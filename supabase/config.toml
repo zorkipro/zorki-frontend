@@ -1,0 +1,4 @@
+project_id = "lyeukzcohzufapmtajcl"
+
+[functions.handle-instagram-profile]
+verify_jwt = false
