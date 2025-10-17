@@ -11,11 +11,11 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getBloggerById } from '@/api/endpoints/blogger';
+import { mapApiDetailBloggerToLocal } from '@/utils/api/mappers';
 import type { Influencer, PlatformData, EditData } from '@/types/profile';
 import { useProfileData } from './useProfileData';
 import { useProfileDrafts } from './useProfileDrafts';
-import { logger } from '@/utils/logger';
 import { ALL_PLATFORMS } from '@/types/platform';
 
 interface LoaderState {
@@ -24,9 +24,9 @@ interface LoaderState {
   /** Доступные платформы */
   availablePlatforms: Record<string, PlatformData> | null;
   /** Темы блогера */
-  topics: string[];
+  topics: number[];
   /** Запрещенные темы */
-  bannedTopics: string[];
+  bannedTopics: number[];
   /** Флаг загрузки */
   loading: boolean;
   /** Ошибка загрузки */
@@ -74,62 +74,36 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
 
   const { hasDrafts, loadDrafts } = useProfileDrafts(profile?.id);
 
-  const [topics, setTopics] = useState<string[]>([]);
-  const [bannedTopics, setBannedTopics] = useState<string[]>([]);
+  const [topics, setTopics] = useState<number[]>([]);
+  const [bannedTopics, setBannedTopics] = useState<number[]>([]);
   const [loadingTopics, setLoadingTopics] = useState(false);
 
   /**
-   * Загружает темы и запрещенные темы блогера
+   * Загружает темы и запрещенные темы блогера через API
    */
   const loadTopics = useCallback(
-    async (profileId: string): Promise<{ topics: string[]; bannedTopics: string[] }> => {
+    async (profileId: string): Promise<{ topics: number[]; bannedTopics: number[] }> => {
       setLoadingTopics(true);
 
       try {
-        const endTimer = logger.startTimer('Load topics and banned topics');
+        const endTimer = () => {};
 
-        // Параллельная загрузка тем и запрещенных тем
-        const [influencerTopicsResult, influencerBannedTopicsResult] = await Promise.all([
-          supabase
-            .from('influencer_topics')
-            .select(`topic_id, topics!inner(title)`)
-            .eq('influencer_id', profileId),
-          supabase
-            .from('influencer_banned_topics')
-            .select(`banned_topic_id, banned_topics!inner(title)`)
-            .eq('influencer_id', profileId),
-        ]);
+        // Загружаем профиль через API, который содержит актуальные темы
+        const apiProfile = await getBloggerById(Number(profileId));
+        const localProfile = mapApiDetailBloggerToLocal(apiProfile);
 
-        const loadedTopics =
-          influencerTopicsResult.data?.map((item) => {
-            const itemData = item as unknown as { topics: { title: string } };
-            return itemData.topics.title;
-          }) || [];
-
-        const loadedBannedTopics =
-          influencerBannedTopicsResult.data?.map((item) => {
-            const itemData = item as unknown as { banned_topics: { title: string } };
-            return itemData.banned_topics.title;
-          }) || [];
+        // Получаем темы из профиля (они уже в правильном формате)
+        const loadedTopics = localProfile.topics || [];
+        const loadedBannedTopics = localProfile.restrictedTopics || [];
 
         setTopics(loadedTopics);
         setBannedTopics(loadedBannedTopics);
 
         endTimer();
 
-        logger.debug('Topics loaded', {
-          component: 'useProfileLoader',
-          profileId,
-          topicsCount: loadedTopics.length,
-          bannedTopicsCount: loadedBannedTopics.length,
-        });
 
         return { topics: loadedTopics, bannedTopics: loadedBannedTopics };
       } catch (err) {
-        logger.error('Error loading topics', err, {
-          component: 'useProfileLoader',
-          profileId,
-        });
 
         return { topics: [], bannedTopics: [] };
       } finally {
@@ -146,8 +120,8 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
     (
       profile: Influencer,
       platforms: Record<string, PlatformData>,
-      topics: string[],
-      bannedTopics: string[]
+      topics: number[],
+      bannedTopics: number[]
     ): EditData => {
       const editData: EditData = {
         full_name: profile.name || '',
@@ -163,13 +137,6 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
         banned_topics: bannedTopics,
       } as EditData;
 
-      console.log('convertToEditData: Converting profile data', {
-        profile_name: profile.name,
-        profile_promoText: profile.promoText,
-        editData_full_name: editData.full_name,
-        editData_description: editData.description,
-        editData: editData
-      });
 
       // Добавляем данные платформ
       ALL_PLATFORMS.forEach((platform) => {
@@ -202,11 +169,6 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
     }
 
     if (!profile || !availablePlatforms) {
-      logger.warn('Cannot load profile data - profile or platforms not available', {
-        component: 'useProfileLoader',
-        hasProfile: !!profile,
-        hasPlatforms: !!availablePlatforms,
-      });
       return null;
     }
 
@@ -222,18 +184,10 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
     );
 
     if (draftFormData) {
-      logger.debug('Loaded draft data', {
-        component: 'useProfileLoader',
-        profileId: profile.id,
-      });
       return draftFormData;
     }
 
     // Нет черновиков - используем опубликованные данные
-    logger.debug('No drafts found, using published data', {
-      component: 'useProfileLoader',
-      profileId: profile.id,
-    });
 
     return convertToEditData(profile, availablePlatforms, loadedTopics, loadedBannedTopics);
   }, [profile, availablePlatforms, fetchProfileData, loadTopics, loadDrafts, convertToEditData]);

@@ -7,6 +7,7 @@ import { AdminAuthProvider } from './contexts/AdminAuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProfileChecker } from './components/ProfileChecker';
+import { AdminRoutes } from './components/AdminRoutes';
 
 // Lazy load all page components
 const Index = lazy(() => import('./pages/Index'));
@@ -106,28 +107,12 @@ const App = () => (
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/2fa" element={<AdminTwoFactor />} />
                 <Route
-                  path="/admin"
+                  path="/admin/*"
                   element={
                     <ErrorBoundary>
                       <AdminAuthProvider>
                         <ProtectedRoute>
-                          <Suspense fallback={<PageLoader />}>
-                            <AdminDashboard />
-                          </Suspense>
-                        </ProtectedRoute>
-                      </AdminAuthProvider>
-                    </ErrorBoundary>
-                  }
-                />
-                <Route
-                  path="/admin/blogger/:username/edit"
-                  element={
-                    <ErrorBoundary>
-                      <AdminAuthProvider>
-                        <ProtectedRoute>
-                          <Suspense fallback={<PageLoader />}>
-                            <AdminBloggerEditor />
-                          </Suspense>
+                          <AdminRoutes />
                         </ProtectedRoute>
                       </AdminAuthProvider>
                     </ErrorBoundary>

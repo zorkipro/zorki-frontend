@@ -19,8 +19,10 @@ import { SafeAvatar } from '@/components/ui/SafeAvatar';
 import { truncateName } from '@/utils/formatters';
 import { useProfileBasicInfo, useVerificationStatus } from '@/hooks/profile/useProfileSelectors';
 import { useBlogger } from '@/contexts/BloggerContext';
+import { useTopics } from '@/hooks/useTopics';
 
 import { EditData } from '@/types/profile';
+import { normalizeUsername } from '@/utils/username';
 
 interface ProfileHeaderProps {
   profile: Blogger;
@@ -46,6 +48,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
   }) => {
     const { bloggerInfo } = useBlogger();
     
+    // Получаем lookup таблицы для конвертации ID в названия
+    const { topicReverseLookup } = useTopics();
+    
     // Используем селекторы для оптимизированного доступа к данным
     const basicInfo = useProfileBasicInfo(bloggerInfo);
     const verificationStatus = useVerificationStatus(bloggerInfo);
@@ -69,11 +74,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
     // Обновляем состояние при изменении formData
     React.useEffect(() => {
-      console.log('ProfileHeader: formData changed', {
-        full_name: formData?.full_name,
-        description: formData?.description,
-        formData: formData
-      });
       setEditName(formData?.full_name || '');
       setEditDescription(formData?.description || '');
     }, [formData?.full_name, formData?.description]);
@@ -148,14 +148,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                           <Button
                             onClick={async () => {
                               const newData = { full_name: editName };
-                              console.log('Saving name:', newData);
                               try {
                                 await handleSave(newData);
-                                console.log('Name saved successfully');
                                 onFormDataChange?.(newData);
                                 onEditingSectionChange(null);
                               } catch (error) {
-                                console.error('Error saving name:', error);
+                                // Ошибка сохранения имени
                               }
                             }}
                             disabled={saving}
@@ -229,14 +227,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                         <Button
                           onClick={async () => {
                             const newData = { description: editDescription };
-                            console.log('Saving description:', newData);
                             try {
                               await handleSave(newData);
-                              console.log('Description saved successfully');
                               onFormDataChange?.(newData);
                               onEditingSectionChange(null);
                             } catch (error) {
-                              console.error('Error saving description:', error);
+                              // Ошибка сохранения описания
                             }
                           }}
                           disabled={saving}
@@ -250,15 +246,22 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
                 <div className="flex flex-wrap justify-center md:justify-start gap-2">
                   {basicInfo?.username && (
-                    <Badge variant="secondary">@{basicInfo.username.replace('@', '')}</Badge>
+                    <Badge variant="secondary">@{normalizeUsername(basicInfo.username)}</Badge>
                   )}
                   {formData?.topics &&
                     formData.topics.length > 0 &&
-                    formData.topics.map((topic, index) => (
-                      <Badge key={index} variant="secondary">
-                        {topic}
-                      </Badge>
-                    ))}
+                    formData.topics.map((topic, index) => {
+                      // Конвертируем ID в название, если это число
+                      const topicName = typeof topic === 'number' 
+                        ? topicReverseLookup[topic] 
+                        : topic;
+                      
+                      return topicName ? (
+                        <Badge key={index} variant="secondary">
+                          {topicName}
+                        </Badge>
+                      ) : null;
+                    })}
                   {formData?.barter_available && <Badge variant="secondary">Бартер возможен</Badge>}
                   {formData?.mart_registry && (
                     <Badge variant="secondary" className="text-success border-success">

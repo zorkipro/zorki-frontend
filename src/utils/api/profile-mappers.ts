@@ -14,7 +14,7 @@ import type {
 import { GENDER_MAP, WORK_FORMAT_MAP, WORK_FORMAT_REVERSE, GENDER_REVERSE } from '@/api/types';
 import { parseBigInt, parseDecimal, splitFullName, joinFullName } from './common-mappers';
 import { mapSinglePlatform, mapMultiplePlatforms, findPrimaryPlatform } from './platform-mappers';
-import { convertTopicNamesToIds } from './topic-mappers';
+import { convertTopicsToIds } from './topic-mappers';
 
 /**
  * Маппер для GET /blogger/public (список блогеров)
@@ -100,7 +100,7 @@ export function mapApiDetailBloggerToLocal(api: PublicGetBloggerByIdOutputDto): 
     name: displayName,
     handle: primarySocial ? `@${primarySocial.username}` : '',
     avatar: primarySocial?.avatar || '',
-    promoText: primarySocial?.description || '',
+    promoText: api.description || primarySocial?.description || '', // Приоритет: описание профиля > описание соцсети
     platforms,
     followers: parseBigInt(primarySocial?.subscribers),
     postPrice: parseDecimal(primaryPrice?.postPrice),
@@ -112,13 +112,13 @@ export function mapApiDetailBloggerToLocal(api: PublicGetBloggerByIdOutputDto): 
       ? (GENDER_MAP[api.genderType] as 'мужчина' | 'женщина' | 'пара' | 'паблик')
       : undefined,
     category: api.topics?.[0]?.name || '',
-    topics: api.topics?.map((t) => t.name) || [],
+    topics: api.topics?.map((t) => t.id) || [],
     allowsBarter: api.isBarterAvailable,
     inMartRegistry: api.isMartRegistry ?? undefined,
     legalForm: api.workFormat
       ? (WORK_FORMAT_MAP[api.workFormat] as 'ИП' | 'профдоход' | 'договор подряда' | 'ООО')
       : undefined,
-    restrictedTopics: api.restrictedTopics?.map((t) => t.name) || [],
+    restrictedTopics: api.restrictedTopics?.map((t) => t.id) || [],
     cooperationConditions: '',
     workFormat: api.workFormat ? WORK_FORMAT_MAP[api.workFormat] : undefined,
     paymentTerms: '',
@@ -142,9 +142,9 @@ export function mapLocalToApiUpdate(
 ): BloggerUpdateProfileInputDto {
   const { name, lastName } = splitFullName(local.full_name);
 
-  // Конвертируем topics/banned_topics названия -> ID
-  const topicIds = convertTopicNamesToIds(local.topics, topicsLookup);
-  const restrictedTopicIds = convertTopicNamesToIds(local.banned_topics, topicsLookup);
+  // Конвертируем topics/banned_topics: названия -> ID, ID -> ID (без изменений)
+  const topicIds = convertTopicsToIds(local.topics, topicsLookup);
+  const restrictedTopicIds = convertTopicsToIds(local.banned_topics, topicsLookup);
 
   // Определяем coverageSocialType и coverage для обновления охвата
   // Приоритет: Instagram > TikTok > YouTube > Telegram
@@ -183,12 +183,6 @@ export function mapLocalToApiUpdate(
     coverage,
   };
 
-  console.log('mapLocalToApiUpdate: Sending to API', {
-    description: result.description,
-    name: result.name,
-    lastName: result.lastName,
-    result: result
-  });
 
   return result;
 }

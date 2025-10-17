@@ -2,12 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle, Badge } from '@/ui-kit';
 import { CheckCircle } from 'lucide-react';
 import { getPlatformIcon, getPlatformName } from '@/components/icons/PlatformIcons';
 import { Blogger } from '@/types/blogger';
+import { useTopics } from '@/hooks/useTopics';
 
 interface BloggerProfilePricingProps {
   blogger: Blogger;
 }
 
 export const BloggerProfilePricing = ({ blogger }: BloggerProfilePricingProps) => {
+  const { getRestrictedTopicNameById, loading: topicsLoading } = useTopics();
+
   return (
     <div className="space-y-6">
       {/* Prices */}
@@ -61,16 +64,32 @@ export const BloggerProfilePricing = ({ blogger }: BloggerProfilePricingProps) =
             </p>
           </div>
 
+          {/* Информация о правовой форме */}
+          {blogger.legalForm && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Правовая форма:</span>
+              <span className="text-sm font-medium">{blogger.legalForm}</span>
+            </div>
+          )}
+
+
           {/* Тематики, которые не берет в рекламу */}
           {blogger.restrictedTopics.length > 0 && (
             <div>
               <div className="text-sm text-muted-foreground mb-2">Не рекламирую</div>
               <div className="flex flex-wrap gap-1">
-                {blogger.restrictedTopics.map((topic, index) => (
-                  <Badge key={index} variant="outline" className="text-xs text-muted-foreground">
-                    {topic}
-                  </Badge>
-                ))}
+                {blogger.restrictedTopics.map((topic, index) => {
+                  // Конвертируем ID в название, если это число
+                  const topicName = typeof topic === 'number' 
+                    ? (topicsLoading ? `Загрузка...` : (getRestrictedTopicNameById(topic) || `Тематика ${topic}`)) 
+                    : topic;
+                  
+                  return (
+                    <Badge key={index} variant="outline" className="text-xs text-muted-foreground">
+                      {topicName}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
           )}

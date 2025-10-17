@@ -8,6 +8,8 @@ import { FilterState } from '@/types/blogger';
 import { RotateCcw } from 'lucide-react';
 import { logError } from '@/utils/logger';
 import { DEFAULT_FILTER_STATE } from '@/config/filters';
+import { getAllCategories, getAllRestrictedTopics } from '@/api/endpoints/topics';
+import type { TopicsOutputDto } from '@/api/types';
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -16,44 +18,33 @@ interface FilterSidebarProps {
 }
 
 const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSidebarProps) => {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [restrictedTopicsOptions, setRestrictedTopicsOptions] = useState<string[]>([]);
+  const [categories, setCategories] = useState<TopicsOutputDto[]>([]);
+  const [restrictedTopicsOptions, setRestrictedTopicsOptions] = useState<TopicsOutputDto[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Загружаем категории и запрещенные тематики из API
   useEffect(() => {
     const loadFilterData = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        const mockCategories = [
-          'Красота и мода',
-          'Путешествия',
-          'Еда и рецепты',
-          'Спорт и фитнес',
-          'Технологии',
-          'Образование',
-          'Развлечения',
-          'Бизнес',
-          'Здоровье',
-          'Семья и дети',
-        ];
+        // Загружаем обычные тематики (категории)
+        const categoriesData = await getAllCategories();
+        setCategories(categoriesData);
 
-        const mockRestrictedTopics = [
-          'Алкоголь',
-          'Табак',
-          'Азартные игры',
-          'Наркотики',
-          'Оружие',
-          'Политика',
-          'Религия',
-          'Медицина',
-        ];
+        // Загружаем запрещенные тематики
+        const restrictedTopicsData = await getAllRestrictedTopics();
+        setRestrictedTopicsOptions(restrictedTopicsData);
 
-        setCategories(mockCategories);
-        setRestrictedTopicsOptions(mockRestrictedTopics);
+        logError('Filter data loaded successfully:', { 
+          categoriesCount: categoriesData.length, 
+          restrictedCount: restrictedTopicsData.length 
+        });
       } catch (error) {
         logError('Error loading filter data:', error);
+        setError('Ошибка загрузки тематик. Попробуйте обновить страницу.');
         // В случае ошибки используем пустые массивы
         setCategories([]);
         setRestrictedTopicsOptions([]);
@@ -77,14 +68,14 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
   }, [onFilterChange]);
 
   const categoryOptions = categories.map((category) => (
-    <SelectItem key={category} value={category}>
-      {category}
+    <SelectItem key={category.id} value={category.name}>
+      {category.name}
     </SelectItem>
   ));
 
   const restrictedTopicsOptionsList = restrictedTopicsOptions.map((topic) => (
-    <SelectItem key={topic} value={topic}>
-      {topic}
+    <SelectItem key={topic.id} value={topic.name}>
+      {topic.name}
     </SelectItem>
   ));
 
@@ -104,6 +95,12 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
             Сбросить
           </Button>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
 
         <form className="space-y-6" role="search" aria-label="Фильтры поиска блогеров">
           {/* Search */}

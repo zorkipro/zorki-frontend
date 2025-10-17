@@ -66,7 +66,7 @@ export const VERIFICATION_REVERSE: Record<string, ApiVerificationStatus> = {
 export interface BadRequestErrorFieldExceptionDto {
   message: string;
   field: string;
-  errorKey: string;
+  errorKey: 'error.incorrect_input_data' | 'error.session_not_found' | 'error.session_unauthorized' | 'error.username_is_not_tg_channel' | 'error.can_not_get_tg_channel_info' | 'error.can_not_get_yt_channel_info' | 'error.can_not_get_ig_user_info' | 'error.blogger_not_found' | 'error.channel_not_found' | 'error.user_not_found' | 'error.unauthorized' | 'error.can_not_load_ig_client' | 'error.email_is_exist' | 'error.username_is_exist' | 'error.account_is_already_linked' | 'error.request_has_been_sent' | 'error.request_not_found' | 'error.request_not_under_moderation' | 'error.request_not_belong_user' | 'error.ig_user_not_found_or_no_active_parser_acc' | 'error.blogger_linked_to_another_user' | 'error.blogger_not_belong_user' | 'error.invalid_page' | 'error.social_media_not_found' | 'error.topic_not_found' | 'error.operation_is_impossible' | 'error.code_is_invalid' | 'error.blogger_already_exist' | 'error.topic_already_exist' | 'error.invalid_file_type' | 'error.exceeded_size' | 'error.file_required' | 'error.incorrect_quantity' | 'error.unknown' | 'error.too_many_files' | 'error.file_not_found' | 'error.file_not_belong_to_blogger' | 'error.file_not_belong_to_user' | 'error_input.username' | 'error_input.password' | 'error_input.channel' | 'error_input.phone' | 'error_input.apiHash' | 'error_input.apiId' | 'error_input.email' | 'error_input.requestId' | 'error_input.bloggerId' | 'error_input.name' | 'error_input.lastName' | 'error_input.contactLink' | 'error_input.workFormat' | 'error_input.genderType' | 'error_input.isBarterAvailable' | 'error_input.isMartRegistry' | 'error_input.topics' | 'error_input.restrictedTopics' | 'error_input.type' | 'error_input.postPrice' | 'error_input.storiesPrice' | 'error_input.integrationPrice' | 'error_input.page' | 'error_input.size' | 'error_input.status' | 'error_input.sortField' | 'error_input.sortDirection' | 'error_input.socialType' | 'error_input.gender' | 'error_input.subCountTo' | 'error_input.subCountFrom' | 'error_input.postPriceFrom' | 'error_input.postPriceTo' | 'error_input.storyPriceFrom' | 'error_input.storyPriceTo' | 'error_input.integrationPriceFrom' | 'error_input.integrationPriceTo' | 'error_input.coverageSocialType' | 'error_input.coverage' | 'error_input.code' | 'error_input.files' | 'error_input.fileId' | 'error_input.isRestricted' | 'error_input.topicId' | 'error_input.description';
 }
 
 export interface BadRequestExceptionDto {
@@ -147,6 +147,7 @@ export interface PublicGetBloggerByIdProfileDraftOutputDto {
   userId: string;
   name: string | null;
   lastName: string | null;
+  description: string | null; // НОВОЕ ПОЛЕ
   contactLink: string | null;
   workFormat: ApiWorkFormat | null;
   genderType: ApiGender | null;
@@ -179,6 +180,7 @@ export interface PublicGetBloggerByIdOutputDto {
   userId: string | null;
   name: string | null;
   lastName: string | null;
+  description: string | null; // НОВОЕ ПОЛЕ
   contactLink: string | null;
   genderType: ApiGender | null;
   workFormat: ApiWorkFormat | null;
@@ -201,7 +203,7 @@ export interface PublicGetBloggerByIdOutputDto {
 export interface BloggerUpdateProfileInputDto {
   name?: string; // 1-30 chars
   lastName?: string; // 1-30 chars
-  description?: string; // описание профиля
+  description?: string; // 1-500 символов, опционально
   contactLink?: string; // URI
   workFormat?: ApiWorkFormat;
   genderType?: ApiGender;
@@ -431,12 +433,32 @@ export interface BloggerLinkMediaTgRequestInputDto {
   username: string; // 3-33 chars, pattern: ^[a-zA-Z0-9_]{3,33}$
 }
 
-// ====== TOPICS (TODO: Backend не реализован) ======
+// ====== TOPICS ======
 
+export interface TopicsOutputDto {
+  id: number;
+  name: string;
+  isRestricted: boolean;
+  createdAt: string; // ISO date string
+}
+
+// Для обратной совместимости
 export interface TopicOutputDto {
   id: number;
   name: string;
   isTopicRestricted: boolean;
+}
+
+// ====== ADMIN TOPICS MANAGEMENT ======
+
+export interface AdminCreateTopicInputDto {
+  name: string; // 2-40 символов
+  isRestricted: boolean;
+}
+
+export interface AdminUpdateTopicInputDto {
+  name: string; // 2-40 символов
+  isRestricted: boolean;
 }
 
 // ====== ADMIN LINK REQUESTS (Backend реализован) ======

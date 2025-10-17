@@ -4,6 +4,8 @@ import { ArrowLeft, MessageCircle, Instagram } from 'lucide-react';
 import { SafeAvatar } from '@/components/ui/SafeAvatar';
 import { truncateName } from '@/utils/formatters';
 import { Blogger } from '@/types/blogger';
+import { normalizeUsername } from '@/utils/username';
+import { useTopics } from '@/hooks/useTopics';
 
 interface BloggerProfileHeaderProps {
   blogger: Blogger;
@@ -11,6 +13,8 @@ interface BloggerProfileHeaderProps {
 }
 
 export const BloggerProfileHeader = ({ blogger, onBack }: BloggerProfileHeaderProps) => {
+  const { getCategoryNameById, loading: topicsLoading } = useTopics();
+
   return (
     <div className="bg-card border-b border-border-light">
       <div className="container mx-auto px-4 py-6">
@@ -25,7 +29,7 @@ export const BloggerProfileHeader = ({ blogger, onBack }: BloggerProfileHeaderPr
               src={blogger.avatar}
               alt={blogger.name}
               className="w-32 h-32 border-4 border-border-light mx-auto md:mx-0 aspect-square"
-              username={blogger.handle.replace('@', '')}
+              username={normalizeUsername(blogger.handle)}
               gender={blogger.gender}
               fallbackIcon={<Instagram className="w-16 h-16 text-muted-foreground" />}
             />
@@ -40,13 +44,20 @@ export const BloggerProfileHeader = ({ blogger, onBack }: BloggerProfileHeaderPr
               <p className="text-lg text-muted-foreground mb-4 max-w-2xl">{blogger.promoText}</p>
 
               <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                <Badge variant="secondary">@{blogger.handle.replace('@', '')}</Badge>
+                <Badge variant="secondary">@{normalizeUsername(blogger.handle)}</Badge>
                 {blogger.topics && blogger.topics.length > 0
-                  ? blogger.topics.map((topic, index) => (
-                      <Badge key={index} variant="secondary">
-                        {topic}
-                      </Badge>
-                    ))
+                  ? blogger.topics.map((topic, index) => {
+                      // Конвертируем ID в название, если это число
+                      const topicName = typeof topic === 'number' 
+                        ? (topicsLoading ? `Загрузка...` : (getCategoryNameById(topic) || `Тематика ${topic}`)) 
+                        : topic;
+                      
+                      return (
+                        <Badge key={index} variant="secondary">
+                          {topicName}
+                        </Badge>
+                      );
+                    })
                   : blogger.category && <Badge variant="secondary">{blogger.category}</Badge>}
                 {blogger.allowsBarter && <Badge variant="secondary">Бартер возможен</Badge>}
                 {blogger.inMartRegistry === true && (

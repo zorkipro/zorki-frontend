@@ -5,6 +5,7 @@ import { mapApiListBloggerToLocal, mapApiDetailBloggerToLocal } from '@/utils/ap
 import { useErrorHandler } from '@/utils/errorHandler';
 import { logError } from '@/utils/logger';
 import { useBlogger } from '@/contexts/BloggerContext';
+import { normalizeUsername } from '@/utils/username';
 
 /**
  * Hook for loading blogger profile data by username
@@ -30,9 +31,12 @@ export const useBloggerProfile = (username?: string) => {
       setLoading(true);
       setError(null);
 
+      // Нормализуем username - убираем @ если есть
+      const normalizedUsername = normalizeUsername(username);
+
       // Сначала ищем блогера по username в списке
       const searchResponse = await getAllBloggers({
-        username: username,
+        username: normalizedUsername,
         page: 1,
         size: 1,
       });

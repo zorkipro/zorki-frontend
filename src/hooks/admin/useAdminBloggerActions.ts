@@ -4,6 +4,7 @@ import { APIError } from '@/api/client';
 import { logError } from '@/utils/logger';
 import { useErrorHandler } from '@/utils/errorHandler';
 import { adminCreateBlogger } from '@/api/endpoints/admin';
+import { normalizeUsername } from '@/utils/username';
 
 export const useAdminBloggerActions = (onUpdate: () => void) => {
   const { toast } = useToast();
@@ -18,7 +19,7 @@ export const useAdminBloggerActions = (onUpdate: () => void) => {
         }
 
         // Убираем @ если есть
-        const cleanUsername = instagramUsername.replace('@', '').trim();
+        const cleanUsername = normalizeUsername(instagramUsername);
 
         if (cleanUsername.length < 1 || cleanUsername.length > 30) {
           throw new Error('Username должен быть от 1 до 30 символов');

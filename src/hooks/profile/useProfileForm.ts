@@ -14,7 +14,6 @@ import { useState, useCallback, useMemo } from 'react';
 import type { EditData, PlatformData } from '@/types/profile';
 import type { PlatformType } from '@/types/platform';
 import { ALL_PLATFORMS } from '@/types/platform';
-import { logger } from '@/utils/logger';
 
 /**
  * Начальные данные формы (пустые значения)
@@ -114,11 +113,6 @@ export const useProfileForm = (initialData?: EditData): ProfileFormReturn => {
     setFormDataState((prev) => {
       const updated = { ...prev, ...data };
 
-      logger.debug('Form data updated', {
-        component: 'useProfileForm',
-        updatedFields: Object.keys(data),
-        changesCount: Object.keys(data).length,
-      });
 
       return updated;
     });
@@ -130,11 +124,6 @@ export const useProfileForm = (initialData?: EditData): ProfileFormReturn => {
   const setFormData = useCallback((data: EditData) => {
     setFormDataState(data);
 
-    logger.debug('Form data set', {
-      component: 'useProfileForm',
-      hasTopics: data.topics.length > 0,
-      hasBannedTopics: data.banned_topics.length > 0,
-    });
   }, []);
 
   /**
@@ -144,9 +133,6 @@ export const useProfileForm = (initialData?: EditData): ProfileFormReturn => {
     setFormDataState(initialData || INITIAL_FORM_DATA);
     setEditingSection(null);
 
-    logger.debug('Form reset', {
-      component: 'useProfileForm',
-    });
   }, [initialData]);
 
   /**

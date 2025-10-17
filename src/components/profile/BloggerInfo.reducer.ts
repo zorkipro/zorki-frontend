@@ -9,9 +9,9 @@ import type { EditData } from '@/types/profile';
  * Состояние формы редактирования блогера
  */
 export interface BloggerInfoState {
-  categories: string[];
+  categories: (string | number)[]; // Поддержка как названий, так и ID
   legalForm: 'ИП' | 'профдоход' | 'договор подряда' | 'ООО' | '';
-  restrictedTopics: string[];
+  restrictedTopics: (string | number)[]; // Поддержка как названий, так и ID
   contactUrl: string;
   gender: 'мужчина' | 'женщина' | 'пара' | 'паблик' | '';
   barterAvailable: boolean;
@@ -22,9 +22,9 @@ export interface BloggerInfoState {
  * Actions для обновления состояния
  */
 export type BloggerInfoAction =
-  | { type: 'SET_CATEGORIES'; payload: string[] }
+  | { type: 'SET_CATEGORIES'; payload: (string | number)[] }
   | { type: 'SET_LEGAL_FORM'; payload: string }
-  | { type: 'SET_RESTRICTED_TOPICS'; payload: string[] }
+  | { type: 'SET_RESTRICTED_TOPICS'; payload: (string | number)[] }
   | { type: 'SET_CONTACT_URL'; payload: string }
   | { type: 'SET_GENDER'; payload: string }
   | { type: 'SET_BARTER_AVAILABLE'; payload: boolean }
@@ -79,6 +79,7 @@ export const bloggerInfoReducer = (
 
     case 'SET_MART_REGISTRY':
       return { ...state, martRegistry: action.payload };
+
 
     case 'RESET_TO_INITIAL':
       return action.payload;

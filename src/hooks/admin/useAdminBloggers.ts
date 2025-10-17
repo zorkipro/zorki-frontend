@@ -171,26 +171,15 @@ export const useAdminBloggers = () => {
         setIsProcessing(true);
         setError(null);
 
-        // Проверяем, существует ли запрос в локальном состоянии
-        const existingRequest = linkRequests.find((req) => req.id === requestId);
-        if (!existingRequest) {
-          logWarn(`⚠️ Запрос ID ${requestId} не найден в локальном состоянии`);
-          throw new Error(
-            `Запрос ID ${requestId} не найден в локальном состоянии. Возможно, он уже был обработан.`
-          );
-        }
-
-        // Проверяем, что запрос в статусе MODERATION
-        if (existingRequest.status !== 'MODERATION') {
-          throw new Error(
-            `Запрос ID ${requestId} уже обработан. Текущий статус: ${existingRequest.status}`
-          );
-        }
-
+        // Отправляем запрос к API без проверки локального состояния
         await approveLinkRequest(requestId);
 
         // Обновляем локальное состояние запросов на связывание
-        setLinkRequests((prev) => prev.filter((req) => req.id !== requestId));
+        setLinkRequests((prev) => {
+          const filtered = prev.filter((req) => Number(req.request_id) !== Number(requestId));
+          logWarn(`🔄 Обновление состояния после одобрения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`);
+          return filtered;
+        });
 
         // Обновляем статистику
         setStats((prev) => ({
@@ -210,13 +199,21 @@ export const useAdminBloggers = () => {
           });
         }
 
-        setError(err instanceof Error ? err.message : 'Ошибка при одобрении запроса');
-        throw err; // Пробрасываем ошибку для обработки в UI
+        // Обрабатываем API ошибки
+        if (err instanceof APIError) {
+          setError(err.message);
+          throw err; // Пробрасываем APIError для обработки в UI
+        }
+        
+        // Обрабатываем обычные ошибки
+        const errorMessage = err instanceof Error ? err.message : 'Ошибка при одобрении запроса';
+        setError(errorMessage);
+        throw new Error(errorMessage); // Создаем новую ошибку для проброса
       } finally {
         setIsProcessing(false);
       }
     },
-    [linkRequests]
+    []
   );
 
   const rejectRequest = useCallback(async (requestId: number) => {
@@ -224,26 +221,15 @@ export const useAdminBloggers = () => {
       setIsProcessing(true);
       setError(null);
 
-      // Проверяем, существует ли запрос в локальном состоянии
-      const existingRequest = linkRequests.find((req) => req.id === requestId);
-      if (!existingRequest) {
-        logWarn(`⚠️ Запрос ID ${requestId} не найден в локальном состоянии`);
-        throw new Error(
-          `Запрос ID ${requestId} не найден в локальном состоянии. Возможно, он уже был обработан.`
-        );
-      }
-
-      // Проверяем, что запрос в статусе MODERATION
-      if (existingRequest.status !== 'MODERATION') {
-        throw new Error(
-          `Запрос ID ${requestId} уже обработан. Текущий статус: ${existingRequest.status}`
-        );
-      }
-
+      // Отправляем запрос к API без проверки локального состояния
       await rejectLinkRequest(requestId);
 
       // Обновляем локальное состояние запросов на связывание
-      setLinkRequests((prev) => prev.filter((req) => req.id !== requestId));
+      setLinkRequests((prev) => {
+        const filtered = prev.filter((req) => Number(req.request_id) !== Number(requestId));
+        logWarn(`🔄 Обновление состояния после отклонения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`);
+        return filtered;
+      });
 
       // Обновляем статистику
       setStats((prev) => ({
@@ -252,8 +238,17 @@ export const useAdminBloggers = () => {
       }));
     } catch (err: unknown) {
       logError('❌ Ошибка при отклонении запроса:', err);
-      setError(err instanceof Error ? err.message : 'Ошибка при отклонении запроса');
-      throw err; // Пробрасываем ошибку для обработки в UI
+      
+      // Обрабатываем API ошибки
+      if (err instanceof APIError) {
+        setError(err.message);
+        throw err; // Пробрасываем APIError для обработки в UI
+      }
+      
+      // Обрабатываем обычные ошибки
+      const errorMessage = err instanceof Error ? err.message : 'Ошибка при отклонении запроса';
+      setError(errorMessage);
+      throw new Error(errorMessage); // Создаем новую ошибку для проброса
     } finally {
       setIsProcessing(false);
     }

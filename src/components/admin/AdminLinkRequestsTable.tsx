@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { formatSubscribers } from '@/utils/formatters';
 import { logger } from '@/utils/logger';
+import { APIError } from '@/api/client';
 
 interface LinkRequest {
   id: string;
@@ -193,18 +194,27 @@ const AdminLinkRequestsTableComponent = ({
           requestId: requestId.toString(),
         });
 
-        // Проверяем авторизацию через контекст
+        // Проверяем, является ли это ошибкой авторизации
+        if (error instanceof APIError && error.isAuthError()) {
+          toast({
+            title: '❌ Ошибка авторизации',
+            description:
+              'Сессия истекла. Необходимо войти в админку заново.',
+            variant: 'destructive',
+          });
+          // Не вызываем adminSignOut() автоматически, пусть пользователь сам решит
+          return;
+        }
+
+        // Для других ошибок показываем общее сообщение
         toast({
-          title: '❌ Ошибка авторизации',
-          description:
-            'Необходимо войти в админку. Проверьте, что вы авторизованы как администратор.',
+          title: '❌ Ошибка при одобрении запроса',
+          description: error instanceof APIError ? error.message : (error instanceof Error ? error.message : 'Произошла неизвестная ошибка'),
           variant: 'destructive',
         });
-        adminSignOut();
-        return;
       }
     },
-    [onApprove, toast]
+    [onApprove, toast, adminSignOut]
   );
 
   const handleReject = useCallback(
@@ -230,18 +240,27 @@ const AdminLinkRequestsTableComponent = ({
           requestId: requestId.toString(),
         });
 
-        // Проверяем авторизацию через контекст
+        // Проверяем, является ли это ошибкой авторизации
+        if (error instanceof APIError && error.isAuthError()) {
+          toast({
+            title: '❌ Ошибка авторизации',
+            description:
+              'Сессия истекла. Необходимо войти в админку заново.',
+            variant: 'destructive',
+          });
+          // Не вызываем adminSignOut() автоматически, пусть пользователь сам решит
+          return;
+        }
+
+        // Для других ошибок показываем общее сообщение
         toast({
-          title: '❌ Ошибка авторизации',
-          description:
-            'Необходимо войти в админку. Проверьте, что вы авторизованы как администратор.',
+          title: '❌ Ошибка при отклонении запроса',
+          description: error instanceof APIError ? error.message : (error instanceof Error ? error.message : 'Произошла неизвестная ошибка'),
           variant: 'destructive',
         });
-        adminSignOut();
-        return;
       }
     },
-    [onReject, toast]
+    [onReject, toast, adminSignOut]
   );
 
   const renderDesktopRow = useCallback(

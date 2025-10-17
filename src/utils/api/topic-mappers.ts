@@ -82,6 +82,39 @@ export function convertTopicNamesToIds(
 }
 
 /**
+ * Конвертирует массив тем (названия или ID) в массив ID
+ * Универсальная функция для обработки смешанных типов данных
+ *
+ * @param topics - массив тем (названия или ID)
+ * @param lookup - таблица name -> id
+ * @returns массив ID тем
+ *
+ * @example
+ * const topics = ["Мода", 2, "Красота"];
+ * const lookup = { "Мода": 1, "Красота": 2 };
+ * convertTopicsToIds(topics, lookup) // => [1, 2, 2]
+ */
+export function convertTopicsToIds(
+  topics: (string | number)[] | undefined,
+  lookup: Record<string, number>
+): number[] {
+  if (!topics || topics.length === 0) {
+    return [];
+  }
+
+  return topics
+    .map((topic) => {
+      // Если уже ID - вернуть как есть
+      if (typeof topic === 'number') {
+        return topic;
+      }
+      // Если название - конвертировать в ID
+      return lookup[topic];
+    })
+    .filter((id): id is number => typeof id === 'number');
+}
+
+/**
  * Конвертирует массив ID топиков в массив названий
  * Фильтрует ID, которых нет в lookup
  *

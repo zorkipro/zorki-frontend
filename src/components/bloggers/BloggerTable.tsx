@@ -7,6 +7,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Button } from '@/ui-kit';
 import { SafeAvatar } from '@/components/ui/SafeAvatar';
 import { truncateName } from '@/utils/formatters';
+import { normalizeUsername } from '@/utils/username';
 
 interface BloggerTableProps {
   bloggers: Blogger[];
@@ -84,7 +85,7 @@ const BloggerTableComponent = ({
       <div
         key={blogger.id}
         className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-sm transition-shadow duration-200 cursor-pointer mb-4"
-        onClick={() => navigate(`/${blogger.handle.replace('@', '')}`)}
+        onClick={() => navigate(`/${normalizeUsername(blogger.handle)}`)}
       >
         {/* Аватарка/имя/никнейм - главная информация */}
         <div className="flex items-center space-x-4 mb-6">
@@ -92,7 +93,7 @@ const BloggerTableComponent = ({
             src={blogger.avatar}
             alt={`Аватар ${blogger.name}`}
             className="w-12 h-12 flex-shrink-0 aspect-square"
-            username={blogger.handle.replace('@', '')}
+            username={normalizeUsername(blogger.handle)}
             gender={blogger.gender}
           />
           <div className="flex-1 min-w-0">
@@ -220,14 +221,14 @@ const BloggerTableComponent = ({
                 <TableRow
                   key={blogger.id}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => navigate(`/${blogger.handle.replace('@', '')}`)}
+                  onClick={() => navigate(`/${normalizeUsername(blogger.handle)}`)}
                   role="button"
                   tabIndex={0}
                   aria-label={`Перейти к профилю блогера ${blogger.name}`}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      navigate(`/${blogger.handle.replace('@', '')}`);
+                      navigate(`/${normalizeUsername(blogger.handle)}`);
                     }
                   }}
                 >
@@ -238,7 +239,7 @@ const BloggerTableComponent = ({
                         src={blogger.avatar}
                         alt={`Аватар ${blogger.name}`}
                         className="w-10 h-10 aspect-square"
-                        username={blogger.handle.replace('@', '')}
+                        username={normalizeUsername(blogger.handle)}
                         gender={blogger.gender}
                       />
                       <div>

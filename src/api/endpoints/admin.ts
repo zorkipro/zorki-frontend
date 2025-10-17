@@ -20,6 +20,9 @@ import type {
   AdminGetBloggersResponse,
   AdminGetBloggersStatsOutputDto,
   AdminCreateBloggerInputDto,
+  BloggerUpdateProfileInputDto,
+  BloggerUpdateSocialPriceInputDto,
+  ApiSocialType,
 } from '../types';
 
 // ====== POST /auth/admin/login - Логин админа ======
@@ -523,5 +526,140 @@ export async function approveLinkRequest(requestId: number): Promise<void> {
 export async function rejectLinkRequest(requestId: number): Promise<void> {
   return apiRequest<void>(`/admin/link/blogger-client/reject/${requestId}`, {
     method: 'POST',
+  });
+}
+
+/**
+ * Удалить файл статистики блогера (только для администраторов)
+ *
+ * @param bloggerId - ID блогера
+ * @param fileId - ID файла для удаления
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 403 - File not belong to this blogger
+ * @throws APIError 404 - Blogger or file not found
+ *
+ * @note Требует Authorization header с admin token
+ * @note Администратор может удалять файлы любого блогера
+ *
+ * @example
+ * ```typescript
+ * await adminDeleteBloggerStatsFile(123, 456);
+ * ```
+ */
+export async function adminDeleteBloggerStatsFile(
+  bloggerId: number,
+  fileId: number
+): Promise<void> {
+  return apiRequest<void>(`/admin/blogger/${bloggerId}/${fileId}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
+ * Обновление профиля блогера администратором
+ * PUT /admin/blogger/{bloggerId}
+ *
+ * @param bloggerId - ID блогера
+ * @param data - данные для обновления профиля
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Blogger not found
+ *
+ * @note Требует Authorization header с admin token
+ * @note Все поля опциональны, отправляются только изменённые поля
+ *
+ * @example
+ * ```typescript
+ * await adminUpdateBlogger(123, {
+ *   name: 'Новое имя',
+ *   description: 'Новое описание',
+ *   topics: [1, 2, 3]
+ * });
+ * ```
+ */
+export async function adminUpdateBlogger(
+  bloggerId: number,
+  data: BloggerUpdateProfileInputDto
+): Promise<void> {
+  return apiRequest<void>(`/admin/blogger/${bloggerId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Обновление цен на соц. платформе блогера
+ * PUT /admin/blogger/social-price/{bloggerId}
+ *
+ * @param bloggerId - ID блогера
+ * @param data - данные цен для платформы
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Blogger or social media not found
+ *
+ * @note Требует Authorization header с admin token
+ * @note Поле type обязательно, остальные поля опциональны
+ *
+ * @example
+ * ```typescript
+ * await adminUpdateBloggerSocialPrice(123, {
+ *   type: 'INSTAGRAM',
+ *   postPrice: 1000,
+ *   storiesPrice: 500
+ * });
+ * ```
+ */
+export async function adminUpdateBloggerSocialPrice(
+  bloggerId: number,
+  data: BloggerUpdateSocialPriceInputDto
+): Promise<void> {
+  return apiRequest<void>(`/admin/blogger/social-price/${bloggerId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Загрузка файлов статистики блогера администратором
+ * PUT /admin/blogger/stats-upload/{bloggerId}
+ *
+ * @param bloggerId - ID блогера
+ * @param type - тип социальной платформы
+ * @param files - массив файлов для загрузки
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data или слишком много файлов
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Blogger or social media not found
+ *
+ * @note Требует Authorization header с admin token
+ * @note Максимум 25 файлов, размер до 10MB каждый
+ * @note Поддерживаемые форматы: image/jpeg, image/png
+ *
+ * @example
+ * ```typescript
+ * await adminUploadBloggerStats(123, 'INSTAGRAM', [file1, file2]);
+ * ```
+ */
+export async function adminUploadBloggerStats(
+  bloggerId: number,
+  type: ApiSocialType,
+  files: File[]
+): Promise<void> {
+  const formData = new FormData();
+  formData.append('type', type);
+  files.forEach((file) => formData.append('files', file));
+
+  return apiRequest<void>(`/admin/blogger/stats-upload/${bloggerId}`, {
+    method: 'PUT',
+    body: formData,
+    headers: {}, // Убираем Content-Type, браузер сам установит для FormData
   });
 }

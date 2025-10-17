@@ -145,8 +145,9 @@ export interface EditData {
   telegram_integration_price: string;
 
   // Topics and banned topics (через связующие таблицы)
-  topics: string[];
-  banned_topics: string[];
+  // Поддержка как названий (string), так и ID (number) для универсальности
+  topics: (string | number)[];
+  banned_topics: (string | number)[];
 }
 
 // Platform data structure for statistics display

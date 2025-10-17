@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/ui-kit';
-import { LogOut, User, Calendar } from 'lucide-react';
+import { LogOut, User, Calendar, Settings } from 'lucide-react';
 
-export const AdminHeader = () => {
+interface AdminHeaderProps {
+  onOpenTopicsManagement?: () => void;
+}
+
+export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenTopicsManagement }) => {
   const { adminInfo, adminSignOut } = useAdminAuth();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -24,6 +28,16 @@ export const AdminHeader = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-bold text-gray-900">Админ панель</h1>
+          {onOpenTopicsManagement && (
+            <Button
+              variant="outline"
+              onClick={onOpenTopicsManagement}
+              className="flex items-center space-x-2"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Управление топиками</span>
+            </Button>
+          )}
         </div>
 
         <div className="relative">

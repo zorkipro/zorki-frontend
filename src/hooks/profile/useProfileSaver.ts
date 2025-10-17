@@ -6,11 +6,11 @@ import { mapLocalToApiUpdate } from '@/utils/api/mappers';
 import { mapProfileChangesToBloggerFields, logProfileChanges } from '@/utils/profile-update-mapper';
 import { APIError } from '@/api/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTopics } from '@/hooks/useTopics';
 import type { Influencer, PlatformData } from '@/types/profile';
 import type { EditData } from '@/types/profile';
 import type { PlatformType } from '@/types/platform';
 import { ALL_PLATFORMS, platformToApi } from '@/types/platform';
-import { logger } from '@/utils/logger';
 
 /**
  * Hook for saving profile changes
@@ -40,11 +40,14 @@ export const useProfileSaver = (
         const mergedData = { ...formData, ...data };
         const profileUpdateData = mapLocalToApiUpdate(mergedData, topicLookup);
 
-        console.log('useProfileSaver: Sending to API', {
-          originalData: data,
-          mergedData: mergedData,
-          profileUpdateData: profileUpdateData
-        });
+        // Убедиться, что topics и restrictedTopics всегда есть (required поля)
+        if (!profileUpdateData.topics) {
+          profileUpdateData.topics = [];
+        }
+        if (!profileUpdateData.restrictedTopics) {
+          profileUpdateData.restrictedTopics = [];
+        }
+
 
         await updateBloggerProfile(Number(profile.id), profileUpdateData);
 
@@ -110,11 +113,6 @@ export const useProfileSaver = (
         // Обновляем локальное состояние formData для немедленного отображения изменений
         if (updateFormData) {
           updateFormData(data);
-          logger.debug('Form data updated locally', {
-            component: 'useProfileSaver',
-            profileId: profile?.id,
-            updatedFields: Object.keys(data),
-          });
         }
 
         // Селективно обновляем только измененные поля в BloggerContext
@@ -124,23 +122,9 @@ export const useProfileSaver = (
           
           if (Object.keys(bloggerFields).length > 0) {
             updateBloggerFields(bloggerFields);
-            logger.debug('BloggerContext fields updated selectively', {
-              component: 'useProfileSaver',
-              profileId: profile?.id,
-              updatedFields: Object.keys(bloggerFields),
-            });
           } else {
-            logger.debug('No blogger fields to update', {
-              component: 'useProfileSaver',
-              profileId: profile?.id,
-            });
           }
         } catch (updateError) {
-          logger.warn('Failed to update BloggerContext fields', {
-            component: 'useProfileSaver',
-            profileId: profile?.id,
-            error: updateError,
-          });
           // Не прерываем выполнение, так как основное сохранение прошло успешно
         }
 
@@ -149,10 +133,6 @@ export const useProfileSaver = (
           description: 'Профиль обновлен',
         });
       } catch (err: unknown) {
-        logger.error('Error saving profile', err, {
-          component: 'useProfileSaver',
-          profileId: profile?.id,
-        });
 
         if (err instanceof APIError) {
           toast({

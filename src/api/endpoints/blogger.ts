@@ -225,3 +225,34 @@ export async function uploadBloggerStats(
     // Не устанавливаем Content-Type, браузер сам установит multipart/form-data
   });
 }
+
+// ====== DELETE /blogger/{bloggerId}/{fileId} - Удаление файла статистики ======
+
+/**
+ * Удалить файл статистики блогера
+ *
+ * @param bloggerId - ID блогера
+ * @param fileId - ID файла для удаления
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется user auth token)
+ * @throws APIError 403 - Insufficient rights to perform the operation
+ * @throws APIError 404 - Blogger or file not found
+ *
+ * @note Требует Authorization header с user token
+ * @note Только владелец блогера может удалять файлы
+ *
+ * @example
+ * ```typescript
+ * await deleteBloggerStatsFile(123, 456);
+ * ```
+ */
+export async function deleteBloggerStatsFile(
+  bloggerId: number,
+  fileId: number
+): Promise<void> {
+  return apiRequest<void>(`/blogger/${bloggerId}/${fileId}`, {
+    method: 'DELETE',
+  });
+}

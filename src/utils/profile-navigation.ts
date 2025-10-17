@@ -9,7 +9,6 @@ import type { User } from '@supabase/supabase-js';
 import type { ClientBloggerInfo } from '@/api/types';
 import { AUTH_PAGES } from '@/config/routes';
 import { isApprovedStatus, isRejectedStatus } from '@/config/statuses';
-import { logger } from '@/utils/logger';
 
 /**
  * Результат валидации информации блогера
@@ -43,33 +42,22 @@ export function shouldSkipProfileCheck(
   loading: boolean,
   bloggerInfoLoading: boolean
 ): boolean {
-  console.log('🔍 shouldSkipProfileCheck:', {
-    pathname,
-    hasUser: !!user,
-    loading,
-    bloggerInfoLoading,
-    isAuthPage: AUTH_PAGES.some((page) => pathname === page),
-  });
 
   // Пропускаем если нет пользователя
   if (!user) {
-    console.log('⏭️ Skipping: no user');
     return true;
   }
 
   // Пропускаем если данные загружаются
   if (loading || bloggerInfoLoading) {
-    console.log('⏭️ Skipping: still loading');
     return true;
   }
 
   // Пропускаем на страницах авторизации и настройки профиля
   if (AUTH_PAGES.some((page) => pathname === page)) {
-    console.log('⏭️ Skipping: auth page');
     return true;
   }
 
-  console.log('✅ Not skipping: will perform check');
   return false;
 }
 
@@ -89,17 +77,9 @@ export function validateBloggerInfo(
   bloggerInfo: ClientBloggerInfo | null
 ): BloggerValidationResult {
   // Добавляем отладочную информацию
-  console.log('🔍 validateBloggerInfo called with:', {
-    bloggerInfo,
-    hasBloggerInfo: !!bloggerInfo,
-    username: bloggerInfo?.username,
-    usernameLength: bloggerInfo?.username?.length,
-    verificationStatus: bloggerInfo?.verificationStatus,
-  });
 
   // Нет связанного блогера
   if (!bloggerInfo) {
-    console.log('❌ No blogger info found');
     return {
       isValid: false,
       reason: 'no_blogger',
@@ -110,14 +90,8 @@ export function validateBloggerInfo(
   // Нет username (обязательное поле)
   // Проверяем не только на falsy, но и на пустую строку после trim
   const hasValidUsername = bloggerInfo.username && bloggerInfo.username.trim().length > 0;
-  console.log('🔍 Username validation:', {
-    username: bloggerInfo.username,
-    hasValidUsername,
-    trimmedLength: bloggerInfo.username?.trim().length,
-  });
   
   if (!hasValidUsername) {
-    console.log('❌ Invalid username');
     return {
       isValid: false,
       reason: 'no_username',
@@ -127,7 +101,6 @@ export function validateBloggerInfo(
 
   // Профиль отклонен
   if (isRejectedStatus(bloggerInfo.verificationStatus)) {
-    console.log('❌ Profile rejected');
     return {
       isValid: false,
       reason: 'rejected',
@@ -136,7 +109,6 @@ export function validateBloggerInfo(
   }
 
   // Если есть username и профиль не отклонен - валидация пройдена
-  console.log('✅ Profile validation passed');
   return {
     isValid: true,
   };
@@ -200,17 +172,9 @@ export function checkProfileRedirect(
   bloggerInfo: ClientBloggerInfo | null,
   bloggerInfoLoading: boolean
 ): string | null {
-  console.log('🔍 checkProfileRedirect called:', {
-    pathname,
-    hasUser: !!user,
-    loading,
-    bloggerInfoLoading,
-    hasBloggerInfo: !!bloggerInfo,
-  });
 
   // Проверяем, нужно ли пропустить проверку
   if (shouldSkipProfileCheck(pathname, user, loading, bloggerInfoLoading)) {
-    console.log('⏭️ Skipping profile check');
     return null;
   }
 
@@ -220,10 +184,6 @@ export function checkProfileRedirect(
   // Определяем путь редиректа
   const redirectPath = determineRedirectPath(bloggerInfo, validation);
   
-  console.log('🔍 checkProfileRedirect result:', {
-    validation,
-    redirectPath,
-  });
 
   return redirectPath;
 }

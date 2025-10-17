@@ -13,6 +13,7 @@ import { AdminLinkRequestsTable } from '@/components/admin/AdminLinkRequestsTabl
 import { BloggersTable } from '@/components/admin/BloggersTable';
 import { AddBloggerDialog } from '@/components/admin/AddBloggerDialog';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { TopicsManagementDialog } from '@/components/admin/TopicsManagementDialog';
 import { formatNumber } from '@/utils/formatters';
 import { logError } from '@/utils/logger';
 import { adminToggleBloggerVisibility } from '@/api/endpoints/admin';
@@ -25,6 +26,7 @@ const AdminDashboard = () => {
   const { adminInfo, loading: adminLoading } = useAdminAuth();
 
   const [activeTab, setActiveTab] = useState('bloggers'); // По умолчанию показываем блогеров
+  const [topicsDialogOpen, setTopicsDialogOpen] = useState(false);
 
   const {
     allBloggers,
@@ -117,7 +119,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Admin Header */}
-      <AdminHeader />
+      <AdminHeader onOpenTopicsManagement={() => setTopicsDialogOpen(true)} />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
@@ -193,6 +195,12 @@ const AdminDashboard = () => {
           />
         )}
       </div>
+
+      {/* Topics Management Dialog */}
+      <TopicsManagementDialog
+        open={topicsDialogOpen}
+        onOpenChange={setTopicsDialogOpen}
+      />
     </div>
   );
 };

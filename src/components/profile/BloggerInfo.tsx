@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/ui-kit';
 import { Button } from '@/ui-kit';
 import { Input } from '@/ui-kit';
 import { Label } from '@/ui-kit';
+import { Textarea } from '@/ui-kit';
 import { Badge } from '@/ui-kit';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui-kit';
 import {
@@ -18,6 +19,7 @@ import { EditData } from '@/types/profile';
 import { CategorySelector } from '@/components/profile/CategorySelector';
 import { RestrictedTopicsSelector } from '@/components/profile/RestrictedTopicsSelector';
 import { bloggerInfoReducer, createInitialState, stateToEditData } from './BloggerInfo.reducer';
+import { useTopics } from '@/hooks/useTopics';
 
 // Опции для правовой формы
 const legalFormOptions = [
@@ -45,8 +47,13 @@ interface BloggerInfoProps {
 
 export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
   ({ formData, editingSection, saving, onEditingChange, onSave }) => {
+    // Получаем темы и lookup таблицы
+    const { topicLookup, topicReverseLookup } = useTopics();
+    
     // Используем useMemo для создания начального состояния только при изменении formData
-    const initialState = useMemo(() => createInitialState(formData), [formData]);
+    const initialState = useMemo(() => {
+      return createInitialState(formData);
+    }, [formData]);
 
     // Заменяем 7 useState на один useReducer
     const [state, dispatch] = useReducer(bloggerInfoReducer, initialState);
@@ -57,9 +64,22 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
     }, [formData]);
 
     const handleSave = useCallback(() => {
-      onSave(stateToEditData(state));
+      const editData = stateToEditData(state);
+      
+      // Конвертируем названия тем в ID для API
+      const topicsWithIds = {
+        ...editData,
+        topics: editData.topics?.map(topic => 
+          typeof topic === 'string' ? topicLookup[topic] : topic
+        ).filter(id => typeof id === 'number') || [],
+        banned_topics: editData.banned_topics?.map(topic => 
+          typeof topic === 'string' ? topicLookup[topic] : topic
+        ).filter(id => typeof id === 'number') || []
+      };
+      
+      onSave(topicsWithIds);
       onEditingChange(null);
-    }, [state, onSave, onEditingChange]);
+    }, [state, onSave, onEditingChange, topicLookup]);
 
     const handleCancel = useCallback(() => {
       dispatch({ type: 'RESET_TO_INITIAL', payload: initialState });
@@ -142,11 +162,14 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                     />
                   </div>
 
+
                   {/* Категории */}
                   <div>
                     <Label>Категории</Label>
                     <CategorySelector
-                      value={state.categories}
+                      value={state.categories.map(topic => 
+                        typeof topic === 'number' ? topicReverseLookup[topic] : topic
+                      ).filter(Boolean)}
                       onChange={(categories) =>
                         dispatch({ type: 'SET_CATEGORIES', payload: categories })
                       }
@@ -157,7 +180,9 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                   <div>
                     <Label>Запрещенные темы</Label>
                     <RestrictedTopicsSelector
-                      value={state.restrictedTopics}
+                      value={state.restrictedTopics.map(topic => 
+                        typeof topic === 'number' ? topicReverseLookup[topic] : topic
+                      ).filter(Boolean)}
                       onChange={(topics) =>
                         dispatch({ type: 'SET_RESTRICTED_TOPICS', payload: topics })
                       }
@@ -240,11 +265,18 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
               <div>
                 <span className="text-sm text-muted-foreground">Категории:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {formData.topics.map((topic) => (
-                    <Badge key={topic} variant="outline" className="text-xs">
-                      {topic}
-                    </Badge>
-                  ))}
+                  {formData.topics.map((topic) => {
+                    // Конвертируем ID в название, если это число
+                    const topicName = typeof topic === 'number' 
+                      ? topicReverseLookup[topic] 
+                      : topic;
+                    
+                    return topicName ? (
+                      <Badge key={topic} variant="outline" className="text-xs">
+                        {topicName}
+                      </Badge>
+                    ) : null;
+                  })}
                 </div>
               </div>
             )}
@@ -253,11 +285,30 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
               <div>
                 <span className="text-sm text-muted-foreground">Запрещенные темы:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {formData.banned_topics.map((topic) => (
-                    <Badge key={topic} variant="destructive" className="text-xs">
-                      {topic}
-                    </Badge>
-                  ))}
+                  {formData.banned_topics.map((topic) => {
+                    // Конвертируем ID в название, если это число
+                    const topicName = typeof topic === 'number' 
+                      ? topicReverseLookup[topic] 
+                      : topic;
+                    
+                    // Логируем для отладки
+                    console.log('Banned topic debug:', {
+                      topicId: topic,
+                      topicName,
+                      topicReverseLookup,
+                      hasLookup: !!topicReverseLookup[topic]
+                    });
+                    
+                    return topicName ? (
+                      <Badge key={topic} variant="destructive" className="text-xs">
+                        {topicName}
+                      </Badge>
+                    ) : (
+                      <Badge key={topic} variant="destructive" className="text-xs">
+                        Тема {topic}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
 import { Button } from '@/ui-kit';
 import { Card, CardContent } from '@/ui-kit';
 import { Label } from '@/ui-kit';
@@ -25,10 +26,11 @@ import { PricingSection } from '@/components/profile/organisms/PricingSection';
 
 // Импортируем хук и типы
 import { useAdminBloggerEditor } from '@/hooks/admin/useAdminBloggerEditor';
-import { useScreenshotManager } from '@/hooks/profile/useScreenshotManager';
+import { useAdminStatsFileManagement } from '@/hooks/admin/useAdminStatsFileManagement';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatNumber } from '@/utils/formatters';
 import type { Blogger } from '@/types/blogger';
+import type { ApiSocialType } from '@/api/types';
 
 export const AdminBloggerEditor = () => {
   const { user } = useAuth();
@@ -52,46 +54,41 @@ export const AdminBloggerEditor = () => {
     setAvailablePlatforms,
   } = useAdminBloggerEditor(username);
 
-  // Управление скриншотами
+  // Создаем стабильную ссылку на пустой массив для предотвращения бесконечных циклов
+  const emptyStatsFiles = useMemo(() => [], []);
+
+  // Управление файлами статистики
   const {
-    screenshots,
-    uploading: uploadingScreenshot,
-    loading: loadingScreenshots,
-    error: screenshotError,
-    uploadScreenshot,
-    uploadMultipleScreenshots,
-    deleteScreenshot,
-  } = useScreenshotManager(
+    files: statsFiles,
+    uploading: uploadingStats,
+    deleting: deletingStats,
+    uploadFiles: uploadStatsFiles,
+    deleteFile: deleteStatsFile,
+  } = useAdminStatsFileManagement(
     profile?.id?.toString(),
     activeTab === 'settings'
-      ? 'instagram'
-      : (activeTab as 'instagram' | 'tiktok' | 'youtube' | 'telegram'),
-    true
+      ? 'INSTAGRAM'
+      : (activeTab.toUpperCase() as ApiSocialType),
+    emptyStatsFiles // TODO: Получить существующие файлы из профиля
   );
 
-  // Загрузка скриншотов
-  const handleScreenshotUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Загрузка файлов статистики
+  const handleStatsUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
 
-    if (!files || !profile?.id || !user?.id) {
+    if (!files || !profile?.id) {
       logError('Missing required data:', {
         files: !!files,
         profileId: !!profile?.id,
-        userId: !!user?.id,
       });
       return;
     }
 
     try {
       const fileArray = Array.from(files);
-
-      if (fileArray.length === 1) {
-        await uploadScreenshot(fileArray[0], user.id);
-      } else {
-        await uploadMultipleScreenshots(fileArray, user.id);
-      }
+      await uploadStatsFiles(fileArray);
     } catch (error) {
-      logError('Error uploading screenshots:', error);
+      logError('Error uploading stats files:', error);
     } finally {
       event.target.value = '';
     }
@@ -142,8 +139,8 @@ export const AdminBloggerEditor = () => {
         followers: parseInt(profile.social?.subscribers || '0'),
         postPrice: parseFloat(profile.price?.postPrice || '0'),
         storyPrice: parseFloat(profile.price?.storiesPrice || '0'),
-        postReach: parseInt(profile.social?.coverage || '0'),
-        storyReach: parseInt(profile.social?.coverage || '0'),
+        postReach: parseInt(profile.social?.[0]?.postCoverage || '0'),
+        storyReach: parseInt(profile.social?.[0]?.coverage || '0'),
         engagementRate: profile.social?.er || 0,
         gender: profile.genderType?.toLowerCase() as
           | 'мужчина'
@@ -209,12 +206,12 @@ export const AdminBloggerEditor = () => {
               onEditingSectionChange={setEditingSection}
               onSave={handleSave}
               saving={saving}
-              screenshots={screenshots}
-              uploadingScreenshot={uploadingScreenshot}
-              loadingScreenshots={loadingScreenshots}
-              screenshotError={screenshotError}
-              onScreenshotUpload={handleScreenshotUpload}
-              onDeleteScreenshot={deleteScreenshot}
+              screenshots={statsFiles}
+              uploadingScreenshot={uploadingStats}
+              loadingScreenshots={false}
+              screenshotError={null}
+              onScreenshotUpload={handleStatsUpload}
+              onDeleteScreenshot={deleteStatsFile}
             />
           </div>
 

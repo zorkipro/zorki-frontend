@@ -6,7 +6,6 @@ import { getBloggerProfilePath } from '@/config/routes';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
 import { Alert, AlertDescription } from '@/ui-kit';
 import { LoadingSpinner } from '@/ui-kit/components';
-import { logger } from '@/utils/logger';
 
 // Components
 import { BloggerInfo } from '@/components/profile/BloggerInfo';
@@ -69,12 +68,6 @@ export const ProfileEditor = () => {
       const files = event.target.files;
 
       if (!files || !profile?.id || !user?.id) {
-        logger.warn('Missing required data for screenshot upload', {
-          component: 'ProfileEditor',
-          hasFiles: !!files,
-          profileId: profile?.id,
-          userId: user?.id,
-        });
         return;
       }
 
@@ -87,10 +80,7 @@ export const ProfileEditor = () => {
           await uploadMultipleScreenshots(fileArray, user.id);
         }
       } catch (error) {
-        logger.error('Error uploading screenshots', error, {
-          component: 'ProfileEditor',
-          filesCount: files.length,
-        });
+        // Ошибка загрузки скриншотов
       } finally {
         event.target.value = '';
       }

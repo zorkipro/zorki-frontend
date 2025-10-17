@@ -105,7 +105,6 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
    */
   const refreshBloggerInfo = useCallback(async () => {
     if (!accessToken) {
-      console.log('🔍 BloggerContext: No access token, clearing info');
       clearBloggerInfo();
       setBloggerInfoLoading(false);
       return;
@@ -115,29 +114,15 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
       setBloggerInfoLoading(true);
       setBloggerInfoError(null);
 
-      console.log('🔍 BloggerContext: Fetching client data...');
       const data = await getClientMe();
       
-      console.log('🔍 BloggerContext: Received data:', {
-        hasBlogger: !!data.blogger,
-        blogger: data.blogger ? {
-          id: data.blogger.id,
-          username: data.blogger.username,
-          verificationStatus: data.blogger.verificationStatus,
-        } : null,
-        hasLastLinkRequest: !!data.lastLinkRequest,
-      });
 
       setBloggerInfo(data.blogger);
       setLastLinkRequest(data.lastLinkRequest);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch blogger info';
 
-      console.error('❌ BloggerContext: Failed to fetch blogger info:', error);
 
-      logger.error('Failed to fetch blogger info', error, {
-        component: 'BloggerProvider',
-      });
 
       setBloggerInfoError(errorMessage);
       clearBloggerInfo();

@@ -3,7 +3,6 @@ import { useProfileLoader } from './useProfileLoader';
 import { useProfileForm } from './useProfileForm';
 import { useProfileSaver } from './useProfileSaver';
 import { useTopics } from '@/hooks/useTopics';
-import { logger } from '@/utils/logger';
 
 /**
  * Главный хук для редактирования профиля
@@ -62,25 +61,11 @@ export const useProfileEditor = () => {
   // Загружаем данные профиля и черновики при монтировании
   useEffect(() => {
     const initializeForm = async () => {
-      logger.debug('Initializing profile editor', {
-        component: 'useProfileEditor',
-        profileId: profile?.id,
-      });
 
       const loadedData = await loadProfileWithDrafts();
 
       if (loadedData) {
-        console.log('useProfileEditor: Setting form data', {
-          full_name: loadedData.full_name,
-          description: loadedData.description,
-          loadedData: loadedData
-        });
         setFormData(loadedData);
-        logger.debug('Form initialized with data', {
-          component: 'useProfileEditor',
-          hasDrafts,
-          topicsCount: loadedData.topics?.length || 0,
-        });
       }
     };
 

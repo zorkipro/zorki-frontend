@@ -7,12 +7,14 @@ import { useErrorHandler } from '@/utils/errorHandler';
 import { logError } from '@/utils/logger';
 import { buildApiParams } from '@/utils/api/filterParams';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useTopics } from '@/hooks/useTopics';
 import { DEFAULT_FILTER_STATE } from '@/config/filters';
 
 export const useBloggers = (externalFilters?: FilterState) => {
   const { handleError } = useErrorHandler({
     showNotifications: true,
   });
+  const { categories, restrictedTopics } = useTopics();
   const [bloggers, setBloggers] = useState<Blogger[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false); // Отдельное состояние для поиска
@@ -35,7 +37,12 @@ export const useBloggers = (externalFilters?: FilterState) => {
       }
       setError('');
 
-      const apiParams = buildApiParams({ ...filters, search: debouncedSearchTerm }, 1, 50);
+      const topicsData = {
+        categories,
+        restrictedTopics,
+      };
+
+      const apiParams = buildApiParams({ ...filters, search: debouncedSearchTerm }, 1, 50, topicsData);
       const response = await getAllBloggers(apiParams);
 
       // Трансформация данных
@@ -63,7 +70,7 @@ export const useBloggers = (externalFilters?: FilterState) => {
         setLoading(false);
       }
     }
-  }, [debouncedSearchTerm, filters]); // Используем debounced поиск
+  }, [debouncedSearchTerm, filters, categories, restrictedTopics]); // Добавляем зависимости для тематик
 
   // Возвращаем всех блогеров без дополнительной фильтрации
   // Поиск теперь обрабатывается на сервере через параметр username
@@ -89,7 +96,12 @@ export const useBloggers = (externalFilters?: FilterState) => {
       setIsLoadingMore(true);
       const nextPage = currentPage + 1;
 
-      const apiParams = buildApiParams({ ...filters, search: debouncedSearchTerm }, nextPage, 50);
+      const topicsData = {
+        categories,
+        restrictedTopics,
+      };
+
+      const apiParams = buildApiParams({ ...filters, search: debouncedSearchTerm }, nextPage, 50, topicsData);
       const response = await getAllBloggers(apiParams);
 
       // Проверяем, что страница существует и содержит данные
@@ -115,7 +127,7 @@ export const useBloggers = (externalFilters?: FilterState) => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [currentPage, hasMore, isLoadingMore, debouncedSearchTerm, filters]);
+  }, [currentPage, hasMore, isLoadingMore, debouncedSearchTerm, filters, categories, restrictedTopics]);
 
   useEffect(() => {
     fetchBloggers();

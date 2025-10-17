@@ -6,7 +6,6 @@ import { Label } from '@/ui-kit';
 import { EditableCard } from '@/ui-kit';
 import { Users, TrendingUp, Eye, Wallet } from 'lucide-react';
 import { PlatformStats, EditData } from '@/types/profile';
-import { logger } from '@/utils/logger';
 
 interface PlatformStatsProps {
   stats: PlatformStats;
@@ -27,12 +26,6 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
   onSave,
   formatNumber,
 }) => {
-  logger.debug('InstagramStats received stats', {
-    component: 'InstagramStats',
-    subscribers: stats.subscribers,
-    reach: stats.reach,
-    reachType: typeof stats.reach,
-  });
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -105,9 +98,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
                     await onSave({ instagram_story_reach: input.value });
                     onEditingChange(null);
                   } catch (error) {
-                    logger.error('Ошибка при сохранении', error, {
-                      component: 'PlatformStats',
-                    });
+                    // Ошибка при сохранении
                   }
                 }}
                 disabled={saving}
@@ -155,9 +146,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
                     await onSave({ instagram_post_price: input.value });
                     onEditingChange(null);
                   } catch (error) {
-                    logger.error('Ошибка при сохранении', error, {
-                      component: 'PlatformStats',
-                    });
+                    // Ошибка при сохранении
                   }
                 }}
                 disabled={saving}
@@ -207,9 +196,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
                     await onSave({ instagram_story_price: input.value });
                     onEditingChange(null);
                   } catch (error) {
-                    logger.error('Ошибка при сохранении', error, {
-                      component: 'PlatformStats',
-                    });
+                    // Ошибка при сохранении
                   }
                 }}
                 disabled={saving}
@@ -293,9 +280,7 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
                     await onSave({ tiktok_post_price: input.value });
                     onEditingChange(null);
                   } catch (error) {
-                    logger.error('Ошибка при сохранении', error, {
-                      component: 'PlatformStats',
-                    });
+                    // Ошибка при сохранении
                   }
                 }}
                 disabled={saving}
@@ -379,9 +364,7 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
                     await onSave({ telegram_post_price: input.value });
                     onEditingChange(null);
                   } catch (error) {
-                    logger.error('Ошибка при сохранении', error, {
-                      component: 'PlatformStats',
-                    });
+                    // Ошибка при сохранении
                   }
                 }}
                 disabled={saving}
@@ -463,9 +446,7 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
                     await onSave({ youtube_post_price: input.value });
                     onEditingChange(null);
                   } catch (error) {
-                    logger.error('Ошибка при сохранении', error, {
-                      component: 'PlatformStats',
-                    });
+                    // Ошибка при сохранении
                   }
                 }}
                 disabled={saving}

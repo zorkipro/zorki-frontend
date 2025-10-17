@@ -8,6 +8,7 @@ import { ScreenshotDisplay } from '@/components/profile/ScreenshotDisplay';
 import { BloggerProfileStats } from './BloggerProfileStats';
 import { Blogger } from '@/types/blogger';
 import { Screenshot } from '@/types/profile';
+import { normalizeUsername } from '@/utils/username';
 
 interface BloggerProfileTabsProps {
   blogger: Blogger;
@@ -75,16 +76,16 @@ export const BloggerProfileTabs = ({
 
                         // Формируем ссылки для всех платформ
                         if (platform === 'instagram') {
-                          const username = blogger.handle.replace('@', '');
+                          const username = normalizeUsername(blogger.handle);
                           url = `https://www.instagram.com/${username}/`;
                         } else if (platform === 'tiktok') {
-                          const username = stats.username || blogger.handle.replace('@', '');
+                          const username = stats.username || normalizeUsername(blogger.handle);
                           url = `https://www.tiktok.com/@${username}`;
                         } else if (platform === 'youtube') {
-                          const username = stats.username || blogger.handle.replace('@', '');
+                          const username = stats.username || normalizeUsername(blogger.handle);
                           url = `https://www.youtube.com/@${username}`;
                         } else if (platform === 'telegram') {
-                          const username = stats.username || blogger.handle.replace('@', '');
+                          const username = stats.username || normalizeUsername(blogger.handle);
                           url = `https://t.me/${username}`;
                         }
 

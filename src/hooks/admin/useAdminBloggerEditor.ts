@@ -7,10 +7,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { getAllBloggers } from '@/api/endpoints/blogger';
-import type { PublicGetAllBloggersOutputDto } from '@/api/types';
+import { getAllBloggers, getBloggerById } from '@/api/endpoints/blogger';
+import { adminUpdateBlogger, adminUpdateBloggerSocialPrice } from '@/api/endpoints/admin';
+import { mapEditDataToProfileUpdate, mapPlatformPricesToUpdate, mapGenderFromApi, mapWorkFormatFromApi } from '@/utils/api/admin-blogger-mappers';
+import type { PublicGetAllBloggersOutputDto, PublicGetBloggerByIdOutputDto } from '@/api/types';
 import type { EditData, PlatformData } from '@/types/profile';
+import type { ApiSocialType } from '@/api/types';
 import { logger } from '@/utils/logger';
+import { normalizeUsername } from '@/utils/username';
 
 /**
  * Хук для редактирования блогера администратором
@@ -19,7 +23,7 @@ export const useAdminBloggerEditor = (username?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [profile, setProfile] = useState<PublicGetAllBloggersOutputDto | null>(null);
+  const [profile, setProfile] = useState<PublicGetBloggerByIdOutputDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,82 +86,128 @@ export const useAdminBloggerEditor = (username?: string) => {
     setError(null);
 
     try {
-      // Используем существующий API для поиска блогера по username
+      // Нормализуем username - убираем @ если есть
+      const normalizedUsername = normalizeUsername(username);
+
+      // Сначала находим блогера по username через публичный API
       const response = await getAllBloggers({
-        username: username,
+        username: normalizedUsername,
         socialType: 'INSTAGRAM',
         page: 1,
         size: 1,
       });
 
       if (response.items && response.items.length > 0) {
-        const bloggerData = response.items[0];
-        logger.debug('Загруженные данные блогера', {
+        const bloggerSummary = response.items[0];
+        logger.debug('Найден блогер по username', {
           component: 'useAdminBloggerEditor',
-          bloggerId: bloggerData.id,
-          socialUsername: bloggerData.social?.username,
+          bloggerId: bloggerSummary.id,
+          socialUsername: bloggerSummary.social?.username,
         });
-        setProfile(bloggerData);
 
-        // Инициализируем formData данными блогера
-        // Приоритет имени: title из социального аккаунта -> name -> username
-        const displayName =
-          bloggerData.social?.title ||
-          bloggerData.name ||
-          bloggerData.social?.username ||
-          'Неизвестный блогер';
-        const fullName =
-          bloggerData.social?.title ||
-          [bloggerData.name, bloggerData.lastName].filter(Boolean).join(' ') ||
-          bloggerData.social?.username ||
-          'Неизвестный блогер';
+        // Теперь получаем полную информацию о блогере через детальный API
+        const bloggerDetails = await getBloggerById(bloggerSummary.id);
+        
+        logger.debug('Загружены детальные данные блогера', {
+          component: 'useAdminBloggerEditor',
+          bloggerId: bloggerDetails.id,
+          hasProfileDraft: !!bloggerDetails.profileDraft,
+          hasPriceDraft: !!bloggerDetails.priceDraft?.length,
+          hasTopics: !!bloggerDetails.topics?.length,
+          hasRestrictedTopics: !!bloggerDetails.restrictedTopics?.length,
+          hasContactLink: !!bloggerDetails.contactLink,
+          hasDescription: !!bloggerDetails.description,
+          // Данные из черновиков (если есть)
+          draftTopics: bloggerDetails.profileDraft?.topics?.length || 0,
+          draftRestrictedTopics: bloggerDetails.profileDraft?.restrictedTopics?.length || 0,
+          // Детальная информация о темах
+          topicsData: bloggerDetails.topics,
+          restrictedTopicsData: bloggerDetails.restrictedTopics,
+          profileDraftTopics: bloggerDetails.profileDraft?.topics,
+          profileDraftRestrictedTopics: bloggerDetails.profileDraft?.restrictedTopics,
+        });
+
+        setProfile(bloggerDetails);
+
+        // Инициализируем formData полными данными блогера
+        // Приоритет: черновики > основные данные
+        const profileData = bloggerDetails.profileDraft || bloggerDetails;
+        const fullName = profileData.name && profileData.lastName 
+          ? `${profileData.name} ${profileData.lastName}`.trim()
+          : profileData.name || bloggerDetails.social?.[0]?.username || 'Неизвестный блогер';
+
         setFormData((prev) => ({
           ...prev,
           full_name: fullName,
-          description: bloggerData.social?.description || '',
-          avatar_url: bloggerData.social?.avatar || '',
-          gender_type:
-            bloggerData.genderType === 'MALE'
-              ? 'мужчина'
-              : bloggerData.genderType === 'FEMALE'
-                ? 'женщина'
-                : '',
-          instagram_username: bloggerData.social?.username || '',
-          instagram_followers: bloggerData.social?.subscribers || '0',
-          instagram_engagement_rate: bloggerData.social?.er?.toString() || '0',
-          instagram_post_reach: bloggerData.social?.coverage || '0',
-          instagram_story_reach: bloggerData.social?.coverage || '0',
-          instagram_post_price: bloggerData.price?.postPrice || '0',
-          instagram_story_price: bloggerData.price?.storiesPrice || '0',
+          description: profileData.description || '',
+          avatar_url: bloggerDetails.social?.[0]?.avatar || '',
+          contact_link: profileData.contactLink || '',
+          work_format: profileData.workFormat ? mapWorkFormatFromApi(profileData.workFormat) || '' : '',
+          gender_type: profileData.genderType ? mapGenderFromApi(profileData.genderType) || '' : '',
+          barter_available: profileData.isBarterAvailable || false,
+          mart_registry: profileData.isMartRegistry || false,
+          // Используем темы из черновиков или основных данных
+          topics: profileData.topics?.map(t => t.id) || [],
+          banned_topics: profileData.restrictedTopics?.map(t => t.id) || [],
+          // Данные Instagram (первая социальная сеть)
+          instagram_username: bloggerDetails.social?.[0]?.username || '',
+          instagram_followers: bloggerDetails.social?.[0]?.subscribers || '0',
+          instagram_engagement_rate: bloggerDetails.social?.[0]?.er?.toString() || '0',
+          instagram_post_reach: bloggerDetails.social?.[0]?.postCoverage || '0',
+          instagram_story_reach: bloggerDetails.social?.[0]?.coverage || '0',
+          instagram_post_price: bloggerDetails.price?.[0]?.postPrice || '0',
+          instagram_story_price: bloggerDetails.price?.[0]?.storiesPrice || '0',
         }));
 
-        // Устанавливаем доступные платформы
-        const platforms: Record<string, PlatformData> = {};
-        if (bloggerData.social) {
-          // Используем postCoverage если есть, иначе coverage
-          const socialData = bloggerData.social;
-          const postCoverage = (socialData as any).postCoverage || bloggerData.social.coverage;
+        // Логируем что мы установили в formData
+        logger.debug('FormData установлен', {
+          component: 'useAdminBloggerEditor',
+          topics: profileData.topics?.map(t => t.id) || [],
+          banned_topics: profileData.restrictedTopics?.map(t => t.id) || [],
+          topicsCount: profileData.topics?.length || 0,
+          bannedTopicsCount: profileData.restrictedTopics?.length || 0,
+          // Данные охватов
+          instagramPostReach: bloggerDetails.social?.[0]?.postCoverage,
+          instagramStoryReach: bloggerDetails.social?.[0]?.coverage,
+        });
 
+        // Устанавливаем доступные платформы для всех социальных сетей
+        const platforms: Record<string, PlatformData> = {};
+        
+        bloggerDetails.social?.forEach((social) => {
           const platformData: PlatformData = {
-            username: bloggerData.social.username,
-            subscribers: parseInt(bloggerData.social.subscribers || '0'),
-            er: bloggerData.social.er || 0,
-            reach: parseInt(postCoverage || '0'), // используем postCoverage если есть
-            price: parseFloat(bloggerData.price?.postPrice || '0'),
-            storyReach: parseInt(bloggerData.social.coverage || '0'), // используем coverage как fallback
-            storyPrice: parseFloat(bloggerData.price?.storiesPrice || '0'),
+            username: social.username,
+            subscribers: parseInt(social.subscribers || '0'),
+            er: social.er || 0,
+            reach: parseInt(social.postCoverage || '0'), // Охват публикаций
+            price: 0,
+            storyReach: parseInt(social.coverage || '0'), // Охват сторис
+            storyPrice: 0,
           };
-          logger.debug('Social data loaded', {
-            component: 'useAdminBloggerEditor',
-            socialType: bloggerData.social.type,
-            hasStats: !!bloggerData.social.stats,
-            coverage: bloggerData.social.coverage,
-            postCoverage: socialData.postCoverage,
-            parsedReach: platformData.reach,
-          });
-          platforms[bloggerData.social.type.toLowerCase()] = platformData;
-        }
+
+          // Приоритет: черновики цен > основные цены
+          const priceData = bloggerDetails.priceDraft || bloggerDetails.price;
+          const priceForPlatform = priceData?.find(p => p.type === social.type);
+          if (priceForPlatform) {
+            platformData.price = parseFloat(priceForPlatform.postPrice || '0');
+            platformData.storyPrice = parseFloat(priceForPlatform.storiesPrice || '0');
+          }
+
+          platforms[social.type.toLowerCase()] = platformData;
+        });
+
         setAvailablePlatforms(platforms);
+
+        logger.info('Данные блогера успешно загружены', {
+          component: 'useAdminBloggerEditor',
+          bloggerId: bloggerDetails.id,
+          platformsCount: Object.keys(platforms).length,
+          topicsCount: profileData.topics?.length || 0,
+          restrictedTopicsCount: profileData.restrictedTopics?.length || 0,
+          usingProfileDraft: !!bloggerDetails.profileDraft,
+          usingPriceDraft: !!bloggerDetails.priceDraft?.length,
+        });
+
       } else {
         setError('Блогер не найден');
         toast({
@@ -190,32 +240,95 @@ export const useAdminBloggerEditor = (username?: string) => {
 
   const handleSave = useCallback(
     async (data: Partial<EditData>) => {
+      if (!profile?.id) {
+        logger.error('Cannot save: profile ID missing', undefined, {
+          component: 'useAdminBloggerEditor',
+        });
+        return;
+      }
+
       setSaving(true);
+      setError(null);
 
       try {
+        // Определяем, какие данные обновляем
+        const profileFields = ['full_name', 'description', 'contact_link', 'work_format', 
+          'gender_type', 'barter_available', 'mart_registry', 'topics', 'banned_topics'];
+        
+        // Поля охвата сторис тоже сохраняются через профильный API
+        const storyReachFields = ['story_reach'];
+        
+        const hasProfileChanges = Object.keys(data).some(key => 
+          profileFields.includes(key) || storyReachFields.some(field => key.includes(field))
+        );
+
+        const priceFields = ['post_price', 'story_price'];
+        const hasPriceChanges = Object.keys(data).some(key =>
+          priceFields.some(field => key.includes(field))
+        );
+
+        // Сохраняем изменения профиля
+        if (hasProfileChanges) {
+          const profileDto = mapEditDataToProfileUpdate(data);
+          await adminUpdateBlogger(profile.id, profileDto);
+          
+          logger.info('Profile updated successfully', {
+            component: 'useAdminBloggerEditor',
+            bloggerId: profile.id,
+          });
+        }
+
+        // Сохраняем изменения цен для каждой платформы
+        if (hasPriceChanges) {
+          const platforms: ApiSocialType[] = ['INSTAGRAM', 'YOUTUBE', 'TELEGRAM', 'TIKTOK'];
+          
+          for (const platform of platforms) {
+            const priceDto = mapPlatformPricesToUpdate(platform, data);
+            if (priceDto) {
+              await adminUpdateBloggerSocialPrice(profile.id, priceDto);
+              
+              logger.info('Platform prices updated', {
+                component: 'useAdminBloggerEditor',
+                bloggerId: profile.id,
+                platform,
+              });
+            }
+          }
+        }
+
+        // Обновляем локальное состояние
+        setFormData((prev) => ({ ...prev, ...data }));
+
         toast({
-          title: 'TODO',
-          description: 'Backend API для сохранения изменений блогера пока не реализован',
-          variant: 'destructive',
+          title: 'Успешно',
+          description: 'Изменения сохранены',
+          variant: 'default',
         });
 
-        // Обновляем локальные данные
-        setFormData((prev) => ({ ...prev, ...data }));
+        // Перезагружаем данные блогера
+        await fetchBloggerData();
+
       } catch (err: unknown) {
-        logger.error('Ошибка сохранения изменений блогера', err, {
+        logger.error('Error saving blogger changes', err, {
           component: 'useAdminBloggerEditor',
           profileId: profile?.id,
         });
+        
+        const errorMessage = err instanceof Error ? err.message : 'Не удалось сохранить изменения';
+        setError(errorMessage);
+        
         toast({
           title: 'Ошибка',
-          description: 'Не удалось сохранить изменения',
+          description: errorMessage,
           variant: 'destructive',
         });
+        
+        throw err;
       } finally {
         setSaving(false);
       }
     },
-    [profile?.id, toast]
+    [profile?.id, toast, fetchBloggerData]
   );
 
   useEffect(() => {

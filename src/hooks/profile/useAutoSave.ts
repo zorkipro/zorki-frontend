@@ -9,7 +9,6 @@
 
 import React, { useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
-import { logger } from '@/utils/logger';
 import type { EditData } from '@/types/profile';
 
 export interface UseAutoSaveOptions {
@@ -94,9 +93,6 @@ export const useAutoSave = ({
 
         const duration = performance.now() - startTime;
       } catch (error) {
-        logger.error('Failed to auto-save draft', error, {
-          component: 'useAutoSave',
-        });
         // Не прокидываем ошибку дальше - автосохранение не должно прерывать работу
       } finally {
         isSavingRef.current = false;

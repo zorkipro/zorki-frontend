@@ -37,19 +37,8 @@ export const useProfileData = () => {
       // Используем данные из AuthContext вместо отдельного запроса
       if (bloggerInfo) {
         const detailedBlogger = await getBloggerById(bloggerInfo.id);
-        console.log('useProfileData: API response', {
-          detailedBlogger: detailedBlogger,
-          social: detailedBlogger.social,
-          name: detailedBlogger.name,
-          lastName: detailedBlogger.lastName
-        });
         
         const transformedBlogger = mapApiDetailBloggerToLocal(detailedBlogger);
-        console.log('useProfileData: Transformed blogger', {
-          transformedBlogger: transformedBlogger,
-          name: transformedBlogger.name,
-          promoText: transformedBlogger.promoText
-        });
 
         setProfile(transformedBlogger);
 

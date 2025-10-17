@@ -94,8 +94,8 @@ export const useProfileDrafts = (profileId?: string) => {
     async (
       apiResponse: PublicGetBloggerByIdOutputDto,
       platformsData: Record<string, PlatformData>,
-      topics: string[],
-      bannedTopics: string[]
+      topics: number[],
+      bannedTopics: number[]
     ): Promise<EditData | null> => {
       if (!user || !apiResponse) return null;
 

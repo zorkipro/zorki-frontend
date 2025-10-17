@@ -4,6 +4,7 @@ import { APIError } from '@/api/client';
 import { logError } from '@/utils/logger';
 import { useScreenshotLoader } from './useScreenshotLoader';
 import { useScreenshotUploader } from './useScreenshotUploader';
+import { useStatsFileManagement } from './useStatsFileManagement';
 import type { Screenshot } from '@/types/profile';
 
 /**
@@ -32,35 +33,8 @@ export const useScreenshotManager = (
     uploadMultipleScreenshots: uploadMultiple,
   } = useScreenshotUploader(profileId, platform);
 
-  // Удаление скриншота
-  const deleteScreenshot = useCallback(
-    async (screenshot: Screenshot) => {
-      try {
-        throw new Error(
-          'Удаление скриншотов через API пока не реализовано. Обратитесь к backend разработчику для добавления DELETE /blogger/screenshot/:screenshotId endpoint.'
-        );
-      } catch (error: unknown) {
-        logError('Error deleting screenshot:', error);
-
-        if (error instanceof APIError) {
-          toast({
-            title: 'Ошибка API',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          const errorMessage =
-            error instanceof Error ? error.message : 'Не удалось удалить скриншот';
-          toast({
-            title: 'Ошибка',
-            description: errorMessage,
-            variant: 'destructive',
-          });
-        }
-      }
-    },
-    [toast]
-  );
+  // Управление удалением файлов
+  const { deleting, confirmDelete } = useStatsFileManagement();
 
   // Upload with cache update
   const uploadScreenshot = useCallback(
@@ -83,10 +57,35 @@ export const useScreenshotManager = (
     [uploadMultiple, profileId, setScreenshots]
   );
 
+  // Удаление скриншота с обновлением кеша
+  const deleteScreenshot = useCallback(
+    async (screenshot: Screenshot) => {
+      if (!profileId) {
+        toast({
+          title: 'Ошибка',
+          description: 'ID профиля не найден',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      try {
+        await confirmDelete(Number(profileId), screenshot.id, screenshot.file_name);
+        
+        // Обновляем кеш - удаляем скриншот из списка
+        setScreenshots((prev) => prev.filter(s => s.id !== screenshot.id));
+      } catch (error) {
+        // Ошибка уже обработана в confirmDelete
+        logError('Error deleting screenshot:', error);
+      }
+    },
+    [profileId, confirmDelete, setScreenshots, toast]
+  );
+
   // Cache management
   return {
     screenshots,
-    uploading,
+    uploading: uploading || deleting,
     loading,
     error: error || uploadError,
     uploadScreenshot,

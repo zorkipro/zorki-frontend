@@ -24,11 +24,11 @@ export interface Blogger {
   engagementRate: number;
   gender?: 'мужчина' | 'женщина' | 'пара' | 'паблик';
   category: string;
-  topics: string[];
+  topics: number[]; // ID тем для унификации с API
   allowsBarter: boolean;
   inMartRegistry: boolean;
   legalForm?: 'ИП' | 'профдоход' | 'договор подряда' | 'ООО';
-  restrictedTopics: string[];
+  restrictedTopics: number[]; // ID запрещенных тем для унификации с API
   cooperationConditions: string;
   workFormat?: string;
   paymentTerms: string;
