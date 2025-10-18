@@ -5,12 +5,12 @@
 // Пользователи отправляют запросы, админы их одобряют
 // ============================================
 
-import { apiRequest } from '../client';
+import { apiRequest } from "../client";
 import type {
   BloggerLinkMediaTgRequestInputDto,
   BloggerLinkMediaYtRequestInputDto,
   BloggerLinkMediaIgRequestInputDto,
-} from '../types';
+} from "../types";
 
 // ====== USER REQUESTS (требуют user-auth-jwt-schema) ======
 
@@ -36,10 +36,10 @@ import type {
  */
 export async function linkTgChannelRequest(
   bloggerId: number,
-  data: BloggerLinkMediaTgRequestInputDto
+  data: BloggerLinkMediaTgRequestInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/tg/${bloggerId}`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -66,10 +66,10 @@ export async function linkTgChannelRequest(
  */
 export async function linkYtChannelRequest(
   bloggerId: number,
-  data: BloggerLinkMediaYtRequestInputDto
+  data: BloggerLinkMediaYtRequestInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/yt/${bloggerId}`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -96,10 +96,10 @@ export async function linkYtChannelRequest(
  */
 export async function linkIgUserRequest(
   bloggerId: number,
-  data: BloggerLinkMediaIgRequestInputDto
+  data: BloggerLinkMediaIgRequestInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/ig/${bloggerId}`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -125,9 +125,12 @@ export async function linkIgUserRequest(
  * await linkTgChannel(123, 456);
  * ```
  */
-export async function linkTgChannel(bloggerId: number, requestId: number): Promise<void> {
+export async function linkTgChannel(
+  bloggerId: number,
+  requestId: number,
+): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/tg/${bloggerId}/${requestId}`, {
-    method: 'POST',
+    method: "POST",
   });
 }
 
@@ -150,9 +153,12 @@ export async function linkTgChannel(bloggerId: number, requestId: number): Promi
  * await linkYtChannel(123, 456);
  * ```
  */
-export async function linkYtChannel(bloggerId: number, requestId: number): Promise<void> {
+export async function linkYtChannel(
+  bloggerId: number,
+  requestId: number,
+): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/yt/${bloggerId}/${requestId}`, {
-    method: 'POST',
+    method: "POST",
   });
 }
 
@@ -175,8 +181,11 @@ export async function linkYtChannel(bloggerId: number, requestId: number): Promi
  * await linkIgUser(123, 456);
  * ```
  */
-export async function linkIgUser(bloggerId: number, requestId: number): Promise<void> {
+export async function linkIgUser(
+  bloggerId: number,
+  requestId: number,
+): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/ig/${bloggerId}/${requestId}`, {
-    method: 'POST',
+    method: "POST",
   });
 }

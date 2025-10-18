@@ -10,13 +10,13 @@
  * Следует принципу Single Responsibility - только загрузка данных.
  */
 
-import { useState, useCallback } from 'react';
-import { getBloggerById } from '@/api/endpoints/blogger';
-import { mapApiDetailBloggerToLocal } from '@/utils/api/mappers';
-import type { Influencer, PlatformData, EditData } from '@/types/profile';
-import { useProfileData } from './useProfileData';
-import { useProfileDrafts } from './useProfileDrafts';
-import { ALL_PLATFORMS } from '@/types/platform';
+import { useState, useCallback } from "react";
+import { getBloggerById } from "@/api/endpoints/blogger";
+import { mapApiDetailBloggerToLocal } from "@/utils/api/mappers";
+import type { Influencer, PlatformData, EditData } from "@/types/profile";
+import { useProfileData } from "./useProfileData";
+import { useProfileDrafts } from "./useProfileDrafts";
+import { ALL_PLATFORMS } from "@/types/platform";
 
 interface LoaderState {
   /** Данные профиля */
@@ -44,7 +44,7 @@ export interface ProfileLoaderReturn extends LoaderState {
   setAvailablePlatforms: (
     platforms:
       | Record<string, PlatformData>
-      | ((prev: Record<string, PlatformData>) => Record<string, PlatformData>)
+      | ((prev: Record<string, PlatformData>) => Record<string, PlatformData>),
   ) => void;
   /** Есть ли черновики */
   hasDrafts: boolean;
@@ -82,7 +82,9 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
    * Загружает темы и запрещенные темы блогера через API
    */
   const loadTopics = useCallback(
-    async (profileId: string): Promise<{ topics: number[]; bannedTopics: number[] }> => {
+    async (
+      profileId: string,
+    ): Promise<{ topics: number[]; bannedTopics: number[] }> => {
       setLoadingTopics(true);
 
       try {
@@ -101,16 +103,14 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
 
         endTimer();
 
-
         return { topics: loadedTopics, bannedTopics: loadedBannedTopics };
       } catch (err) {
-
         return { topics: [], bannedTopics: [] };
       } finally {
         setLoadingTopics(false);
       }
     },
-    []
+    [],
   );
 
   /**
@@ -121,76 +121,96 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
       profile: Influencer,
       platforms: Record<string, PlatformData>,
       topics: number[],
-      bannedTopics: number[]
+      bannedTopics: number[],
     ): EditData => {
       const editData: EditData = {
-        full_name: profile.name || '',
-        description: profile.promoText || '',
-        avatar_url: profile.avatar || '',
-        contact_link: profile.contact_url || '',
-        work_format: profile.workFormat || '',
-        gender_type: profile.gender || '',
+        full_name: profile.name || "",
+        description: profile.promoText || "",
+        avatar_url: profile.avatar || "",
+        contact_link: profile.contact_url || "",
+        work_format: profile.workFormat || "",
+        gender_type: profile.gender || "",
         barter_available: profile.allowsBarter ?? false,
         mart_registry: profile.inMartRegistry ?? false,
-        cooperation_conditions: profile.cooperationConditions || '',
+        cooperation_conditions: profile.cooperationConditions || "",
         topics,
         banned_topics: bannedTopics,
       } as EditData;
-
 
       // Добавляем данные платформ
       ALL_PLATFORMS.forEach((platform) => {
         const platformData = platforms[platform];
         if (platformData) {
-          editData[`${platform}_username`] = platformData.username || '';
-          editData[`${platform}_profile_url`] = platformData.profile_url || '';
-          editData[`${platform}_followers`] = platformData.subscribers?.toString() || '';
-          editData[`${platform}_engagement_rate`] = platformData.er?.toString() || '';
-          editData[`${platform}_post_reach`] = platformData.reach?.toString() || '';
-          editData[`${platform}_story_reach`] = platformData.storyReach?.toString() || '';
-          editData[`${platform}_post_price`] = platformData.price?.toString() || '';
-          editData[`${platform}_story_price`] = platformData.storyPrice?.toString() || '';
-          editData[`${platform}_integration_price`] = platformData.price?.toString() || '';
+          editData[`${platform}_username`] = platformData.username || "";
+          editData[`${platform}_profile_url`] = platformData.profile_url || "";
+          editData[`${platform}_followers`] =
+            platformData.subscribers?.toString() || "";
+          editData[`${platform}_engagement_rate`] =
+            platformData.er?.toString() || "";
+          editData[`${platform}_post_reach`] =
+            platformData.reach?.toString() || "";
+          editData[`${platform}_story_reach`] =
+            platformData.storyReach?.toString() || "";
+          editData[`${platform}_post_price`] =
+            platformData.price?.toString() || "";
+          editData[`${platform}_story_price`] =
+            platformData.storyPrice?.toString() || "";
+          editData[`${platform}_integration_price`] =
+            platformData.price?.toString() || "";
         }
       });
 
       return editData;
     },
-    []
+    [],
   );
 
   /**
    * Загружает профиль и возвращает данные с учетом черновиков
    * Основная функция для инициализации формы редактирования
    */
-  const loadProfileWithDrafts = useCallback(async (): Promise<EditData | null> => {
-    if (!profile || !availablePlatforms) {
-      await fetchProfileData();
-    }
+  const loadProfileWithDrafts =
+    useCallback(async (): Promise<EditData | null> => {
+      if (!profile || !availablePlatforms) {
+        await fetchProfileData();
+      }
 
-    if (!profile || !availablePlatforms) {
-      return null;
-    }
+      if (!profile || !availablePlatforms) {
+        return null;
+      }
 
-    // Загружаем темы
-    const { topics: loadedTopics, bannedTopics: loadedBannedTopics } = await loadTopics(profile.id);
+      // Загружаем темы
+      const { topics: loadedTopics, bannedTopics: loadedBannedTopics } =
+        await loadTopics(profile.id);
 
-    // Пытаемся загрузить черновики
-    const draftFormData = await loadDrafts(
+      // Пытаемся загрузить черновики
+      const draftFormData = await loadDrafts(
+        profile,
+        availablePlatforms,
+        loadedTopics,
+        loadedBannedTopics,
+      );
+
+      if (draftFormData) {
+        return draftFormData;
+      }
+
+      // Нет черновиков - используем опубликованные данные
+
+      return convertToEditData(
+        profile,
+        availablePlatforms,
+        loadedTopics,
+        loadedBannedTopics,
+      );
+    }, [
       profile,
       availablePlatforms,
-      loadedTopics,
-      loadedBannedTopics
-    );
-
-    if (draftFormData) {
-      return draftFormData;
-    }
-
-    // Нет черновиков - используем опубликованные данные
-
-    return convertToEditData(profile, availablePlatforms, loadedTopics, loadedBannedTopics);
-  }, [profile, availablePlatforms, fetchProfileData, loadTopics, loadDrafts, convertToEditData]);
+      fetchProfileData,
+      loadTopics,
+      loadDrafts,
+      convertToEditData,
+    ]);
 
   /**
    * Обновляет данные профиля

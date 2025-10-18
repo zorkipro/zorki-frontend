@@ -2,21 +2,21 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { APIError } from '../ApiErrorHandler';
-import type { BadRequestExceptionDto } from '../types';
+import { describe, it, expect, beforeEach } from "vitest";
+import { APIError } from "../ApiErrorHandler";
+import type { BadRequestExceptionDto } from "../types";
 
-describe('APIError', () => {
-  describe('constructor', () => {
-    it('should create APIError with all properties', () => {
+describe("APIError", () => {
+  describe("constructor", () => {
+    it("should create APIError with all properties", () => {
       const errorData: BadRequestExceptionDto = {
-        message: 'Test error',
+        message: "Test error",
         statusCode: 400,
         errorField: [
           {
-            field: 'email',
-            message: 'Invalid email',
-            errorKey: 'invalid_email',
+            field: "email",
+            message: "Invalid email",
+            errorKey: "invalid_email",
           },
         ],
       };
@@ -25,15 +25,15 @@ describe('APIError', () => {
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(APIError);
-      expect(error.name).toBe('APIError');
-      expect(error.message).toBe('Test error');
+      expect(error.name).toBe("APIError");
+      expect(error.message).toBe("Test error");
       expect(error.statusCode).toBe(400);
       expect(error.errorField).toEqual(errorData.errorField);
     });
 
-    it('should create APIError without errorField', () => {
+    it("should create APIError without errorField", () => {
       const errorData: BadRequestExceptionDto = {
-        message: 'Server error',
+        message: "Server error",
         statusCode: 500,
         errorField: null,
       };
@@ -45,20 +45,22 @@ describe('APIError', () => {
     });
   });
 
-  describe('isValidationError', () => {
-    it('should return true for 400 error with errorField', () => {
+  describe("isValidationError", () => {
+    it("should return true for 400 error with errorField", () => {
       const error = new APIError({
-        message: 'Validation failed',
+        message: "Validation failed",
         statusCode: 400,
-        errorField: [{ field: 'name', message: 'Required', errorKey: 'required' }],
+        errorField: [
+          { field: "name", message: "Required", errorKey: "required" },
+        ],
       });
 
       expect(error.isValidationError()).toBe(true);
     });
 
-    it('should return false for 400 error without errorField', () => {
+    it("should return false for 400 error without errorField", () => {
       const error = new APIError({
-        message: 'Bad request',
+        message: "Bad request",
         statusCode: 400,
         errorField: null,
       });
@@ -66,9 +68,9 @@ describe('APIError', () => {
       expect(error.isValidationError()).toBe(false);
     });
 
-    it('should return false for non-400 error', () => {
+    it("should return false for non-400 error", () => {
       const error = new APIError({
-        message: 'Server error',
+        message: "Server error",
         statusCode: 500,
         errorField: null,
       });
@@ -77,10 +79,10 @@ describe('APIError', () => {
     });
   });
 
-  describe('isAuthError', () => {
-    it('should return true for 401 error', () => {
+  describe("isAuthError", () => {
+    it("should return true for 401 error", () => {
       const error = new APIError({
-        message: 'Unauthorized',
+        message: "Unauthorized",
         statusCode: 401,
         errorField: null,
       });
@@ -88,9 +90,9 @@ describe('APIError', () => {
       expect(error.isAuthError()).toBe(true);
     });
 
-    it('should return false for non-401 error', () => {
+    it("should return false for non-401 error", () => {
       const error = new APIError({
-        message: 'Forbidden',
+        message: "Forbidden",
         statusCode: 403,
         errorField: null,
       });
@@ -99,10 +101,10 @@ describe('APIError', () => {
     });
   });
 
-  describe('isForbiddenError', () => {
-    it('should return true for 403 error', () => {
+  describe("isForbiddenError", () => {
+    it("should return true for 403 error", () => {
       const error = new APIError({
-        message: 'Forbidden',
+        message: "Forbidden",
         statusCode: 403,
         errorField: null,
       });
@@ -110,9 +112,9 @@ describe('APIError', () => {
       expect(error.isForbiddenError()).toBe(true);
     });
 
-    it('should return false for non-403 error', () => {
+    it("should return false for non-403 error", () => {
       const error = new APIError({
-        message: 'Unauthorized',
+        message: "Unauthorized",
         statusCode: 401,
         errorField: null,
       });
@@ -121,10 +123,10 @@ describe('APIError', () => {
     });
   });
 
-  describe('isServerError', () => {
-    it('should return true for 500 error', () => {
+  describe("isServerError", () => {
+    it("should return true for 500 error", () => {
       const error = new APIError({
-        message: 'Internal Server Error',
+        message: "Internal Server Error",
         statusCode: 500,
         errorField: null,
       });
@@ -132,9 +134,9 @@ describe('APIError', () => {
       expect(error.isServerError()).toBe(true);
     });
 
-    it('should return true for 503 error', () => {
+    it("should return true for 503 error", () => {
       const error = new APIError({
-        message: 'Service Unavailable',
+        message: "Service Unavailable",
         statusCode: 503,
         errorField: null,
       });
@@ -142,9 +144,9 @@ describe('APIError', () => {
       expect(error.isServerError()).toBe(true);
     });
 
-    it('should return false for 400 error', () => {
+    it("should return false for 400 error", () => {
       const error = new APIError({
-        message: 'Bad Request',
+        message: "Bad Request",
         statusCode: 400,
         errorField: null,
       });
@@ -153,28 +155,32 @@ describe('APIError', () => {
     });
   });
 
-  describe('getValidationErrors', () => {
-    it('should return Record of field errors', () => {
+  describe("getValidationErrors", () => {
+    it("should return Record of field errors", () => {
       const error = new APIError({
-        message: 'Validation failed',
+        message: "Validation failed",
         statusCode: 400,
         errorField: [
-          { field: 'email', message: 'Invalid email', errorKey: 'invalid_email' },
-          { field: 'password', message: 'Too short', errorKey: 'min_length' },
+          {
+            field: "email",
+            message: "Invalid email",
+            errorKey: "invalid_email",
+          },
+          { field: "password", message: "Too short", errorKey: "min_length" },
         ],
       });
 
       const validationErrors = error.getValidationErrors();
 
       expect(validationErrors).toEqual({
-        email: 'Invalid email',
-        password: 'Too short',
+        email: "Invalid email",
+        password: "Too short",
       });
     });
 
-    it('should return empty object when no errorField', () => {
+    it("should return empty object when no errorField", () => {
       const error = new APIError({
-        message: 'Error',
+        message: "Error",
         statusCode: 500,
         errorField: null,
       });
@@ -184,9 +190,9 @@ describe('APIError', () => {
       expect(validationErrors).toEqual({});
     });
 
-    it('should return empty object when errorField is empty array', () => {
+    it("should return empty object when errorField is empty array", () => {
       const error = new APIError({
-        message: 'Error',
+        message: "Error",
         statusCode: 400,
         errorField: [],
       });

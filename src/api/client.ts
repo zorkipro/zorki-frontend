@@ -6,24 +6,24 @@
  * - ApiErrorHandler - обработка ошибок
  */
 
-import { tokenManager } from './core/TokenManager';
-import { responseHandler } from './core/ResponseHandler';
-import { apiErrorHandler, APIError } from './core/ApiErrorHandler';
-import type { ApiRequestOptions } from './core/types';
+import { tokenManager } from "./core/TokenManager";
+import { responseHandler } from "./core/ResponseHandler";
+import { apiErrorHandler, APIError } from "./core/ApiErrorHandler";
+import type { ApiRequestOptions } from "./core/types";
 
 // Re-export types and classes for backward compatibility
 export type {
   BadRequestErrorFieldExceptionDto,
   BadRequestExceptionDto,
   ApiRequestOptions,
-} from './core/types';
-export { APIError } from './core/ApiErrorHandler';
-export { tokenManager } from './core/TokenManager';
+} from "./core/types";
+export { APIError } from "./core/ApiErrorHandler";
+export { tokenManager } from "./core/TokenManager";
 
 // API Configuration
 const API_BASE_URL = import.meta.env.DEV
-  ? '/api' // Прокси в режиме разработки
-  : import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+  ? "/api" // Прокси в режиме разработки
+  : import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 /**
  * Базовая функция для выполнения API запросов
@@ -41,7 +41,7 @@ const API_BASE_URL = import.meta.env.DEV
  */
 export async function apiRequest<T = unknown>(
   endpoint: string,
-  options: ApiRequestOptions = {}
+  options: ApiRequestOptions = {},
 ): Promise<T> {
   const { skipAuth = false, baseUrl, ...fetchOptions } = options;
 
@@ -50,13 +50,17 @@ export async function apiRequest<T = unknown>(
 
   // Подготавливаем заголовки
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...((fetchOptions.headers as Record<string, string>) || {}),
   };
 
+  // Устанавливаем Content-Type только если это не FormData
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
   // Добавляем токен если есть
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const url = `${baseUrl || API_BASE_URL}${endpoint}`;
@@ -69,10 +73,8 @@ export async function apiRequest<T = unknown>(
     });
 
     // Обрабатываем ответ через ResponseHandler
-    const { data, hasError, errorData } = await responseHandler.parseResponse<T>(
-      response,
-      endpoint
-    );
+    const { data, hasError, errorData } =
+      await responseHandler.parseResponse<T>(response, endpoint);
 
     // Если есть ошибка - обрабатываем
     if (hasError && errorData) {

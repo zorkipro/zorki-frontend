@@ -5,7 +5,7 @@
 // Использует useTopics и фильтрует по isTopicRestricted: false
 // ============================================
 
-import { useCategories as useCategoriesFromTopics } from './useTopics';
+import { useCategories as useCategoriesFromTopics } from "./useTopics";
 
 /**
  * Хук для получения категорий (обычных тем)

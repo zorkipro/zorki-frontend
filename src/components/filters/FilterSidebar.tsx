@@ -1,15 +1,24 @@
-import { memo, useCallback, useState, useEffect } from 'react';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Button } from '@/ui-kit';
-import { Checkbox } from '@/ui-kit';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui-kit';
-import { FilterState } from '@/types/blogger';
-import { RotateCcw } from 'lucide-react';
-import { logError } from '@/utils/logger';
-import { DEFAULT_FILTER_STATE } from '@/config/filters';
-import { getAllCategories, getAllRestrictedTopics } from '@/api/endpoints/topics';
-import type { TopicsOutputDto } from '@/api/types';
+import { memo, useCallback, useState, useEffect } from "react";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import { Button } from "@/ui-kit";
+import { Checkbox } from "@/ui-kit";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/ui-kit";
+import { FilterState } from "@/types/blogger";
+import { RotateCcw } from "lucide-react";
+import { logError } from "@/utils/logger";
+import { DEFAULT_FILTER_STATE } from "@/config/filters";
+import {
+  getAllCategories,
+  getAllRestrictedTopics,
+} from "@/api/endpoints/topics";
+import type { TopicsOutputDto } from "@/api/types";
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -17,9 +26,15 @@ interface FilterSidebarProps {
   onClose?: () => void;
 }
 
-const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSidebarProps) => {
+const FilterSidebarComponent = ({
+  filters,
+  onFilterChange,
+  onClose,
+}: FilterSidebarProps) => {
   const [categories, setCategories] = useState<TopicsOutputDto[]>([]);
-  const [restrictedTopicsOptions, setRestrictedTopicsOptions] = useState<TopicsOutputDto[]>([]);
+  const [restrictedTopicsOptions, setRestrictedTopicsOptions] = useState<
+    TopicsOutputDto[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,13 +53,13 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
         const restrictedTopicsData = await getAllRestrictedTopics();
         setRestrictedTopicsOptions(restrictedTopicsData);
 
-        logError('Filter data loaded successfully:', { 
-          categoriesCount: categoriesData.length, 
-          restrictedCount: restrictedTopicsData.length 
+        logError("Filter data loaded successfully:", {
+          categoriesCount: categoriesData.length,
+          restrictedCount: restrictedTopicsData.length,
         });
       } catch (error) {
-        logError('Error loading filter data:', error);
-        setError('Ошибка загрузки тематик. Попробуйте обновить страницу.');
+        logError("Error loading filter data:", error);
+        setError("Ошибка загрузки тематик. Попробуйте обновить страницу.");
         // В случае ошибки используем пустые массивы
         setCategories([]);
         setRestrictedTopicsOptions([]);
@@ -60,7 +75,7 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
     (key: keyof FilterState, value: string | boolean) => {
       onFilterChange({ ...filters, [key]: value });
     },
-    [filters, onFilterChange]
+    [filters, onFilterChange],
   );
 
   const resetFilters = useCallback(() => {
@@ -102,7 +117,11 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
           </div>
         )}
 
-        <form className="space-y-6" role="search" aria-label="Фильтры поиска блогеров">
+        <form
+          className="space-y-6"
+          role="search"
+          aria-label="Фильтры поиска блогеров"
+        >
           {/* Search */}
           <fieldset className="filter-section">
             <Label htmlFor="search" className="text-sm font-medium mb-2 block">
@@ -112,21 +131,30 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
               id="search"
               placeholder="Имя или @username"
               value={filters.search}
-              onChange={(e) => updateFilter('search', e.target.value)}
+              onChange={(e) => updateFilter("search", e.target.value)}
               className="w-full"
               aria-describedby="search-help"
             />
-            <div id="search-help" className="text-xs text-muted-foreground mt-1">
+            <div
+              id="search-help"
+              className="text-xs text-muted-foreground mt-1"
+            >
               Введите имя или username блогера для поиска
             </div>
           </fieldset>
 
           {/* Gender */}
           <fieldset className="filter-section">
-            <Label htmlFor="gender-select" className="text-sm font-medium mb-2 block">
+            <Label
+              htmlFor="gender-select"
+              className="text-sm font-medium mb-2 block"
+            >
               Пол блогера
             </Label>
-            <Select value={filters.gender} onValueChange={(value) => updateFilter('gender', value)}>
+            <Select
+              value={filters.gender}
+              onValueChange={(value) => updateFilter("gender", value)}
+            >
               <SelectTrigger id="gender-select" aria-describedby="gender-help">
                 <SelectValue placeholder="Выберите" />
               </SelectTrigger>
@@ -137,20 +165,27 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
                 <SelectItem value="паблик">Паблик</SelectItem>
               </SelectContent>
             </Select>
-            <div id="gender-help" className="text-xs text-muted-foreground mt-1">
+            <div
+              id="gender-help"
+              className="text-xs text-muted-foreground mt-1"
+            >
               Выберите пол блогера для фильтрации
             </div>
           </fieldset>
 
           {/* Category */}
           <div className="filter-section">
-            <Label className="text-sm font-medium mb-2 block">Тематика блога</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              Тематика блога
+            </Label>
             <Select
               value={filters.category}
-              onValueChange={(value) => updateFilter('category', value)}
+              onValueChange={(value) => updateFilter("category", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={loading ? 'Загрузка...' : 'Выберите тематику'} />
+                <SelectValue
+                  placeholder={loading ? "Загрузка..." : "Выберите тематику"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (
@@ -169,18 +204,20 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
 
           {/* Followers */}
           <div className="filter-section">
-            <Label className="text-sm font-medium mb-2 block">Подписчиков</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              Подписчиков
+            </Label>
             <div className="flex space-x-2">
               <Input
                 placeholder="От"
                 value={filters.followersMin}
-                onChange={(e) => updateFilter('followersMin', e.target.value)}
+                onChange={(e) => updateFilter("followersMin", e.target.value)}
                 type="number"
               />
               <Input
                 placeholder="До"
                 value={filters.followersMax}
-                onChange={(e) => updateFilter('followersMax', e.target.value)}
+                onChange={(e) => updateFilter("followersMax", e.target.value)}
                 type="number"
               />
             </div>
@@ -188,18 +225,20 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
 
           {/* Post Price */}
           <div className="filter-section">
-            <Label className="text-sm font-medium mb-2 block">Цена поста - BYN</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              Цена поста - BYN
+            </Label>
             <div className="flex space-x-2">
               <Input
                 placeholder="От"
                 value={filters.postPriceMin}
-                onChange={(e) => updateFilter('postPriceMin', e.target.value)}
+                onChange={(e) => updateFilter("postPriceMin", e.target.value)}
                 type="number"
               />
               <Input
                 placeholder="До"
                 value={filters.postPriceMax}
-                onChange={(e) => updateFilter('postPriceMax', e.target.value)}
+                onChange={(e) => updateFilter("postPriceMax", e.target.value)}
                 type="number"
               />
             </div>
@@ -207,18 +246,20 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
 
           {/* Story Price */}
           <div className="filter-section">
-            <Label className="text-sm font-medium mb-2 block">Цена сторис - BYN</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              Цена сторис - BYN
+            </Label>
             <div className="flex space-x-2">
               <Input
                 placeholder="От"
                 value={filters.storyPriceMin}
-                onChange={(e) => updateFilter('storyPriceMin', e.target.value)}
+                onChange={(e) => updateFilter("storyPriceMin", e.target.value)}
                 type="number"
               />
               <Input
                 placeholder="До"
                 value={filters.storyPriceMax}
-                onChange={(e) => updateFilter('storyPriceMax', e.target.value)}
+                onChange={(e) => updateFilter("storyPriceMax", e.target.value)}
                 type="number"
               />
             </div>
@@ -231,7 +272,9 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
                 <Checkbox
                   id="barter"
                   checked={filters.allowsBarter}
-                  onCheckedChange={(checked) => updateFilter('allowsBarter', checked)}
+                  onCheckedChange={(checked) =>
+                    updateFilter("allowsBarter", checked)
+                  }
                 />
                 <Label htmlFor="barter" className="text-sm">
                   Возможен бартер
@@ -242,7 +285,9 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
                 <Checkbox
                   id="mart"
                   checked={filters.inMartRegistry}
-                  onCheckedChange={(checked) => updateFilter('inMartRegistry', checked)}
+                  onCheckedChange={(checked) =>
+                    updateFilter("inMartRegistry", checked)
+                  }
                 />
                 <Label htmlFor="mart" className="text-sm">
                   Есть в реестре МАРТ
@@ -253,13 +298,17 @@ const FilterSidebarComponent = ({ filters, onFilterChange, onClose }: FilterSide
 
           {/* Restricted Topics */}
           <fieldset className="filter-section">
-            <Label className="text-sm font-medium mb-2 block">Запрещенные тематики</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              Запрещенные тематики
+            </Label>
             <Select
               value={filters.restrictedTopics}
-              onValueChange={(value) => updateFilter('restrictedTopics', value)}
+              onValueChange={(value) => updateFilter("restrictedTopics", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={loading ? 'Загрузка...' : 'Выберите тематику'} />
+                <SelectValue
+                  placeholder={loading ? "Загрузка..." : "Выберите тематику"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (

@@ -5,7 +5,7 @@
 // Используется админами для настройки Instagram аккаунтов
 // ============================================
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,19 +17,29 @@ import {
   Label,
   Alert,
   AlertDescription,
-} from '@/ui-kit';
-import { Instagram, User, Key, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useInstagramClient } from '@/hooks/admin/useInstagramClient';
+} from "@/ui-kit";
+import {
+  Instagram,
+  User,
+  Key,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import { useInstagramClient } from "@/hooks/admin/useInstagramClient";
 
 interface InstagramClientManagerProps {
   className?: string;
 }
 
-export const InstagramClientManager: React.FC<InstagramClientManagerProps> = ({ className }) => {
-  const { loading, error, isAuthorized, login, clearError, reset } = useInstagramClient();
+export const InstagramClientManager: React.FC<InstagramClientManagerProps> = ({
+  className,
+}) => {
+  const { loading, error, isAuthorized, login, clearError, reset } =
+    useInstagramClient();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +56,8 @@ export const InstagramClientManager: React.FC<InstagramClientManagerProps> = ({ 
 
       if (isAuthorized) {
         // Успешная авторизация
-        setUsername('');
-        setPassword('');
+        setUsername("");
+        setPassword("");
       }
     } catch (error) {
       // Ошибка обрабатывается в хуке
@@ -56,8 +66,8 @@ export const InstagramClientManager: React.FC<InstagramClientManagerProps> = ({ 
 
   const handleReset = () => {
     reset();
-    setUsername('');
-    setPassword('');
+    setUsername("");
+    setPassword("");
     clearError();
   };
 
@@ -68,7 +78,9 @@ export const InstagramClientManager: React.FC<InstagramClientManagerProps> = ({ 
           <Instagram className="w-5 h-5 text-pink-500" />
           <span>Instagram Клиент</span>
         </CardTitle>
-        <CardDescription>Настройка Instagram аккаунта для парсинга данных</CardDescription>
+        <CardDescription>
+          Настройка Instagram аккаунта для парсинга данных
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -129,7 +141,7 @@ export const InstagramClientManager: React.FC<InstagramClientManagerProps> = ({ 
                   Авторизация...
                 </>
               ) : (
-                'Авторизовать'
+                "Авторизовать"
               )}
             </Button>
 

@@ -5,10 +5,13 @@
 // Используется админами для настройки Instagram аккаунтов
 // ============================================
 
-import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { igClientLogin } from '@/api/endpoints/instagram';
-import type { IgClientLoginInputDto, IgClientLoginOutputDto } from '@/api/types';
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { igClientLogin } from "@/api/endpoints/instagram";
+import type {
+  IgClientLoginInputDto,
+  IgClientLoginOutputDto,
+} from "@/api/types";
 
 interface UseInstagramClientReturn {
   // Состояние загрузки
@@ -78,26 +81,28 @@ export const useInstagramClient = (): UseInstagramClientReturn => {
 
         if (result.isAuthorized && result.isVerify) {
           toast({
-            title: 'Успешно',
-            description: 'Instagram аккаунт авторизован и готов к использованию',
+            title: "Успешно",
+            description:
+              "Instagram аккаунт авторизован и готов к использованию",
           });
         } else {
           toast({
-            title: 'Ошибка авторизации',
-            description: 'Не удалось авторизовать Instagram аккаунт',
-            variant: 'destructive',
+            title: "Ошибка авторизации",
+            description: "Не удалось авторизовать Instagram аккаунт",
+            variant: "destructive",
           });
         }
 
         return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка авторизации Instagram';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка авторизации Instagram";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -105,7 +110,7 @@ export const useInstagramClient = (): UseInstagramClientReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Очистка ошибки

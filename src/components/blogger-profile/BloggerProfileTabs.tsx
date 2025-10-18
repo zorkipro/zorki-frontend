@@ -1,27 +1,26 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui-kit';
-import { Button } from '@/ui-kit';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui-kit';
-import { ExternalLink } from 'lucide-react';
-import { getPlatformIcon, getPlatformName } from '@/components/icons/PlatformIcons';
-import { ScreenshotDisplay } from '@/components/profile/ScreenshotDisplay';
-import { BloggerProfileStats } from './BloggerProfileStats';
-import { Blogger } from '@/types/blogger';
-import { Screenshot } from '@/types/profile';
-import { normalizeUsername } from '@/utils/username';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui-kit";
+import { Button } from "@/ui-kit";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui-kit";
+import { ExternalLink } from "lucide-react";
+import {
+  getPlatformIcon,
+  getPlatformName,
+} from "@/components/icons/PlatformIcons";
+import { ScreenshotDisplay } from "@/components/profile/ScreenshotDisplay";
+import { BloggerProfileStats } from "./BloggerProfileStats";
+import { Blogger } from "@/types/blogger";
+import { Screenshot } from "@/types/profile";
+import { normalizeUsername } from "@/utils/username";
 
 interface BloggerProfileTabsProps {
   blogger: Blogger;
-  screenshots: Screenshot[];
-  loadingScreenshots: boolean;
 }
 
 export const BloggerProfileTabs = ({
   blogger,
-  screenshots,
-  loadingScreenshots,
 }: BloggerProfileTabsProps) => {
-  const [activeTab, setActiveTab] = useState('instagram');
+  const [activeTab, setActiveTab] = useState("instagram");
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -29,8 +28,8 @@ export const BloggerProfileTabs = ({
         {Object.entries(blogger.platforms)
           .sort(([a], [b]) => {
             // Instagram всегда первый
-            if (a === 'instagram') return -1;
-            if (b === 'instagram') return 1;
+            if (a === "instagram") return -1;
+            if (b === "instagram") return 1;
             // Остальные в алфавитном порядке
             return a.localeCompare(b);
           })
@@ -41,7 +40,9 @@ export const BloggerProfileTabs = ({
               className="flex items-center space-x-2 shrink-0 px-6 md:px-3 flex-1 md:flex-initial"
             >
               {getPlatformIcon(platform)}
-              <span className="hidden sm:inline">{getPlatformName(platform)}</span>
+              <span className="hidden sm:inline">
+                {getPlatformName(platform)}
+              </span>
             </TabsTrigger>
           ))}
       </TabsList>
@@ -49,8 +50,8 @@ export const BloggerProfileTabs = ({
       {Object.entries(blogger.platforms)
         .sort(([a], [b]) => {
           // Instagram всегда первый
-          if (a === 'instagram') return -1;
-          if (b === 'instagram') return 1;
+          if (a === "instagram") return -1;
+          if (b === "instagram") return 1;
           // Остальные в алфавитном порядке
           return a.localeCompare(b);
         })
@@ -64,10 +65,10 @@ export const BloggerProfileTabs = ({
                     <span>Статистика {getPlatformName(platform)}</span>
                   </div>
                   {(stats.url ||
-                    platform === 'instagram' ||
-                    platform === 'tiktok' ||
-                    platform === 'youtube' ||
-                    platform === 'telegram') && (
+                    platform === "instagram" ||
+                    platform === "tiktok" ||
+                    platform === "youtube" ||
+                    platform === "telegram") && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -75,22 +76,25 @@ export const BloggerProfileTabs = ({
                         let url = stats.url;
 
                         // Формируем ссылки для всех платформ
-                        if (platform === 'instagram') {
+                        if (platform === "instagram") {
                           const username = normalizeUsername(blogger.handle);
                           url = `https://www.instagram.com/${username}/`;
-                        } else if (platform === 'tiktok') {
-                          const username = stats.username || normalizeUsername(blogger.handle);
+                        } else if (platform === "tiktok") {
+                          const username =
+                            stats.username || normalizeUsername(blogger.handle);
                           url = `https://www.tiktok.com/@${username}`;
-                        } else if (platform === 'youtube') {
-                          const username = stats.username || normalizeUsername(blogger.handle);
+                        } else if (platform === "youtube") {
+                          const username =
+                            stats.username || normalizeUsername(blogger.handle);
                           url = `https://www.youtube.com/@${username}`;
-                        } else if (platform === 'telegram') {
-                          const username = stats.username || normalizeUsername(blogger.handle);
+                        } else if (platform === "telegram") {
+                          const username =
+                            stats.username || normalizeUsername(blogger.handle);
                           url = `https://t.me/${username}`;
                         }
 
                         if (url) {
-                          window.open(url, '_blank');
+                          window.open(url, "_blank");
                         }
                       }}
                       className="flex items-center space-x-1"
@@ -107,8 +111,8 @@ export const BloggerProfileTabs = ({
                 {/* Screenshots Section */}
                 <ScreenshotDisplay
                   platform={platform}
-                  screenshots={screenshots}
-                  loading={loadingScreenshots}
+                  screenshots={stats.screenshots || []}
+                  loading={false} // Скриншоты уже загружены с данными платформы
                   showUploadButton={false}
                   isVerified={true} // Для публичной страницы блогера всегда показываем скриншоты
                   createdBy="admin" // Публичные страницы созданы админом

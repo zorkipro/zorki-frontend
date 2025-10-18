@@ -1,6 +1,6 @@
 // Утилитарные функции для расчета данных платформ
 
-import { ENGAGEMENT_COEFFICIENTS } from '@/config/constants';
+import { ENGAGEMENT_COEFFICIENTS } from "@/config/constants";
 
 export interface PlatformCalculationData {
   followers_count?: number;
@@ -34,7 +34,10 @@ export interface CalculatedPlatformData {
 /**
  * Безопасно парсит строку в число с fallback значением
  */
-const safeParseInt = (value: string | undefined, fallback: number = 0): number => {
+const safeParseInt = (
+  value: string | undefined,
+  fallback: number = 0,
+): number => {
   if (!value) return fallback;
   const parsed = parseInt(value);
   return isNaN(parsed) ? fallback : parsed;
@@ -43,7 +46,9 @@ const safeParseInt = (value: string | undefined, fallback: number = 0): number =
 /**
  * Рассчитывает данные для Instagram платформы
  */
-export const calculateInstagramData = (data: PlatformCalculationData): CalculatedPlatformData => {
+export const calculateInstagramData = (
+  data: PlatformCalculationData,
+): CalculatedPlatformData => {
   const followers = data.followers_count || 0;
   const engagementRate = data.engagement_rate || 0;
 
@@ -60,7 +65,9 @@ export const calculateInstagramData = (data: PlatformCalculationData): Calculate
 /**
  * Рассчитывает данные для TikTok платформы
  */
-export const calculateTikTokData = (data: PlatformCalculationData): CalculatedPlatformData => {
+export const calculateTikTokData = (
+  data: PlatformCalculationData,
+): CalculatedPlatformData => {
   const subscribers = safeParseInt(data.tiktok_subscribers);
   const reach = safeParseInt(data.tiktok_reach);
 
@@ -77,7 +84,9 @@ export const calculateTikTokData = (data: PlatformCalculationData): CalculatedPl
 /**
  * Рассчитывает данные для Telegram платформы
  */
-export const calculateTelegramData = (data: PlatformCalculationData): CalculatedPlatformData => {
+export const calculateTelegramData = (
+  data: PlatformCalculationData,
+): CalculatedPlatformData => {
   const subscribers = safeParseInt(data.telegram_subscribers);
   const reach = safeParseInt(data.telegram_reach);
 
@@ -94,7 +103,9 @@ export const calculateTelegramData = (data: PlatformCalculationData): Calculated
 /**
  * Рассчитывает данные для YouTube платформы
  */
-export const calculateYouTubeData = (data: PlatformCalculationData): CalculatedPlatformData => {
+export const calculateYouTubeData = (
+  data: PlatformCalculationData,
+): CalculatedPlatformData => {
   const subscribers = safeParseInt(data.youtube_subscribers);
   const views = safeParseInt(data.youtube_views);
 

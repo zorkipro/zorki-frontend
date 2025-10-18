@@ -5,10 +5,10 @@
  * Заменяет дублирующийся код в формах
  */
 
-import React from 'react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { getErrorMessage } from '@/utils/errorHandler';
+import React from "react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { getErrorMessage } from "@/utils/errorHandler";
 
 export interface ErrorAlertProps {
   /** Текст ошибки */
@@ -16,7 +16,7 @@ export interface ErrorAlertProps {
   /** Заголовок (опционально) */
   title?: string;
   /** Вариант отображения */
-  variant?: 'inline' | 'alert';
+  variant?: "inline" | "alert";
   /** Дополнительные CSS классы */
   className?: string;
 }
@@ -38,12 +38,12 @@ export interface ErrorAlertProps {
 export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   error,
   title,
-  variant = 'inline',
-  className = '',
+  variant = "inline",
+  className = "",
 }) => {
   if (!error) return null;
 
-  if (variant === 'inline') {
+  if (variant === "inline") {
     return (
       <div
         className={`p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md ${className}`}

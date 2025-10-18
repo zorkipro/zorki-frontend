@@ -68,7 +68,10 @@ export type AsyncState<T> = {
 /**
  * Состояние асинхронной операции с дополнительными метаданными
  */
-export type ExtendedAsyncState<T, M = Record<string, unknown>> = AsyncState<T> & {
+export type ExtendedAsyncState<
+  T,
+  M = Record<string, unknown>,
+> = AsyncState<T> & {
   /** Дополнительные метаданные */
   metadata?: M;
   /** Время последнего обновления */
@@ -132,7 +135,8 @@ export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
  * type PartialUser = OptionalFields<User, 'email'>;
  * // { id: string; name: string; email?: string }
  */
-export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type OptionalFields<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
 
 /**
  * Извлекает значения enum или union
@@ -208,7 +212,7 @@ export type SortParams<T> = {
   /** Поле для сортировки */
   field: keyof T;
   /** Направление сортировки */
-  direction: 'asc' | 'desc';
+  direction: "asc" | "desc";
 };
 
 /**
@@ -350,7 +354,7 @@ export type ToastData = {
   /** Описание */
   description?: string;
   /** Тип уведомления */
-  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info';
+  variant?: "default" | "destructive" | "success" | "warning" | "info";
   /** Длительность показа (мс) */
   duration?: number;
   /** Action button */

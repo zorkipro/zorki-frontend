@@ -1,15 +1,22 @@
-import { useEffect, useState, useCallback, useMemo, memo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Star } from 'lucide-react';
-import { LoadingSpinner } from '@/ui-kit/components';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { DashboardProfileCard } from '@/components/dashboard/DashboardProfileCard';
-import { DashboardPlatformCard } from '@/components/dashboard/DashboardPlatformCard';
-import { useDashboardNavigation } from '@/hooks/dashboard/useDashboardNavigation';
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Star } from "lucide-react";
+import { LoadingSpinner } from "@/ui-kit/components";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
+import { DashboardPlatformCard } from "@/components/dashboard/DashboardPlatformCard";
+import { useDashboardNavigation } from "@/hooks/dashboard/useDashboardNavigation";
 
 const DashboardComponent = () => {
-  const { user, signOut, loading, bloggerInfo, lastLinkRequest, bloggerInfoLoading } = useAuth();
-  const [error, setError] = useState('');
+  const {
+    user,
+    signOut,
+    loading,
+    bloggerInfo,
+    lastLinkRequest,
+    bloggerInfoLoading,
+  } = useAuth();
+  const [error, setError] = useState("");
 
   // Используем данные из AuthContext вместо отдельного запроса
   const userBlogger = bloggerInfo;
@@ -28,7 +35,8 @@ const DashboardComponent = () => {
   // Memoized computed values
   const displayName = useMemo(() => {
     return userBlogger
-      ? `${userBlogger.name || ''} ${userBlogger.lastName || ''}`.trim() || user?.email
+      ? `${userBlogger.name || ""} ${userBlogger.lastName || ""}`.trim() ||
+          user?.email
       : user?.email;
   }, [userBlogger?.name, userBlogger?.lastName, user?.email]);
 
@@ -36,13 +44,13 @@ const DashboardComponent = () => {
     if (!userBlogger) return null;
 
     const statusConfig = {
-      verified: { color: 'bg-green-500', text: 'Верифицирован' },
-      pending: { color: 'bg-yellow-500', text: 'На модерации' },
-      new: { color: 'bg-gray-500', text: 'Новый' },
-      rejected: { color: 'bg-red-500', text: 'Отклонён' },
+      verified: { color: "bg-green-500", text: "Верифицирован" },
+      pending: { color: "bg-yellow-500", text: "На модерации" },
+      new: { color: "bg-gray-500", text: "Новый" },
+      rejected: { color: "bg-red-500", text: "Отклонён" },
     };
 
-    return statusConfig[userBlogger.verificationStatus] || statusConfig['new'];
+    return statusConfig[userBlogger.verificationStatus] || statusConfig["new"];
   }, [userBlogger?.verificationStatus]);
 
   if (loading) {
@@ -59,7 +67,9 @@ const DashboardComponent = () => {
           <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
             <Star className="w-5 h-5 text-white fill-white" />
           </div>
-          <p className="text-muted-foreground">Перенаправление в редактор профиля...</p>
+          <p className="text-muted-foreground">
+            Перенаправление в редактор профиля...
+          </p>
         </div>
       </div>
     );
@@ -68,7 +78,10 @@ const DashboardComponent = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
-      <DashboardHeader displayName={displayName || ''} onSignOut={handleSignOut} />
+      <DashboardHeader
+        displayName={displayName || ""}
+        onSignOut={handleSignOut}
+      />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
@@ -86,7 +99,7 @@ const DashboardComponent = () => {
             {/* Platform Management */}
             <DashboardPlatformCard
               userBlogger={userBlogger}
-              displayName={displayName || ''}
+              displayName={displayName || ""}
               profileStatusInfo={profileStatusInfo}
             />
           </div>

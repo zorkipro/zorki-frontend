@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Edit } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { Edit } from "lucide-react";
 
 interface EditableCardProps {
   title: string;
@@ -36,7 +36,10 @@ export const EditableCard: React.FC<EditableCardProps> = ({
     <Card className="relative">
       <CardContent className="p-4 text-center">
         <div className="absolute top-2 right-2">
-          <Dialog open={isEditing} onOpenChange={(open) => onEditChange(open ? editKey : null)}>
+          <Dialog
+            open={isEditing}
+            onOpenChange={(open) => onEditChange(open ? editKey : null)}
+          >
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Edit className="w-4 h-4" />

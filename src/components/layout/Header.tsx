@@ -1,8 +1,8 @@
-import { memo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/ui-kit';
-import { Star, LogOut, User } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { memo, useCallback } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/ui-kit";
+import { Star, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HeaderComponent = () => {
   const { user, signOut, loading, bloggerInfo } = useAuth();
@@ -16,10 +16,10 @@ const HeaderComponent = () => {
     // Если у пользователя есть связанный блогер
     if (bloggerInfo) {
       // Всегда ведем на редактирование профиля
-      return '/profile/edit';
+      return "/profile/edit";
     }
     // Иначе ведем на настройку профиля
-    return '/profile-setup';
+    return "/profile-setup";
   };
 
   return (

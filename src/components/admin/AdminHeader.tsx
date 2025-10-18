@@ -1,13 +1,15 @@
-import { useState } from 'react';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Button } from '@/ui-kit';
-import { LogOut, User, Calendar, Settings } from 'lucide-react';
+import { useState } from "react";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
+import { Button } from "@/ui-kit";
+import { LogOut, User, Calendar, Settings } from "lucide-react";
 
 interface AdminHeaderProps {
   onOpenTopicsManagement?: () => void;
 }
 
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenTopicsManagement }) => {
+export const AdminHeader: React.FC<AdminHeaderProps> = ({
+  onOpenTopicsManagement,
+}) => {
   const { adminInfo, adminSignOut } = useAdminAuth();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -16,10 +18,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenTopicsManagement
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("ru-RU", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -53,7 +55,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenTopicsManagement
           {showDropdown && (
             <>
               {/* Overlay для закрытия dropdown */}
-              <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowDropdown(false)}
+              />
 
               {/* Dropdown меню */}
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
@@ -63,7 +68,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onOpenTopicsManagement
                       <User className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{adminInfo.username}</p>
+                      <p className="font-medium text-gray-900">
+                        {adminInfo.username}
+                      </p>
                       <p className="text-sm text-gray-500">{adminInfo.email}</p>
                     </div>
                   </div>

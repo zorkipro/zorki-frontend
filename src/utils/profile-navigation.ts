@@ -5,10 +5,10 @@
  * и валидации состояния профиля пользователя.
  */
 
-import type { User } from '@supabase/supabase-js';
-import type { ClientBloggerInfo } from '@/api/types';
-import { AUTH_PAGES } from '@/config/routes';
-import { isApprovedStatus, isRejectedStatus } from '@/config/statuses';
+import type { User } from "@supabase/supabase-js";
+import type { ClientBloggerInfo } from "@/api/types";
+import { AUTH_PAGES } from "@/config/routes";
+import { isApprovedStatus, isRejectedStatus } from "@/config/statuses";
 
 /**
  * Результат валидации информации блогера
@@ -17,7 +17,7 @@ export interface BloggerValidationResult {
   /** Валиден ли профиль */
   isValid: boolean;
   /** Причина невалидности (если isValid = false) */
-  reason?: 'no_blogger' | 'no_username' | 'rejected';
+  reason?: "no_blogger" | "no_username" | "rejected";
   /** Сообщение об ошибке */
   message?: string;
 }
@@ -40,9 +40,8 @@ export function shouldSkipProfileCheck(
   pathname: string,
   user: User | null,
   loading: boolean,
-  bloggerInfoLoading: boolean
+  bloggerInfoLoading: boolean,
 ): boolean {
-
   // Пропускаем если нет пользователя
   if (!user) {
     return true;
@@ -74,7 +73,7 @@ export function shouldSkipProfileCheck(
  * }
  */
 export function validateBloggerInfo(
-  bloggerInfo: ClientBloggerInfo | null
+  bloggerInfo: ClientBloggerInfo | null,
 ): BloggerValidationResult {
   // Добавляем отладочную информацию
 
@@ -82,20 +81,21 @@ export function validateBloggerInfo(
   if (!bloggerInfo) {
     return {
       isValid: false,
-      reason: 'no_blogger',
-      message: 'Блогер не связан с аккаунтом',
+      reason: "no_blogger",
+      message: "Блогер не связан с аккаунтом",
     };
   }
 
   // Нет username (обязательное поле)
   // Проверяем не только на falsy, но и на пустую строку после trim
-  const hasValidUsername = bloggerInfo.username && bloggerInfo.username.trim().length > 0;
-  
+  const hasValidUsername =
+    bloggerInfo.username && bloggerInfo.username.trim().length > 0;
+
   if (!hasValidUsername) {
     return {
       isValid: false,
-      reason: 'no_username',
-      message: 'Отсутствует username блогера',
+      reason: "no_username",
+      message: "Отсутствует username блогера",
     };
   }
 
@@ -103,8 +103,8 @@ export function validateBloggerInfo(
   if (isRejectedStatus(bloggerInfo.verificationStatus)) {
     return {
       isValid: false,
-      reason: 'rejected',
-      message: 'Профиль блогера отклонен',
+      reason: "rejected",
+      message: "Профиль блогера отклонен",
     };
   }
 
@@ -129,7 +129,7 @@ export function validateBloggerInfo(
  */
 export function determineRedirectPath(
   bloggerInfo: ClientBloggerInfo | null,
-  validationResult: BloggerValidationResult
+  validationResult: BloggerValidationResult,
 ): string | null {
   // Если валидация прошла - редирект не нужен
   if (validationResult.isValid) {
@@ -138,10 +138,10 @@ export function determineRedirectPath(
 
   // На основе причины невалидности определяем путь
   switch (validationResult.reason) {
-    case 'no_blogger':
-    case 'no_username':
-    case 'rejected':
-      return '/profile-setup';
+    case "no_blogger":
+    case "no_username":
+    case "rejected":
+      return "/profile-setup";
 
     default:
       return null;
@@ -170,9 +170,8 @@ export function checkProfileRedirect(
   user: User | null,
   loading: boolean,
   bloggerInfo: ClientBloggerInfo | null,
-  bloggerInfoLoading: boolean
+  bloggerInfoLoading: boolean,
 ): string | null {
-
   // Проверяем, нужно ли пропустить проверку
   if (shouldSkipProfileCheck(pathname, user, loading, bloggerInfoLoading)) {
     return null;
@@ -183,7 +182,6 @@ export function checkProfileRedirect(
 
   // Определяем путь редиректа
   const redirectPath = determineRedirectPath(bloggerInfo, validation);
-  
 
   return redirectPath;
 }
@@ -197,7 +195,7 @@ export function checkProfileRedirect(
  */
 export function isOnModeration(bloggerInfo: ClientBloggerInfo | null): boolean {
   if (!bloggerInfo) return false;
-  return bloggerInfo.verificationStatus === 'MODERATION';
+  return bloggerInfo.verificationStatus === "MODERATION";
 }
 
 /**
@@ -206,22 +204,24 @@ export function isOnModeration(bloggerInfo: ClientBloggerInfo | null): boolean {
  * @param validationResult - Результат валидации
  * @returns Пользовательское сообщение
  */
-export function getProfileStatusMessage(validationResult: BloggerValidationResult): string {
+export function getProfileStatusMessage(
+  validationResult: BloggerValidationResult,
+): string {
   if (validationResult.isValid) {
-    return 'Профиль активен';
+    return "Профиль активен";
   }
 
   switch (validationResult.reason) {
-    case 'no_blogger':
-      return 'Для продолжения необходимо связать аккаунт с профилем блогера';
+    case "no_blogger":
+      return "Для продолжения необходимо связать аккаунт с профилем блогера";
 
-    case 'no_username':
-      return 'Необходимо указать username блогера';
+    case "no_username":
+      return "Необходимо указать username блогера";
 
-    case 'rejected':
-      return 'Ваш профиль был отклонен. Пожалуйста, свяжитесь с поддержкой';
+    case "rejected":
+      return "Ваш профиль был отклонен. Пожалуйста, свяжитесь с поддержкой";
 
     default:
-      return 'Проверьте статус вашего профиля';
+      return "Проверьте статус вашего профиля";
   }
 }

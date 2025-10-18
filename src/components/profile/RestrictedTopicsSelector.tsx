@@ -1,6 +1,6 @@
-import React from 'react';
-import { MultiSelect } from '@/ui-kit';
-import { useTopics } from '@/hooks/useTopics';
+import React from "react";
+import { MultiSelect } from "@/ui-kit";
+import { useTopics } from "@/hooks/useTopics";
 
 interface RestrictedTopicsSelectorProps {
   value: string[];
@@ -9,12 +9,9 @@ interface RestrictedTopicsSelectorProps {
   className?: string;
 }
 
-export const RestrictedTopicsSelector: React.FC<RestrictedTopicsSelectorProps> = ({
-  value,
-  onChange,
-  disabled = false,
-  className,
-}) => {
+export const RestrictedTopicsSelector: React.FC<
+  RestrictedTopicsSelectorProps
+> = ({ value, onChange, disabled = false, className }) => {
   const { restrictedTopics, loading, error } = useTopics();
 
   const topicsOptions = restrictedTopics.map((topic) => ({
@@ -34,7 +31,9 @@ export const RestrictedTopicsSelector: React.FC<RestrictedTopicsSelectorProps> =
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center p-3 text-sm text-destructive ${className}`}>
+      <div
+        className={`flex items-center justify-center p-3 text-sm text-destructive ${className}`}
+      >
         Ошибка загрузки запрещенных тематик: {error}
       </div>
     );

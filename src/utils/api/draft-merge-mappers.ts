@@ -3,9 +3,9 @@
  * Используется для отображения неопубликованных изменений в редакторе профиля
  */
 
-import type { Blogger } from '@/types/blogger';
-import type { PublicGetBloggerByIdOutputDto } from '@/api/types';
-import { mapApiDetailBloggerToLocal } from './profile-mappers';
+import type { Blogger } from "@/types/blogger";
+import type { PublicGetBloggerByIdOutputDto } from "@/api/types";
+import { mapApiDetailBloggerToLocal } from "./profile-mappers";
 
 /**
  * Сливает данные черновиков с основными данными блогера
@@ -22,7 +22,9 @@ import { mapApiDetailBloggerToLocal } from './profile-mappers';
  *   // У блогера есть неопубликованные изменения
  * }
  */
-export function mergeDraftsWithPublished(apiResponse: PublicGetBloggerByIdOutputDto): {
+export function mergeDraftsWithPublished(
+  apiResponse: PublicGetBloggerByIdOutputDto,
+): {
   mergedProfile: Blogger;
   hasDrafts: boolean;
   draftInfo: {
@@ -32,15 +34,19 @@ export function mergeDraftsWithPublished(apiResponse: PublicGetBloggerByIdOutput
   };
 } {
   const hasProfileDraft = !!apiResponse.profileDraft;
-  const hasPriceDraft = !!apiResponse.priceDraft && apiResponse.priceDraft.length > 0;
-  const hasCoverageDraft = !!apiResponse.coverageDraft && apiResponse.coverageDraft.length > 0;
+  const hasPriceDraft =
+    !!apiResponse.priceDraft && apiResponse.priceDraft.length > 0;
+  const hasCoverageDraft =
+    !!apiResponse.coverageDraft && apiResponse.coverageDraft.length > 0;
   const hasAnyDrafts = hasProfileDraft || hasPriceDraft || hasCoverageDraft;
 
   // Создаем копию основного ответа для модификации
   const modifiedResponse: PublicGetBloggerByIdOutputDto = {
     ...apiResponse,
     // Переопределяем основные поля данными из черновиков профиля
-    name: hasProfileDraft ? apiResponse.profileDraft?.name || apiResponse.name : apiResponse.name,
+    name: hasProfileDraft
+      ? apiResponse.profileDraft?.name || apiResponse.name
+      : apiResponse.name,
     lastName: hasProfileDraft
       ? apiResponse.profileDraft?.lastName || apiResponse.lastName
       : apiResponse.lastName,
@@ -54,7 +60,8 @@ export function mergeDraftsWithPublished(apiResponse: PublicGetBloggerByIdOutput
       ? apiResponse.profileDraft?.genderType || apiResponse.genderType
       : apiResponse.genderType,
     isBarterAvailable: hasProfileDraft
-      ? (apiResponse.profileDraft?.isBarterAvailable ?? apiResponse.isBarterAvailable)
+      ? (apiResponse.profileDraft?.isBarterAvailable ??
+        apiResponse.isBarterAvailable)
       : apiResponse.isBarterAvailable,
     isMartRegistry: hasProfileDraft
       ? (apiResponse.profileDraft?.isMartRegistry ?? apiResponse.isMartRegistry)
@@ -74,14 +81,17 @@ export function mergeDraftsWithPublished(apiResponse: PublicGetBloggerByIdOutput
   if (hasPriceDraft && apiResponse.price) {
     modifiedResponse.price = apiResponse.price.map((price) => {
       // Ищем соответствующий черновик цены по типу
-      const priceDraft = apiResponse.priceDraft?.find((draft) => draft.type === price.type);
+      const priceDraft = apiResponse.priceDraft?.find(
+        (draft) => draft.type === price.type,
+      );
 
       if (priceDraft) {
         return {
           ...price,
           postPrice: priceDraft.postPrice || price.postPrice,
           storiesPrice: priceDraft.storiesPrice || price.storiesPrice,
-          integrationPrice: priceDraft.integrationPrice || price.integrationPrice,
+          integrationPrice:
+            priceDraft.integrationPrice || price.integrationPrice,
         };
       }
 
@@ -93,7 +103,9 @@ export function mergeDraftsWithPublished(apiResponse: PublicGetBloggerByIdOutput
   if (hasCoverageDraft && apiResponse.social) {
     modifiedResponse.social = apiResponse.social.map((social) => {
       // Ищем соответствующий черновик охвата по типу
-      const coverageDraft = apiResponse.coverageDraft?.find((draft) => draft.type === social.type);
+      const coverageDraft = apiResponse.coverageDraft?.find(
+        (draft) => draft.type === social.type,
+      );
 
       if (coverageDraft) {
         return {
@@ -137,16 +149,20 @@ export function extractDraftInfo(apiResponse: PublicGetBloggerByIdOutputDto): {
   draftSummary: string;
 } {
   const hasProfileDraft = !!apiResponse.profileDraft;
-  const hasPriceDraft = !!apiResponse.priceDraft && apiResponse.priceDraft.length > 0;
-  const hasCoverageDraft = !!apiResponse.coverageDraft && apiResponse.coverageDraft.length > 0;
+  const hasPriceDraft =
+    !!apiResponse.priceDraft && apiResponse.priceDraft.length > 0;
+  const hasCoverageDraft =
+    !!apiResponse.coverageDraft && apiResponse.coverageDraft.length > 0;
   const hasAnyDrafts = hasProfileDraft || hasPriceDraft || hasCoverageDraft;
 
   const draftTypes: string[] = [];
-  if (hasProfileDraft) draftTypes.push('Профиль');
-  if (hasPriceDraft) draftTypes.push('Цены');
-  if (hasCoverageDraft) draftTypes.push('Охват');
+  if (hasProfileDraft) draftTypes.push("Профиль");
+  if (hasPriceDraft) draftTypes.push("Цены");
+  if (hasCoverageDraft) draftTypes.push("Охват");
 
-  const draftSummary = hasAnyDrafts ? `Есть черновики: ${draftTypes.join(', ')}` : 'Нет черновиков';
+  const draftSummary = hasAnyDrafts
+    ? `Есть черновики: ${draftTypes.join(", ")}`
+    : "Нет черновиков";
 
   return {
     hasDrafts: hasAnyDrafts,

@@ -5,9 +5,9 @@
  * Используется когда нет данных для отображения
  */
 
-import React from 'react';
-import { LucideIcon, Database } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import React from "react";
+import { LucideIcon, Database } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export interface EmptyStateProps {
   /** Иконка */
@@ -43,14 +43,16 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   action,
   compact = false,
-  className = '',
+  className = "",
 }) => {
   if (compact) {
     return (
       <div className={`text-center py-8 ${className}`}>
         <Icon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        {description && <p className="text-sm text-muted-foreground mb-4">{description}</p>}
+        {description && (
+          <p className="text-sm text-muted-foreground mb-4">{description}</p>
+        )}
         {action && <div>{action}</div>}
       </div>
     );
@@ -64,7 +66,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </div>
         <h3 className="text-xl font-semibold mb-2">{title}</h3>
         {description && (
-          <p className="text-muted-foreground mb-6 max-w-sm mx-auto">{description}</p>
+          <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+            {description}
+          </p>
         )}
         {action && <div>{action}</div>}
       </CardContent>

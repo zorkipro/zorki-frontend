@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ClientBloggerInfo } from '@/api/types';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ClientBloggerInfo } from "@/api/types";
 
 interface UseDashboardNavigationProps {
   user: { id: string; email: string } | null;
@@ -28,24 +28,24 @@ export const useDashboardNavigation = ({
 
       if (!isProfileComplete) {
         // Если профиль не заполнен, перенаправляем на редактирование
-        navigate('/profile/edit');
+        navigate("/profile/edit");
         return;
       }
 
-      if (userBlogger.verificationStatus === 'APPROVED') {
+      if (userBlogger.verificationStatus === "APPROVED") {
         // Блогер одобрен - остаемся на дашборде
         return;
-      } else if (userBlogger.verificationStatus === 'MODERATION') {
+      } else if (userBlogger.verificationStatus === "MODERATION") {
         // Блогер на рассмотрении - остаемся на дашборде
         return;
-      } else if (userBlogger.verificationStatus === 'REJECTED') {
+      } else if (userBlogger.verificationStatus === "REJECTED") {
         // Блогер отклонен - перенаправляем на настройку профиля
-        navigate('/profile-setup');
+        navigate("/profile-setup");
         return;
       }
     } else {
       // Нет связанного блогера - перенаправляем на настройку профиля
-      navigate('/profile-setup');
+      navigate("/profile-setup");
     }
   }, [user, userBlogger, bloggerInfoLoading, navigate]);
 };

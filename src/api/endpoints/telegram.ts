@@ -5,13 +5,13 @@
 // Используется админами для настройки Telegram аккаунтов
 // ============================================
 
-import { apiRequest } from '../client';
+import { apiRequest } from "../client";
 import type {
   TgClientLoginInputDto,
   TgClientLoginOutputDto,
   TgClientConfirmInputDto,
   TgClientConfirmOutputDto,
-} from '../types';
+} from "../types";
 
 // ====== POST /tg-client/login - Логин Telegram аккаунта ======
 
@@ -38,9 +38,11 @@ import type {
  * }
  * ```
  */
-export async function tgClientLogin(data: TgClientLoginInputDto): Promise<TgClientLoginOutputDto> {
-  return apiRequest<TgClientLoginOutputDto>('/tg-client/login', {
-    method: 'POST',
+export async function tgClientLogin(
+  data: TgClientLoginInputDto,
+): Promise<TgClientLoginOutputDto> {
+  return apiRequest<TgClientLoginOutputDto>("/tg-client/login", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -71,10 +73,10 @@ export async function tgClientLogin(data: TgClientLoginInputDto): Promise<TgClie
  * ```
  */
 export async function tgClientConfirm(
-  data: TgClientConfirmInputDto
+  data: TgClientConfirmInputDto,
 ): Promise<TgClientConfirmOutputDto> {
-  return apiRequest<TgClientConfirmOutputDto>('/tg-client/confirm', {
-    method: 'POST',
+  return apiRequest<TgClientConfirmOutputDto>("/tg-client/confirm", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }

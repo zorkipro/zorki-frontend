@@ -1,5 +1,5 @@
 // Re-export types from profile for compatibility
-export type { PlatformData } from './profile';
+export type { PlatformData } from "./profile";
 
 // Legacy Blogger interface for backward compatibility
 // This should be gradually replaced with Influencer type
@@ -22,18 +22,18 @@ export interface Blogger {
   postReach: number;
   storyReach: number;
   engagementRate: number;
-  gender?: 'мужчина' | 'женщина' | 'пара' | 'паблик';
+  gender?: "мужчина" | "женщина" | "пара" | "паблик";
   category: string;
   topics: number[]; // ID тем для унификации с API
   allowsBarter: boolean;
   inMartRegistry: boolean;
-  legalForm?: 'ИП' | 'профдоход' | 'договор подряда' | 'ООО';
+  legalForm?: "ИП" | "профдоход" | "договор подряда" | "ООО";
   restrictedTopics: number[]; // ID запрещенных тем для унификации с API
   cooperationConditions: string;
   workFormat?: string;
   paymentTerms: string;
   contact_url?: string;
-  verificationStatus?: 'NEW' | 'APPROVED' | 'REJECTED' | 'MODERATION';
+  verificationStatus?: "NEW" | "APPROVED" | "REJECTED" | "MODERATION";
 }
 
 export interface FilterState {

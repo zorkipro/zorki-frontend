@@ -1,45 +1,45 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { useAuth } from '@/contexts/AuthContext';
-import { linkClientToBlogger } from '@/api/endpoints/client';
-import { APIError } from '@/api/client';
-import { getAccessToken } from '@/utils/googleAuth';
-import { LogOut } from 'lucide-react';
-import { logger } from '@/utils/logger';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { useAuth } from "@/contexts/AuthContext";
+import { linkClientToBlogger } from "@/api/endpoints/client";
+import { APIError } from "@/api/client";
+import { getAccessToken } from "@/utils/googleAuth";
+import { LogOut } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 export const ProfileSetup = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [instagramUsername, setInstagramUsername] = useState('');
+  const [instagramUsername, setInstagramUsername] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!user) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [user, navigate]);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      logger.error('Ошибка при выходе', error, { component: 'ProfileSetup' });
+      logger.error("Ошибка при выходе", error, { component: "ProfileSetup" });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!instagramUsername.trim()) {
-      setError('Введите ваш Instagram username');
+      setError("Введите ваш Instagram username");
       return;
     }
 
     setIsSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       // ============================================
@@ -76,31 +76,39 @@ export const ProfileSetup = () => {
       await linkClientToBlogger(instagramUsername.trim());
 
       // Перенаправляем на страницу редактирования профиля
-      navigate('/profile/edit');
+      navigate("/profile/edit");
     } catch (err: unknown) {
-      logger.error('Error linking to blogger', err, { component: 'ProfileSetup' });
+      logger.error("Error linking to blogger", err, {
+        component: "ProfileSetup",
+      });
 
       if (err instanceof APIError) {
         if (err.statusCode === 403) {
           // Обрабатываем специфичные ошибки из backend
-          if (err.message.includes('blogger_already_linked_to_another_user')) {
+          if (err.message.includes("blogger_already_linked_to_another_user")) {
             setError(
-              'Этот блогер уже привязан к другому пользователю. Вы не можете использовать этот username.'
+              "Этот блогер уже привязан к другому пользователю. Вы не можете использовать этот username.",
             );
-          } else if (err.message.includes('client_already_linked_to_blogger')) {
-            setError('Вы уже привязаны к блогеру. Обратитесь к администратору для изменения.');
+          } else if (err.message.includes("client_already_linked_to_blogger")) {
+            setError(
+              "Вы уже привязаны к блогеру. Обратитесь к администратору для изменения.",
+            );
           } else {
             setError(err.message);
           }
         } else if (err.errorField) {
           // Validation errors
-          const messages = err.errorField.map((e) => e.message).join(', ');
+          const messages = err.errorField.map((e) => e.message).join(", ");
           setError(messages);
         } else {
           setError(err.message);
         }
       } else {
-        setError(err instanceof Error ? err.message : 'Произошла ошибка при создании профиля');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Произошла ошибка при создании профиля",
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -126,7 +134,9 @@ export const ProfileSetup = () => {
           <h1 className="text-2xl font-bold text-foreground mb-2">
             Введите свой Instagram Username
           </h1>
-          <p className="text-muted-foreground text-sm">Вводите без @ и ссылок</p>
+          <p className="text-muted-foreground text-sm">
+            Вводите без @ и ссылок
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -156,7 +166,7 @@ export const ProfileSetup = () => {
                 Сохранение...
               </>
             ) : (
-              'Сохранить'
+              "Сохранить"
             )}
           </Button>
         </form>

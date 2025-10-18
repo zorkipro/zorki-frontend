@@ -5,7 +5,7 @@
 // Используется пользователями для запроса связывания аккаунтов
 // ============================================
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,22 +21,38 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@/ui-kit';
-import { MessageSquare, Youtube, Instagram, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useSocialLinking } from '@/hooks/useSocialLinking';
+} from "@/ui-kit";
+import {
+  MessageSquare,
+  Youtube,
+  Instagram,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import { useSocialLinking } from "@/hooks/useSocialLinking";
 
 interface SocialLinkingProps {
   bloggerId: number;
   className?: string;
 }
 
-export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, className }) => {
-  const { loading, error, linkTgChannel, linkYtChannel, linkIgUser, clearError } =
-    useSocialLinking();
+export const SocialLinking: React.FC<SocialLinkingProps> = ({
+  bloggerId,
+  className,
+}) => {
+  const {
+    loading,
+    error,
+    linkTgChannel,
+    linkYtChannel,
+    linkIgUser,
+    clearError,
+  } = useSocialLinking();
 
-  const [tgChannel, setTgChannel] = useState('');
-  const [ytChannel, setYtChannel] = useState('');
-  const [igUsername, setIgUsername] = useState('');
+  const [tgChannel, setTgChannel] = useState("");
+  const [ytChannel, setYtChannel] = useState("");
+  const [igUsername, setIgUsername] = useState("");
 
   const handleTgLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +66,7 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
         channelName: tgChannel.trim(),
       });
 
-      setTgChannel('');
+      setTgChannel("");
     } catch (error) {
       // Ошибка обрабатывается в хуке
     }
@@ -68,7 +84,7 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
         channelName: ytChannel.trim(),
       });
 
-      setYtChannel('');
+      setYtChannel("");
     } catch (error) {
       // Ошибка обрабатывается в хуке
     }
@@ -86,7 +102,7 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
         username: igUsername.trim(),
       });
 
-      setIgUsername('');
+      setIgUsername("");
     } catch (error) {
       // Ошибка обрабатывается в хуке
     }
@@ -112,15 +128,24 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
 
         <Tabs defaultValue="telegram" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="telegram" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="telegram"
+              className="flex items-center space-x-2"
+            >
               <MessageSquare className="w-4 h-4" />
               <span>Telegram</span>
             </TabsTrigger>
-            <TabsTrigger value="youtube" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="youtube"
+              className="flex items-center space-x-2"
+            >
               <Youtube className="w-4 h-4" />
               <span>YouTube</span>
             </TabsTrigger>
-            <TabsTrigger value="instagram" className="flex items-center space-x-2">
+            <TabsTrigger
+              value="instagram"
+              className="flex items-center space-x-2"
+            >
               <Instagram className="w-4 h-4" />
               <span>Instagram</span>
             </TabsTrigger>
@@ -149,7 +174,7 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
                     Отправка запроса...
                   </>
                 ) : (
-                  'Связать Telegram канал'
+                  "Связать Telegram канал"
                 )}
               </Button>
             </form>
@@ -178,7 +203,7 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
                     Отправка запроса...
                   </>
                 ) : (
-                  'Связать YouTube канал'
+                  "Связать YouTube канал"
                 )}
               </Button>
             </form>
@@ -207,7 +232,7 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
                     Отправка запроса...
                   </>
                 ) : (
-                  'Связать Instagram аккаунт'
+                  "Связать Instagram аккаунт"
                 )}
               </Button>
             </form>
@@ -217,8 +242,8 @@ export const SocialLinking: React.FC<SocialLinkingProps> = ({ bloggerId, classNa
         <Alert>
           <CheckCircle className="h-4 w-4" />
           <AlertDescription>
-            После отправки запроса администратор рассмотрит его и свяжет ваш аккаунт с профилем
-            блогера.
+            После отправки запроса администратор рассмотрит его и свяжет ваш
+            аккаунт с профилем блогера.
           </AlertDescription>
         </Alert>
       </CardContent>

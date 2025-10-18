@@ -7,7 +7,7 @@
 // PUT /blogger/social-price/:id - Обновление цен социальной сети
 // ============================================
 
-import { apiRequest } from '../client';
+import { apiRequest } from "../client";
 import type {
   PaginationUtil,
   PublicGetAllBloggersOutputDto,
@@ -17,7 +17,7 @@ import type {
   BloggerUploadStatsInputDto,
   ApiSocialType,
   ApiGender,
-} from '../types';
+} from "../types";
 
 // ====== GET /blogger/public - Список блогеров ======
 
@@ -66,7 +66,7 @@ export interface GetAllBloggersParams {
  * ```
  */
 export async function getAllBloggers(
-  params: GetAllBloggersParams = {}
+  params: GetAllBloggersParams = {},
 ): Promise<PaginationUtil<PublicGetAllBloggersOutputDto[]>> {
   const query = new URLSearchParams();
 
@@ -81,7 +81,9 @@ export async function getAllBloggers(
     }
   });
 
-  return apiRequest<PaginationUtil<PublicGetAllBloggersOutputDto[]>>(`/blogger/public?${query}`);
+  return apiRequest<PaginationUtil<PublicGetAllBloggersOutputDto[]>>(
+    `/blogger/public?${query}`,
+  );
 }
 
 // ====== GET /blogger/public/:id - Детали блогера ======
@@ -99,8 +101,12 @@ export async function getAllBloggers(
  * const blogger = await getBloggerById(123);
  * ```
  */
-export async function getBloggerById(bloggerId: number): Promise<PublicGetBloggerByIdOutputDto> {
-  return apiRequest<PublicGetBloggerByIdOutputDto>(`/blogger/public/${bloggerId}`);
+export async function getBloggerById(
+  bloggerId: number,
+): Promise<PublicGetBloggerByIdOutputDto> {
+  return apiRequest<PublicGetBloggerByIdOutputDto>(
+    `/blogger/public/${bloggerId}`,
+  );
 }
 
 // ====== PUT /blogger/:id - Обновление профиля ======
@@ -133,10 +139,10 @@ export async function getBloggerById(bloggerId: number): Promise<PublicGetBlogge
  */
 export async function updateBloggerProfile(
   bloggerId: number,
-  data: BloggerUpdateProfileInputDto
+  data: BloggerUpdateProfileInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/blogger/${bloggerId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -169,10 +175,10 @@ export async function updateBloggerProfile(
  */
 export async function updateBloggerSocialPrice(
   bloggerId: number,
-  data: BloggerUpdateSocialPriceInputDto
+  data: BloggerUpdateSocialPriceInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/blogger/social-price/${bloggerId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -206,13 +212,13 @@ export async function updateBloggerSocialPrice(
  */
 export async function uploadBloggerStats(
   bloggerId: number,
-  data: BloggerUploadStatsInputDto
+  data: BloggerUploadStatsInputDto,
 ): Promise<void> {
   // Создаем FormData для загрузки файлов
   const formData = new FormData();
 
   // Добавляем тип социальной сети
-  formData.append('type', data.type);
+  formData.append("type", data.type);
 
   // Добавляем файлы
   data.files.forEach((file, index) => {
@@ -220,7 +226,7 @@ export async function uploadBloggerStats(
   });
 
   return apiRequest<void>(`/blogger/stats-upload/${bloggerId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: formData,
     // Не устанавливаем Content-Type, браузер сам установит multipart/form-data
   });
@@ -250,9 +256,9 @@ export async function uploadBloggerStats(
  */
 export async function deleteBloggerStatsFile(
   bloggerId: number,
-  fileId: number
+  fileId: number,
 ): Promise<void> {
   return apiRequest<void>(`/blogger/${bloggerId}/${fileId}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }

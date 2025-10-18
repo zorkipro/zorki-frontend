@@ -18,14 +18,14 @@
  * createTopicLookup(topics) // => { "Мода": 1, "Красота": 2 }
  */
 export function createTopicLookup(
-  topics: Array<{ id: number; name: string }>
+  topics: Array<{ id: number; name: string }>,
 ): Record<string, number> {
   return topics.reduce(
     (acc, topic) => {
       acc[topic.name] = topic.id;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 }
 
@@ -44,14 +44,14 @@ export function createTopicLookup(
  * createTopicReverseLookup(topics) // => { 1: "Мода", 2: "Красота" }
  */
 export function createTopicReverseLookup(
-  topics: Array<{ id: number; name: string }>
+  topics: Array<{ id: number; name: string }>,
 ): Record<number, string> {
   return topics.reduce(
     (acc, topic) => {
       acc[topic.id] = topic.name;
       return acc;
     },
-    {} as Record<number, string>
+    {} as Record<number, string>,
   );
 }
 
@@ -70,7 +70,7 @@ export function createTopicReverseLookup(
  */
 export function convertTopicNamesToIds(
   topicNames: string[] | undefined,
-  lookup: Record<string, number>
+  lookup: Record<string, number>,
 ): number[] {
   if (!topicNames || topicNames.length === 0) {
     return [];
@@ -78,7 +78,7 @@ export function convertTopicNamesToIds(
 
   return topicNames
     .map((name) => lookup[name])
-    .filter((id): id is number => typeof id === 'number');
+    .filter((id): id is number => typeof id === "number");
 }
 
 /**
@@ -96,7 +96,7 @@ export function convertTopicNamesToIds(
  */
 export function convertTopicsToIds(
   topics: (string | number)[] | undefined,
-  lookup: Record<string, number>
+  lookup: Record<string, number>,
 ): number[] {
   if (!topics || topics.length === 0) {
     return [];
@@ -105,13 +105,13 @@ export function convertTopicsToIds(
   return topics
     .map((topic) => {
       // Если уже ID - вернуть как есть
-      if (typeof topic === 'number') {
+      if (typeof topic === "number") {
         return topic;
       }
       // Если название - конвертировать в ID
       return lookup[topic];
     })
-    .filter((id): id is number => typeof id === 'number');
+    .filter((id): id is number => typeof id === "number");
 }
 
 /**
@@ -129,7 +129,7 @@ export function convertTopicsToIds(
  */
 export function convertTopicIdsToNames(
   topicIds: number[] | undefined,
-  reverseLookup: Record<number, string>
+  reverseLookup: Record<number, string>,
 ): string[] {
   if (!topicIds || topicIds.length === 0) {
     return [];
@@ -137,5 +137,5 @@ export function convertTopicIdsToNames(
 
   return topicIds
     .map((id) => reverseLookup[id])
-    .filter((name): name is string => typeof name === 'string');
+    .filter((name): name is string => typeof name === "string");
 }

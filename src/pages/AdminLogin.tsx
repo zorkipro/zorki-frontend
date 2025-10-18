@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Input, Label } from '@/ui-kit';
-import { adminLogin } from '@/api/endpoints/admin';
-import { APIError } from '@/api/client';
-import { Shield } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, Input, Label } from "@/ui-kit";
+import { adminLogin } from "@/api/endpoints/admin";
+import { APIError } from "@/api/client";
+import { Shield } from "lucide-react";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // ✅ Логин через Backend API
@@ -25,29 +25,31 @@ const AdminLogin = () => {
       });
 
       // Сохраняем временный токен для 2FA
-      sessionStorage.setItem('adminTempToken', accessToken);
+      sessionStorage.setItem("adminTempToken", accessToken);
 
       // Переходим на страницу 2FA
-      navigate('/admin/2fa');
+      navigate("/admin/2fa");
     } catch (err: unknown) {
       // Обработка ошибок API
       if (err instanceof APIError) {
         if (err.statusCode === 401) {
-          setError('Неверный логин или пароль');
+          setError("Неверный логин или пароль");
         } else if (err.errorField) {
           // Validation errors
-          const messages = err.errorField.map((e) => e.message).join(', ');
+          const messages = err.errorField.map((e) => e.message).join(", ");
           setError(messages);
         } else {
           setError(err.message);
         }
       } else {
-        setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
+        setError(
+          err instanceof Error ? err.message : "Произошла ошибка при входе",
+        );
       }
 
       // Удаляем токены в случае ошибки
-      sessionStorage.removeItem('adminToken');
-      sessionStorage.removeItem('adminTempToken');
+      sessionStorage.removeItem("adminToken");
+      sessionStorage.removeItem("adminTempToken");
     } finally {
       setLoading(false);
     }
@@ -62,14 +64,21 @@ const AdminLogin = () => {
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <Shield className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Вход в админ-панель</h1>
-            <p className="text-gray-600">Введите учетные данные администратора</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Вход в админ-панель
+            </h1>
+            <p className="text-gray-600">
+              Введите учетные данные администратора
+            </p>
           </div>
 
           {/* Форма логина */}
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="username"
+                className="text-sm font-medium text-gray-700"
+              >
                 Имя пользователя
               </Label>
               <Input
@@ -85,7 +94,10 @@ const AdminLogin = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
                 Пароль
               </Label>
               <Input
@@ -100,7 +112,11 @@ const AdminLogin = () => {
               />
             </div>
 
-            {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</div>}
+            {error && (
+              <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                {error}
+              </div>
+            )}
 
             <Button
               type="submit"
@@ -113,7 +129,7 @@ const AdminLogin = () => {
                   Вход...
                 </div>
               ) : (
-                'Войти в админ-панель'
+                "Войти в админ-панель"
               )}
             </Button>
           </form>

@@ -5,15 +5,15 @@
 // Используется админами для настройки Telegram аккаунтов
 // ============================================
 
-import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { tgClientLogin, tgClientConfirm } from '@/api/endpoints/telegram';
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { tgClientLogin, tgClientConfirm } from "@/api/endpoints/telegram";
 import type {
   TgClientLoginInputDto,
   TgClientLoginOutputDto,
   TgClientConfirmInputDto,
   TgClientConfirmOutputDto,
-} from '@/api/types';
+} from "@/api/types";
 
 interface UseTelegramClientReturn {
   // Состояние загрузки
@@ -93,31 +93,33 @@ export const useTelegramClient = (): UseTelegramClientReturn => {
 
         if (result.isAuthorized && result.isVerify) {
           toast({
-            title: 'Успешно',
-            description: 'Telegram аккаунт авторизован и готов к использованию',
+            title: "Успешно",
+            description: "Telegram аккаунт авторизован и готов к использованию",
           });
         } else if (result.isAuthorized) {
           toast({
-            title: 'Код отправлен',
-            description: 'SMS код отправлен на указанный номер. Введите код для подтверждения.',
+            title: "Код отправлен",
+            description:
+              "SMS код отправлен на указанный номер. Введите код для подтверждения.",
           });
         } else {
           toast({
-            title: 'Ошибка авторизации',
-            description: 'Не удалось авторизовать Telegram аккаунт',
-            variant: 'destructive',
+            title: "Ошибка авторизации",
+            description: "Не удалось авторизовать Telegram аккаунт",
+            variant: "destructive",
           });
         }
 
         return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка авторизации Telegram';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка авторизации Telegram";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -125,12 +127,14 @@ export const useTelegramClient = (): UseTelegramClientReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Подтверждение логина с кодом
   const confirm = useCallback(
-    async (data: TgClientConfirmInputDto): Promise<TgClientConfirmOutputDto> => {
+    async (
+      data: TgClientConfirmInputDto,
+    ): Promise<TgClientConfirmOutputDto> => {
       try {
         setLoading(true);
         setError(null);
@@ -142,26 +146,27 @@ export const useTelegramClient = (): UseTelegramClientReturn => {
 
         if (result.isAuthorized && result.isVerify) {
           toast({
-            title: 'Успешно',
-            description: 'Telegram аккаунт подтвержден и готов к использованию',
+            title: "Успешно",
+            description: "Telegram аккаунт подтвержден и готов к использованию",
           });
         } else {
           toast({
-            title: 'Ошибка подтверждения',
-            description: 'Неверный код или ошибка подтверждения',
-            variant: 'destructive',
+            title: "Ошибка подтверждения",
+            description: "Неверный код или ошибка подтверждения",
+            variant: "destructive",
           });
         }
 
         return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка подтверждения Telegram';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка подтверждения Telegram";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -169,7 +174,7 @@ export const useTelegramClient = (): UseTelegramClientReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Очистка ошибки

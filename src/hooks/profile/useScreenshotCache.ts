@@ -1,4 +1,4 @@
-import type { Screenshot } from '@/types/profile';
+import type { Screenshot } from "@/types/profile";
 
 /**
  * Глобальный кеш для скриншотов
@@ -43,19 +43,27 @@ class ScreenshotCache {
     this.loadingCache.set(key, loading);
   }
 
-  addToCache(profileId: string, platform: string, screenshot: Screenshot): void {
+  addToCache(
+    profileId: string,
+    platform: string,
+    screenshot: Screenshot,
+  ): void {
     const key = this.getCacheKey(profileId, platform);
     const current = this.cache.get(key) || [];
     this.cache.set(key, [screenshot, ...current]);
   }
 
-  removeFromCache(profileId: string, platform: string, screenshotId: number): void {
+  removeFromCache(
+    profileId: string,
+    platform: string,
+    screenshotId: number,
+  ): void {
     const key = this.getCacheKey(profileId, platform);
     const current = this.cache.get(key);
     if (current) {
       this.cache.set(
         key,
-        current.filter((s) => s.id !== screenshotId)
+        current.filter((s) => s.id !== screenshotId),
       );
     }
   }

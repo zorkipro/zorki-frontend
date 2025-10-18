@@ -1,6 +1,6 @@
-import { memo, useCallback, useState, useEffect } from 'react';
-import { Card, CardContent } from '@/ui-kit';
-import { Button } from '@/ui-kit';
+import { memo, useCallback, useState, useEffect } from "react";
+import { Card, CardContent } from "@/ui-kit";
+import { Button } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -8,12 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Edit } from 'lucide-react';
-import { getPlatformIcon, getPlatformName } from '@/components/icons/PlatformIcons';
-import type { EditData, PlatformData } from '@/types/profile';
+} from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import { Edit } from "lucide-react";
+import {
+  getPlatformIcon,
+  getPlatformName,
+} from "@/components/icons/PlatformIcons";
+import type { EditData, PlatformData } from "@/types/profile";
 
 interface PricingSectionProps {
   availablePlatforms: Record<string, PlatformData>;
@@ -33,17 +36,20 @@ const PricingSectionComponent = ({
   saving,
 }: PricingSectionProps) => {
   // Состояние для полей редактирования цен
-  const [priceStates, setPriceStates] = useState<Record<string, { postPrice: string; storyPrice: string }>>({});
+  const [priceStates, setPriceStates] = useState<
+    Record<string, { postPrice: string; storyPrice: string }>
+  >({});
 
   // Инициализируем состояние при изменении formData
   useEffect(() => {
-    const newStates: Record<string, { postPrice: string; storyPrice: string }> = {};
-    Object.keys(availablePlatforms).forEach(platform => {
+    const newStates: Record<string, { postPrice: string; storyPrice: string }> =
+      {};
+    Object.keys(availablePlatforms).forEach((platform) => {
       const postPriceField = `${platform}_post_price` as keyof EditData;
       const storyPriceField = `${platform}_story_price` as keyof EditData;
       newStates[platform] = {
-        postPrice: (formData[postPriceField] as string) || '',
-        storyPrice: (formData[storyPriceField] as string) || '',
+        postPrice: (formData[postPriceField] as string) || "",
+        storyPrice: (formData[storyPriceField] as string) || "",
       };
     });
     setPriceStates(newStates);
@@ -56,15 +62,15 @@ const PricingSectionComponent = ({
 
       try {
         await onSave({
-          [postPriceField]: priceStates[platform]?.postPrice || '',
-          [storyPriceField]: priceStates[platform]?.storyPrice || '',
+          [postPriceField]: priceStates[platform]?.postPrice || "",
+          [storyPriceField]: priceStates[platform]?.storyPrice || "",
         });
         onEditingSectionChange(null);
       } catch (error) {
         // Error already handled by onSave
       }
     },
-    [onSave, onEditingSectionChange, priceStates]
+    [onSave, onEditingSectionChange, priceStates],
   );
 
   return (
@@ -82,7 +88,9 @@ const PricingSectionComponent = ({
               </div>
               <div className="flex items-center space-x-2">
                 <div className="text-right">
-                  <div className="text-sm font-medium">{stats.price || 0} BYN</div>
+                  <div className="text-sm font-medium">
+                    {stats.price || 0} BYN
+                  </div>
                   {stats.storyPrice > 0 && (
                     <div className="text-xs text-muted-foreground">
                       Stories: {stats.storyPrice} BYN
@@ -102,41 +110,65 @@ const PricingSectionComponent = ({
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Редактировать цены {getPlatformName(platform)}</DialogTitle>
-                      <DialogDescription>Обновите цены для этой платформы</DialogDescription>
+                      <DialogTitle>
+                        Редактировать цены {getPlatformName(platform)}
+                      </DialogTitle>
+                      <DialogDescription>
+                        Обновите цены для этой платформы
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor={`${platform}_post_price`}>Цена за пост (BYN)</Label>
+                        <Label htmlFor={`${platform}_post_price`}>
+                          Цена за пост (BYN)
+                        </Label>
                         <Input
                           id={`${platform}_post_price`}
                           type="number"
-                          value={priceStates[platform]?.postPrice || ''}
-                          onChange={(e) => setPriceStates(prev => ({
-                            ...prev,
-                            [platform]: { ...prev[platform], postPrice: e.target.value }
-                          }))}
+                          value={priceStates[platform]?.postPrice || ""}
+                          onChange={(e) =>
+                            setPriceStates((prev) => ({
+                              ...prev,
+                              [platform]: {
+                                ...prev[platform],
+                                postPrice: e.target.value,
+                              },
+                            }))
+                          }
                           placeholder="Введите цену"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`${platform}_story_price`}>Цена за stories (BYN)</Label>
+                        <Label htmlFor={`${platform}_story_price`}>
+                          Цена за stories (BYN)
+                        </Label>
                         <Input
                           id={`${platform}_story_price`}
                           type="number"
-                          value={priceStates[platform]?.storyPrice || ''}
-                          onChange={(e) => setPriceStates(prev => ({
-                            ...prev,
-                            [platform]: { ...prev[platform], storyPrice: e.target.value }
-                          }))}
+                          value={priceStates[platform]?.storyPrice || ""}
+                          onChange={(e) =>
+                            setPriceStates((prev) => ({
+                              ...prev,
+                              [platform]: {
+                                ...prev[platform],
+                                storyPrice: e.target.value,
+                              },
+                            }))
+                          }
                           placeholder="Введите цену"
                         />
                       </div>
                       <div className="flex justify-end space-x-2">
-                        <Button variant="outline" onClick={() => onEditingSectionChange(null)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => onEditingSectionChange(null)}
+                        >
                           Отмена
                         </Button>
-                        <Button onClick={() => handlePriceEdit(platform)} disabled={saving}>
+                        <Button
+                          onClick={() => handlePriceEdit(platform)}
+                          disabled={saving}
+                        >
                           Сохранить
                         </Button>
                       </div>

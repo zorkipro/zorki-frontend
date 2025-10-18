@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Check, ChevronDown, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import React, { useState, useRef, useEffect } from "react";
+import { Check, ChevronDown, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface MultiSelectOption {
   value: string;
@@ -23,7 +23,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = 'Выберите опции...',
+  placeholder = "Выберите опции...",
   className,
   disabled = false,
   maxDisplayItems = 3,
@@ -33,13 +33,16 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleOption = (optionValue: string) => {
@@ -61,20 +64,22 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const remainingCount = value.length - maxDisplayItems;
 
   const getOptionLabel = (optionValue: string) => {
-    return options.find((opt) => opt.value === optionValue)?.label || optionValue;
+    return (
+      options.find((opt) => opt.value === optionValue)?.label || optionValue
+    );
   };
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
+    <div ref={containerRef} className={cn("relative", className)}>
       {/* Trigger */}
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={cn(
-          'flex min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
-          'cursor-pointer transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-          disabled && 'cursor-not-allowed opacity-50',
-          isOpen && 'ring-2 ring-ring ring-offset-2'
+          "flex min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+          "cursor-pointer transition-colors",
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          disabled && "cursor-not-allowed opacity-50",
+          isOpen && "ring-2 ring-ring ring-offset-2",
         )}
       >
         <div className="flex flex-1 flex-wrap gap-1 items-center">
@@ -105,7 +110,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           )}
         </div>
         <ChevronDown
-          className={cn('h-4 w-4 opacity-50 transition-transform', isOpen && 'rotate-180')}
+          className={cn(
+            "h-4 w-4 opacity-50 transition-transform",
+            isOpen && "rotate-180",
+          )}
         />
       </div>
 
@@ -120,9 +128,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                   key={option.value}
                   onClick={() => toggleOption(option.value)}
                   className={cn(
-                    'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
-                    'transition-colors hover:bg-accent hover:text-accent-foreground',
-                    isSelected && 'bg-accent text-accent-foreground'
+                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                    "transition-colors hover:bg-accent hover:text-accent-foreground",
+                    isSelected && "bg-accent text-accent-foreground",
                   )}
                 >
                   <div className="flex h-3.5 w-3.5 items-center justify-center mr-2">

@@ -5,7 +5,7 @@
 // См. docs/API_TODOS.md для полного списка и приоритетов.
 // ============================================
 
-import { apiRequest } from '../client';
+import { apiRequest } from "../client";
 import type {
   AdminLoginInputDto,
   AdminLoginOutputDto,
@@ -23,7 +23,7 @@ import type {
   BloggerUpdateProfileInputDto,
   BloggerUpdateSocialPriceInputDto,
   ApiSocialType,
-} from '../types';
+} from "../types";
 
 // ====== POST /auth/admin/login - Логин админа ======
 
@@ -47,9 +47,11 @@ import type {
  * sessionStorage.setItem('adminToken', accessToken);
  * ```
  */
-export async function adminLogin(data: AdminLoginInputDto): Promise<AdminLoginOutputDto> {
-  return apiRequest<AdminLoginOutputDto>('/auth/admin/login', {
-    method: 'POST',
+export async function adminLogin(
+  data: AdminLoginInputDto,
+): Promise<AdminLoginOutputDto> {
+  return apiRequest<AdminLoginOutputDto>("/auth/admin/login", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -77,8 +79,8 @@ export async function adminLogin(data: AdminLoginInputDto): Promise<AdminLoginOu
  * ```
  */
 export async function adminSignUp(data: AdminSignUpInputDto): Promise<void> {
-  return apiRequest<void>('/auth/admin/signup', {
-    method: 'POST',
+  return apiRequest<void>("/auth/admin/signup", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -99,8 +101,8 @@ export async function adminSignUp(data: AdminSignUpInputDto): Promise<void> {
  * ```
  */
 export async function getAdminMe(): Promise<AdminAuthMeOutputDto> {
-  return apiRequest<AdminAuthMeOutputDto>('/auth/admin/me', {
-    method: 'GET',
+  return apiRequest<AdminAuthMeOutputDto>("/auth/admin/me", {
+    method: "GET",
   });
 }
 
@@ -124,11 +126,13 @@ export async function getAdminMe(): Promise<AdminAuthMeOutputDto> {
  * sessionStorage.setItem('adminToken', accessToken);
  * ```
  */
-export async function adminConfirm2FA(code: number): Promise<AdminLoginOutputDto> {
+export async function adminConfirm2FA(
+  code: number,
+): Promise<AdminLoginOutputDto> {
   const data: AdminLogin2faFakeInputDto = { code };
 
-  return apiRequest<AdminLoginOutputDto>('/auth/admin/2fa/confirm', {
-    method: 'POST',
+  return apiRequest<AdminLoginOutputDto>("/auth/admin/2fa/confirm", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -155,7 +159,7 @@ export async function adminConfirm2FA(code: number): Promise<AdminLoginOutputDto
  * ```
  */
 export async function adminGetBloggers(
-  params: AdminGetBloggersQuery = {}
+  params: AdminGetBloggersQuery = {},
 ): Promise<AdminGetBloggersResponse> {
   const query = new URLSearchParams();
 
@@ -186,8 +190,8 @@ export async function adminGetBloggers(
  * ```
  */
 export async function adminGetBloggersStats(): Promise<AdminGetBloggersStatsOutputDto> {
-  return apiRequest<AdminGetBloggersStatsOutputDto>('/admin/blogger/stats', {
-    method: 'GET',
+  return apiRequest<AdminGetBloggersStatsOutputDto>("/admin/blogger/stats", {
+    method: "GET",
   });
 }
 
@@ -208,8 +212,8 @@ export async function adminGetBloggersStats(): Promise<AdminGetBloggersStatsOutp
 export async function adminCreateBlogger(username: string): Promise<void> {
   const data: AdminCreateBloggerInputDto = { username };
 
-  return apiRequest<void>('/admin/blogger', {
-    method: 'POST',
+  return apiRequest<void>("/admin/blogger", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -229,9 +233,11 @@ export async function adminCreateBlogger(username: string): Promise<void> {
  * await adminToggleBloggerVisibility(123);
  * ```
  */
-export async function adminToggleBloggerVisibility(bloggerId: number): Promise<void> {
+export async function adminToggleBloggerVisibility(
+  bloggerId: number,
+): Promise<void> {
   return apiRequest<void>(`/admin/blogger/visibility/${bloggerId}`, {
-    method: 'PATCH',
+    method: "PATCH",
   });
 }
 
@@ -472,7 +478,7 @@ export async function adminToggleBloggerVisibility(bloggerId: number): Promise<v
  * ```
  */
 export async function getAdminLinkRequests(
-  params: GetLinkRequestsParams = {}
+  params: GetLinkRequestsParams = {},
 ): Promise<PaginationUtil<AdminGetLinkBloggerClientRequestOutputDto[]>> {
   const query = new URLSearchParams();
 
@@ -482,9 +488,9 @@ export async function getAdminLinkRequests(
     }
   });
 
-  return apiRequest<PaginationUtil<AdminGetLinkBloggerClientRequestOutputDto[]>>(
-    `/admin/link/blogger-client?${query}`
-  );
+  return apiRequest<
+    PaginationUtil<AdminGetLinkBloggerClientRequestOutputDto[]>
+  >(`/admin/link/blogger-client?${query}`);
 }
 
 /**
@@ -504,7 +510,7 @@ export async function getAdminLinkRequests(
  */
 export async function approveLinkRequest(requestId: number): Promise<void> {
   return apiRequest<void>(`/admin/link/blogger-client/approve/${requestId}`, {
-    method: 'POST',
+    method: "POST",
   });
 }
 
@@ -525,7 +531,7 @@ export async function approveLinkRequest(requestId: number): Promise<void> {
  */
 export async function rejectLinkRequest(requestId: number): Promise<void> {
   return apiRequest<void>(`/admin/link/blogger-client/reject/${requestId}`, {
-    method: 'POST',
+    method: "POST",
   });
 }
 
@@ -551,10 +557,10 @@ export async function rejectLinkRequest(requestId: number): Promise<void> {
  */
 export async function adminDeleteBloggerStatsFile(
   bloggerId: number,
-  fileId: number
+  fileId: number,
 ): Promise<void> {
   return apiRequest<void>(`/admin/blogger/${bloggerId}/${fileId}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 
@@ -584,10 +590,10 @@ export async function adminDeleteBloggerStatsFile(
  */
 export async function adminUpdateBlogger(
   bloggerId: number,
-  data: BloggerUpdateProfileInputDto
+  data: BloggerUpdateProfileInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/admin/blogger/${bloggerId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -618,10 +624,10 @@ export async function adminUpdateBlogger(
  */
 export async function adminUpdateBloggerSocialPrice(
   bloggerId: number,
-  data: BloggerUpdateSocialPriceInputDto
+  data: BloggerUpdateSocialPriceInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/admin/blogger/social-price/${bloggerId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -651,14 +657,14 @@ export async function adminUpdateBloggerSocialPrice(
 export async function adminUploadBloggerStats(
   bloggerId: number,
   type: ApiSocialType,
-  files: File[]
+  files: File[],
 ): Promise<void> {
   const formData = new FormData();
-  formData.append('type', type);
-  files.forEach((file) => formData.append('files', file));
+  formData.append("type", type);
+  files.forEach((file) => formData.append("files", file));
 
   return apiRequest<void>(`/admin/blogger/stats-upload/${bloggerId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: formData,
     headers: {}, // Убираем Content-Type, браузер сам установит для FormData
   });

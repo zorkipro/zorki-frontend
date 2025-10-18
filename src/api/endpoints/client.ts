@@ -4,8 +4,11 @@
 // POST /client/blogger/link - Связывание клиента с блогером по Instagram username
 // ============================================
 
-import { apiRequest } from '../client';
-import type { ClientLinkToBloggerInputDto, ClientAuthMeOutputDto } from '../types';
+import { apiRequest } from "../client";
+import type {
+  ClientLinkToBloggerInputDto,
+  ClientAuthMeOutputDto,
+} from "../types";
 
 // ====== POST /client/blogger/link ======
 
@@ -38,8 +41,8 @@ import type { ClientLinkToBloggerInputDto, ClientAuthMeOutputDto } from '../type
 export async function linkClientToBlogger(username: string): Promise<void> {
   const data: ClientLinkToBloggerInputDto = { username };
 
-  return apiRequest<void>('/client/blogger/link', {
-    method: 'POST',
+  return apiRequest<void>("/client/blogger/link", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -64,7 +67,7 @@ export async function linkClientToBlogger(username: string): Promise<void> {
  * ```
  */
 export async function getClientMe(): Promise<ClientAuthMeOutputDto> {
-  return apiRequest<ClientAuthMeOutputDto>('/auth/client/me', {
-    method: 'GET',
+  return apiRequest<ClientAuthMeOutputDto>("/auth/client/me", {
+    method: "GET",
   });
 }

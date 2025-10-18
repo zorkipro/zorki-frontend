@@ -1,7 +1,7 @@
-import { Card, CardContent } from '@/ui-kit';
-import { Users, TrendingUp, Eye, Wallet } from 'lucide-react';
-import { formatNumber } from '@/utils/formatters';
-import { PlatformData } from '@/types/profile';
+import { Card, CardContent } from "@/ui-kit";
+import { Users, TrendingUp, Eye, Wallet } from "lucide-react";
+import { formatNumber } from "@/utils/formatters";
+import { PlatformData } from "@/types/profile";
 
 interface PlatformStatsCardProps {
   icon: React.ReactNode;
@@ -10,7 +10,12 @@ interface PlatformStatsCardProps {
   color?: string;
 }
 
-const StatsCard = ({ icon, value, label, color = 'text-foreground' }: PlatformStatsCardProps) => (
+const StatsCard = ({
+  icon,
+  value,
+  label,
+  color = "text-foreground",
+}: PlatformStatsCardProps) => (
   <Card>
     <CardContent className="p-4 text-center">
       <div className={`w-6 h-6 ${color} mx-auto mb-2`}>{icon}</div>
@@ -25,8 +30,11 @@ interface BloggerProfileStatsProps {
   stats: PlatformData;
 }
 
-export const BloggerProfileStats = ({ platform, stats }: BloggerProfileStatsProps) => {
-  if (platform === 'instagram') {
+export const BloggerProfileStats = ({
+  platform,
+  stats,
+}: BloggerProfileStatsProps) => {
+  if (platform === "instagram") {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <StatsCard
@@ -69,7 +77,7 @@ export const BloggerProfileStats = ({ platform, stats }: BloggerProfileStatsProp
     );
   }
 
-  if (platform === 'youtube') {
+  if (platform === "youtube") {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <StatsCard

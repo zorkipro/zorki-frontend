@@ -1,9 +1,15 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Mail } from 'lucide-react';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Mail } from "lucide-react";
 import {
   GoogleAuthButton,
   InputWithIcon,
@@ -11,10 +17,10 @@ import {
   DividerWithText,
   CenteredAuthLayout,
   ErrorAlert,
-} from '@/ui-kit/components';
+} from "@/ui-kit/components";
 
 interface AuthFormProps {
-  mode: 'login' | 'register';
+  mode: "login" | "register";
   onSubmit: (email: string, password: string) => Promise<void>;
   onGoogleAuth: () => Promise<void>;
   loading: boolean;
@@ -30,24 +36,26 @@ export const AuthForm = ({
   error,
   showForgotPassword = true,
 }: AuthFormProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit(email, password);
   };
 
-  const isLogin = mode === 'login';
-  const title = isLogin ? 'Добро пожаловать' : 'Создать аккаунт';
-  const description = isLogin 
-    ? 'Войдите в свой аккаунт для продолжения' 
-    : 'Зарегистрируйтесь для доступа к платформе';
-  const buttonText = isLogin ? 'Войти' : 'Зарегистрироваться';
-  const googleButtonText = isLogin ? 'Войти через Google' : 'Зарегистрироваться через Google';
-  const linkText = isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?';
-  const linkPath = isLogin ? '/register' : '/login';
-  const linkLabel = isLogin ? 'Зарегистрироваться' : 'Войти';
+  const isLogin = mode === "login";
+  const title = isLogin ? "Добро пожаловать" : "Создать аккаунт";
+  const description = isLogin
+    ? "Войдите в свой аккаунт для продолжения"
+    : "Зарегистрируйтесь для доступа к платформе";
+  const buttonText = isLogin ? "Войти" : "Зарегистрироваться";
+  const googleButtonText = isLogin
+    ? "Войти через Google"
+    : "Зарегистрироваться через Google";
+  const linkText = isLogin ? "Нет аккаунта?" : "Уже есть аккаунт?";
+  const linkPath = isLogin ? "/register" : "/login";
+  const linkLabel = isLogin ? "Зарегистрироваться" : "Войти";
 
   return (
     <CenteredAuthLayout>
@@ -58,8 +66,8 @@ export const AuthForm = ({
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Google Button */}
-          <GoogleAuthButton 
-            text={googleButtonText} 
+          <GoogleAuthButton
+            text={googleButtonText}
             onClick={onGoogleAuth}
             loading={loading}
           />
@@ -98,7 +106,10 @@ export const AuthForm = ({
             {showForgotPassword && isLogin && (
               <div className="flex items-center justify-between">
                 <div className="text-sm">
-                  <Link to="/forgot-password" className="text-primary hover:text-primary/80">
+                  <Link
+                    to="/forgot-password"
+                    className="text-primary hover:text-primary/80"
+                  >
                     Забыли пароль?
                   </Link>
                 </div>
@@ -117,14 +128,16 @@ export const AuthForm = ({
           {/* Terms and Privacy */}
           <div className="text-center text-sm text-muted-foreground mb-4">
             <p className="mb-2">
-              {isLogin ? 'Рады видеть вас снова! Входя в систему, вы подтверждаете согласие с' : 'Добро пожаловать! Регистрируясь на нашей платформе, вы принимаете'}{' '}
+              {isLogin
+                ? "Рады видеть вас снова! Входя в систему, вы подтверждаете согласие с"
+                : "Добро пожаловать! Регистрируясь на нашей платформе, вы принимаете"}{" "}
               <Link
                 to="/terms"
                 className="text-primary hover:text-primary/80 underline font-medium"
               >
                 условиями использования
-              </Link>{' '}
-              и{' '}
+              </Link>{" "}
+              и{" "}
               <Link
                 to="/privacy"
                 className="text-primary hover:text-primary/80 underline font-medium"
@@ -142,7 +155,10 @@ export const AuthForm = ({
           {/* Switch Mode Link */}
           <div className="text-center text-sm">
             <span className="text-muted-foreground">{linkText} </span>
-            <Link to={linkPath} className="text-primary hover:text-primary/80 font-medium">
+            <Link
+              to={linkPath}
+              className="text-primary hover:text-primary/80 font-medium"
+            >
               {linkLabel}
             </Link>
           </div>

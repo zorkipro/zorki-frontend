@@ -5,17 +5,21 @@
  */
 
 // Re-export все из отдельных файлов
-export { colors, semanticColors, componentColors } from './colors';
-export type { ColorScale, SemanticColors, ComponentColors } from './colors';
+export { colors, semanticColors, componentColors } from "./colors";
+export type { ColorScale, SemanticColors, ComponentColors } from "./colors";
 
-export { typography, typographyStyles, typographyClasses } from './typography';
-export type { Typography, TypographyStyles, TypographyClasses } from './typography';
+export { typography, typographyStyles, typographyClasses } from "./typography";
+export type {
+  Typography,
+  TypographyStyles,
+  TypographyClasses,
+} from "./typography";
 
-export { spacing, semanticSpacing, sizes, borderRadius } from './spacing';
-export type { Spacing, SemanticSpacing, Sizes, BorderRadius } from './spacing';
+export { spacing, semanticSpacing, sizes, borderRadius } from "./spacing";
+export type { Spacing, SemanticSpacing, Sizes, BorderRadius } from "./spacing";
 
-export { shadows, semanticShadows } from './shadows';
-export type { Shadows, SemanticShadows } from './shadows';
+export { shadows, semanticShadows } from "./shadows";
+export type { Shadows, SemanticShadows } from "./shadows";
 
-export { breakpoints, mediaQueries, semanticBreakpoints } from './breakpoints';
-export type { Breakpoints, MediaQueries } from './breakpoints';
+export { breakpoints, mediaQueries, semanticBreakpoints } from "./breakpoints";
+export type { Breakpoints, MediaQueries } from "./breakpoints";

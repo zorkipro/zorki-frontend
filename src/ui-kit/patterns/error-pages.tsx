@@ -4,10 +4,16 @@
  * Компоненты для отображения стандартных страниц ошибок
  */
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertCircle, Home, ArrowLeft } from "lucide-react";
 
 /**
  * NotFoundPage - Страница 404
@@ -32,8 +38,8 @@ export interface NotFoundPageProps {
 }
 
 export const NotFoundPage: React.FC<NotFoundPageProps> = ({
-  title = '404 - Страница не найдена',
-  message = 'К сожалению, запрашиваемая страница не существует',
+  title = "404 - Страница не найдена",
+  message = "К сожалению, запрашиваемая страница не существует",
   showHomeButton = true,
   showBackButton = true,
   onHomeClick,
@@ -43,7 +49,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({
     if (onHomeClick) {
       onHomeClick();
     } else {
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
 
@@ -75,7 +81,11 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({
               </Button>
             )}
             {showBackButton && (
-              <Button variant="outline" onClick={handleBackClick} className="w-full">
+              <Button
+                variant="outline"
+                onClick={handleBackClick}
+                className="w-full"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Назад
               </Button>
@@ -112,8 +122,8 @@ export interface ErrorPageProps {
 }
 
 export const ErrorPage: React.FC<ErrorPageProps> = ({
-  title = 'Ошибка',
-  message = 'Произошла непредвиденная ошибка',
+  title = "Ошибка",
+  message = "Произошла непредвиденная ошибка",
   error,
   showError = false,
   showRetryButton = true,
@@ -125,7 +135,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
     if (onHomeClick) {
       onHomeClick();
     } else {
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
 
@@ -137,7 +147,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
     }
   };
 
-  const errorMessage = typeof error === 'string' ? error : error?.message;
+  const errorMessage = typeof error === "string" ? error : error?.message;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -152,7 +162,9 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
         <CardContent className="space-y-4">
           {showError && errorMessage && (
             <div className="p-3 bg-destructive/10 rounded-lg">
-              <p className="text-sm text-destructive font-mono break-all">{errorMessage}</p>
+              <p className="text-sm text-destructive font-mono break-all">
+                {errorMessage}
+              </p>
             </div>
           )}
           <div className="flex flex-col gap-2">
@@ -162,7 +174,11 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
               </Button>
             )}
             {showHomeButton && (
-              <Button variant="outline" onClick={handleHomeClick} className="w-full">
+              <Button
+                variant="outline"
+                onClick={handleHomeClick}
+                className="w-full"
+              >
                 <Home className="w-4 h-4 mr-2" />
                 На главную
               </Button>
@@ -195,8 +211,8 @@ export interface UnauthorizedPageProps {
 }
 
 export const UnauthorizedPage: React.FC<UnauthorizedPageProps> = ({
-  title = 'Доступ запрещён',
-  message = 'У вас нет прав для просмотра этой страницы',
+  title = "Доступ запрещён",
+  message = "У вас нет прав для просмотра этой страницы",
   showLoginButton = true,
   showHomeButton = true,
   onLoginClick,
@@ -206,7 +222,7 @@ export const UnauthorizedPage: React.FC<UnauthorizedPageProps> = ({
     if (onLoginClick) {
       onLoginClick();
     } else {
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   };
 
@@ -214,7 +230,7 @@ export const UnauthorizedPage: React.FC<UnauthorizedPageProps> = ({
     if (onHomeClick) {
       onHomeClick();
     } else {
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
 
@@ -237,7 +253,11 @@ export const UnauthorizedPage: React.FC<UnauthorizedPageProps> = ({
               </Button>
             )}
             {showHomeButton && (
-              <Button variant="outline" onClick={handleHomeClick} className="w-full">
+              <Button
+                variant="outline"
+                onClick={handleHomeClick}
+                className="w-full"
+              >
                 <Home className="w-4 h-4 mr-2" />
                 На главную
               </Button>

@@ -12,7 +12,7 @@ import {
   adminDeleteBloggerStatsFile 
 } from '@/api/endpoints/admin';
 import type { ApiSocialType } from '@/api/types';
-import type { StatsFile } from '@/types/profile';
+import type { Screenshot } from '@/types/profile';
 
 /**
  * Хук для управления файлами статистики блогера администратором
@@ -25,13 +25,14 @@ import type { StatsFile } from '@/types/profile';
 export const useAdminStatsFileManagement = (
   bloggerId: string | undefined,
   platform: ApiSocialType,
-  existingFiles: StatsFile[] = []
+  existingFiles: Screenshot[] = [],
+  onUploadSuccess?: () => void
 ) => {
   const { toast } = useToast();
-  const [files, setFiles] = useState<StatsFile[]>(existingFiles);
+  const [files, setFiles] = useState<Screenshot[]>(existingFiles);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const prevExistingFilesRef = useRef<StatsFile[]>(existingFiles);
+  const prevExistingFilesRef = useRef<Screenshot[]>(existingFiles);
 
   useEffect(() => {
     // Проверяем, действительно ли изменились файлы
@@ -70,19 +71,12 @@ export const useAdminStatsFileManagement = (
           variant: 'default',
         });
 
-        // Файлы будут обновлены при следующем fetch профиля
-        logger.info('Stats files uploaded successfully', {
-          component: 'useAdminStatsFileManagement',
-          bloggerId,
-          platform,
-          filesCount: filesToUpload.length,
-        });
+        // Вызываем callback для обновления данных профиля
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
       } catch (error) {
-        logger.error('Error uploading stats files', error, {
-          component: 'useAdminStatsFileManagement',
-          bloggerId,
-          platform,
-        });
+        logger.error('Error uploading stats files', error);
         toast({
           title: 'Ошибка',
           description: 'Не удалось загрузить файлы',
@@ -93,7 +87,7 @@ export const useAdminStatsFileManagement = (
         setUploading(false);
       }
     },
-    [bloggerId, platform, toast]
+    [bloggerId, platform, toast, onUploadSuccess]
   );
 
   /**
@@ -121,17 +115,12 @@ export const useAdminStatsFileManagement = (
           variant: 'default',
         });
 
-        logger.info('Stats file deleted successfully', {
-          component: 'useAdminStatsFileManagement',
-          bloggerId,
-          fileId,
-        });
+        // Вызываем callback для обновления данных профиля
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
       } catch (error) {
-        logger.error('Error deleting stats file', error, {
-          component: 'useAdminStatsFileManagement',
-          bloggerId,
-          fileId,
-        });
+        logger.error('Error deleting stats file', error);
         toast({
           title: 'Ошибка',
           description: 'Не удалось удалить файл',

@@ -1,7 +1,7 @@
-import { useState, useCallback, memo } from 'react';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
+import { useState, useCallback, memo } from "react";
+import { Button } from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui-kit';
-import { PlatformData } from '@/types/profile';
-import { Plus, Trash2, Edit, Instagram, Youtube, MessageCircle, Lock } from 'lucide-react';
-import { getPlatformIcon, getPlatformName } from '@/components/icons/PlatformIcons';
+} from "@/ui-kit";
+import { PlatformData } from "@/types/profile";
+import {
+  Plus,
+  Trash2,
+  Edit,
+  Instagram,
+  Youtube,
+  MessageCircle,
+  Lock,
+} from "lucide-react";
+import {
+  getPlatformIcon,
+  getPlatformName,
+} from "@/components/icons/PlatformIcons";
 
 interface Platform {
   id: string;
@@ -34,15 +45,15 @@ const PlatformManagementComponent = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
   const [newPlatform, setNewPlatform] = useState({
-    name: '',
-    url: '',
+    name: "",
+    url: "",
   });
 
   const availablePlatforms = [
-    { id: 'instagram', name: 'Instagram', icon: Instagram },
-    { id: 'youtube', name: 'YouTube', icon: Youtube },
-    { id: 'tiktok', name: 'TikTok', icon: MessageCircle },
-    { id: 'telegram', name: 'Telegram', icon: MessageCircle },
+    { id: "instagram", name: "Instagram", icon: Instagram },
+    { id: "youtube", name: "YouTube", icon: Youtube },
+    { id: "tiktok", name: "TikTok", icon: MessageCircle },
+    { id: "telegram", name: "Telegram", icon: MessageCircle },
   ];
 
   const handleAddPlatform = useCallback(() => {
@@ -55,7 +66,7 @@ const PlatformManagementComponent = ({
           profile_url: newPlatform.url,
         },
       });
-      setNewPlatform({ name: '', url: '' });
+      setNewPlatform({ name: "", url: "" });
       setIsDialogOpen(false);
     }
   }, [newPlatform, platforms, onPlatformsChange]);
@@ -65,11 +76,11 @@ const PlatformManagementComponent = ({
       setEditingPlatform(platformId);
       setNewPlatform({
         name: platformId,
-        url: platforms[platformId]?.profile_url || '',
+        url: platforms[platformId]?.profile_url || "",
       });
       setIsDialogOpen(true);
     },
-    [platforms]
+    [platforms],
   );
 
   const handleUpdatePlatform = useCallback(() => {
@@ -82,7 +93,7 @@ const PlatformManagementComponent = ({
         },
       });
       setEditingPlatform(null);
-      setNewPlatform({ name: '', url: '' });
+      setNewPlatform({ name: "", url: "" });
       setIsDialogOpen(false);
     }
   }, [editingPlatform, newPlatform, platforms, onPlatformsChange]);
@@ -93,7 +104,7 @@ const PlatformManagementComponent = ({
       delete newPlatforms[platformId];
       onPlatformsChange(newPlatforms);
     },
-    [platforms, onPlatformsChange]
+    [platforms, onPlatformsChange],
   );
 
   return (
@@ -107,7 +118,7 @@ const PlatformManagementComponent = ({
               size="sm"
               onClick={() => {
                 setEditingPlatform(null);
-                setNewPlatform({ name: '', url: '' });
+                setNewPlatform({ name: "", url: "" });
               }}
               disabled={hasMaxPlatforms}
             >
@@ -118,12 +129,14 @@ const PlatformManagementComponent = ({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingPlatform ? 'Редактировать платформу' : 'Добавить платформу'}
+                {editingPlatform
+                  ? "Редактировать платформу"
+                  : "Добавить платформу"}
               </DialogTitle>
               <DialogDescription>
                 {editingPlatform
-                  ? 'Обновите информацию о платформе'
-                  : 'Добавьте новую платформу для отслеживания метрик'}
+                  ? "Обновите информацию о платформе"
+                  : "Добавьте новую платформу для отслеживания метрик"}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -142,15 +155,17 @@ const PlatformManagementComponent = ({
                     id="platform"
                     className="w-full p-2 border rounded"
                     value={newPlatform.name}
-                    onChange={(e) => setNewPlatform({ ...newPlatform, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewPlatform({ ...newPlatform, name: e.target.value })
+                    }
                   >
                     <option value="">Выберите платформу</option>
                     {availablePlatforms
                       .filter((platform) => !platforms[platform.id])
                       .sort((a, b) => {
                         // Instagram всегда первый
-                        if (a.id === 'instagram') return -1;
-                        if (b.id === 'instagram') return 1;
+                        if (a.id === "instagram") return -1;
+                        if (b.id === "instagram") return 1;
                         // Остальные в алфавитном порядке
                         return a.name.localeCompare(b.name);
                       })
@@ -167,19 +182,28 @@ const PlatformManagementComponent = ({
                 <Input
                   id="url"
                   value={newPlatform.url}
-                  onChange={(e) => setNewPlatform({ ...newPlatform, url: e.target.value })}
+                  onChange={(e) =>
+                    setNewPlatform({ ...newPlatform, url: e.target.value })
+                  }
                   placeholder="https://..."
                 />
               </div>
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Отмена
                 </Button>
                 <Button
-                  onClick={editingPlatform ? handleUpdatePlatform : handleAddPlatform}
-                  disabled={!newPlatform.url || (!editingPlatform && !newPlatform.name)}
+                  onClick={
+                    editingPlatform ? handleUpdatePlatform : handleAddPlatform
+                  }
+                  disabled={
+                    !newPlatform.url || (!editingPlatform && !newPlatform.name)
+                  }
                 >
-                  {editingPlatform ? 'Сохранить' : 'Добавить'}
+                  {editingPlatform ? "Сохранить" : "Добавить"}
                 </Button>
               </div>
             </div>
@@ -191,17 +215,20 @@ const PlatformManagementComponent = ({
         {Object.keys(platforms)
           .sort((a, b) => {
             // Instagram всегда первый
-            if (a === 'instagram') return -1;
-            if (b === 'instagram') return 1;
+            if (a === "instagram") return -1;
+            if (b === "instagram") return 1;
             // Остальные в алфавитном порядке
             return a.localeCompare(b);
           })
           .map((platformId) => (
-            <div key={platformId} className="flex items-center justify-between p-2 border rounded">
+            <div
+              key={platformId}
+              className="flex items-center justify-between p-2 border rounded"
+            >
               <div className="flex items-center space-x-2">
                 {getPlatformIcon(platformId)}
                 <span>{getPlatformName(platformId)}</span>
-                {platformId === 'instagram' && (
+                {platformId === "instagram" && (
                   <Lock className="w-3 h-3 text-muted-foreground" />
                 )}
               </div>
@@ -210,7 +237,7 @@ const PlatformManagementComponent = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEditPlatform(platformId)}
-                  disabled={platformId === 'instagram'} // Запрещаем редактирование Instagram
+                  disabled={platformId === "instagram"} // Запрещаем редактирование Instagram
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -218,7 +245,7 @@ const PlatformManagementComponent = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDeletePlatform(platformId)}
-                  disabled={platformId === 'instagram'} // Prevent deleting the primary platform
+                  disabled={platformId === "instagram"} // Prevent deleting the primary platform
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

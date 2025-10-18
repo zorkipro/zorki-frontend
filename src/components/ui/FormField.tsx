@@ -1,6 +1,6 @@
-import { memo } from 'react';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { memo } from "react";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
   label: string;
@@ -20,12 +20,14 @@ const FormFieldComponent = ({
   className,
 }: FormFieldProps) => {
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       <Label className="text-sm font-medium">
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
-      {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      {description && (
+        <p className="text-xs text-muted-foreground">{description}</p>
+      )}
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

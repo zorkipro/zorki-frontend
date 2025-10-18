@@ -3,9 +3,9 @@
  * Отвечает за получение и управление токенами согласно приоритету
  */
 
-import { supabase } from '@/integrations/supabase/client';
-import { getAccessToken } from '@/utils/googleAuth';
-import { logger } from '@/utils/logger';
+import { supabase } from "@/integrations/supabase/client";
+import { getAccessToken } from "@/utils/googleAuth";
+import { logger } from "@/utils/logger";
 
 /**
  * Приоритет токенов:
@@ -36,13 +36,13 @@ export class TokenManager {
    */
   async getAuthToken(): Promise<string | null> {
     // 1. Admin token from sessionStorage (для админских операций)
-    const adminToken = sessionStorage.getItem('adminToken');
+    const adminToken = sessionStorage.getItem("adminToken");
     if (adminToken) {
       return adminToken;
     }
 
     // 2. Admin temp token for 2FA (для подтверждения 2FA)
-    const adminTempToken = sessionStorage.getItem('adminTempToken');
+    const adminTempToken = sessionStorage.getItem("adminTempToken");
     if (adminTempToken) {
       return adminTempToken;
     }
@@ -64,8 +64,8 @@ export class TokenManager {
         return supabaseToken;
       }
     } catch (error) {
-      logger.error('Error getting Supabase session', error, {
-        component: 'TokenManager',
+      logger.error("Error getting Supabase session", error, {
+        component: "TokenManager",
       });
     }
 
@@ -76,17 +76,17 @@ export class TokenManager {
    * Очистить все токены (при выходе из системы)
    */
   clearAllTokens(): void {
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('adminToken');
-    sessionStorage.removeItem('adminTempToken');
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminTempToken");
   }
 
   /**
    * Очистить админские токены (при выходе из админки)
    */
   clearAdminTokens(): void {
-    sessionStorage.removeItem('adminToken');
-    sessionStorage.removeItem('adminTempToken');
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminTempToken");
   }
 
   /**
@@ -100,11 +100,11 @@ export class TokenManager {
   /**
    * Получить тип текущего токена
    */
-  getCurrentTokenType(): 'admin' | 'admin_temp' | 'access' | 'supabase' | null {
-    if (sessionStorage.getItem('adminToken')) return 'admin';
-    if (sessionStorage.getItem('adminTempToken')) return 'admin_temp';
-    if (getAccessToken()) return 'access';
-    return 'supabase'; // Проверка Supabase требует async, предполагаем
+  getCurrentTokenType(): "admin" | "admin_temp" | "access" | "supabase" | null {
+    if (sessionStorage.getItem("adminToken")) return "admin";
+    if (sessionStorage.getItem("adminTempToken")) return "admin_temp";
+    if (getAccessToken()) return "access";
+    return "supabase"; // Проверка Supabase требует async, предполагаем
   }
 }
 

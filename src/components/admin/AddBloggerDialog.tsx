@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
+import React, { useState } from "react";
+import { Button } from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui-kit';
-import { Plus, AlertCircle, CheckCircle } from 'lucide-react';
-import { useInstagramClientStatus } from '@/hooks/admin/useInstagramClientStatus';
-import { InstagramClientSetupDialog } from './InstagramClientSetupDialog';
+} from "@/ui-kit";
+import { Plus, AlertCircle, CheckCircle } from "lucide-react";
+import { useInstagramClientStatus } from "@/hooks/admin/useInstagramClientStatus";
+import { InstagramClientSetupDialog } from "./InstagramClientSetupDialog";
 
 interface AddBloggerDialogProps {
   onAddBlogger: (username: string) => Promise<void>;
@@ -22,9 +22,9 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
   onAddBlogger,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [instagramUsername, setInstagramUsername] = useState('');
+  const [instagramUsername, setInstagramUsername] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStatus, setProcessingStatus] = useState('');
+  const [processingStatus, setProcessingStatus] = useState("");
   const {
     isActive,
     isLoading: statusLoading,
@@ -34,19 +34,19 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
 
   const handleSubmit = async () => {
     setIsProcessing(true);
-    setProcessingStatus('Создание блогера...');
+    setProcessingStatus("Создание блогера...");
 
     try {
       await onAddBlogger(instagramUsername);
-      setProcessingStatus('Блогер успешно создан!');
+      setProcessingStatus("Блогер успешно создан!");
       setIsOpen(false);
-      setInstagramUsername('');
+      setInstagramUsername("");
     } catch (error) {
-      setProcessingStatus('Ошибка при создании блогера');
+      setProcessingStatus("Ошибка при создании блогера");
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-        setProcessingStatus('');
+        setProcessingStatus("");
       }, 2000);
     }
   };
@@ -72,19 +72,27 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
           <div
             className={`p-3 rounded-lg border flex items-center justify-between ${
               isActive
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800'
+                ? "bg-green-50 border-green-200 text-green-800"
+                : "bg-red-50 border-red-200 text-red-800"
             }`}
           >
             <div className="flex items-center space-x-2">
-              {isActive ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {isActive ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <AlertCircle className="w-4 h-4" />
+              )}
               <div className="text-sm">
                 {isActive ? (
                   <span>Instagram клиент активен</span>
                 ) : (
                   <div>
-                    <div className="font-medium">Instagram клиент недоступен</div>
-                    {statusError && <div className="text-xs mt-1">{statusError}</div>}
+                    <div className="font-medium">
+                      Instagram клиент недоступен
+                    </div>
+                    {statusError && (
+                      <div className="text-xs mt-1">{statusError}</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -104,7 +112,7 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
                 placeholder="Например: elena_fitness_coach"
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && instagramUsername.trim()) {
+                  if (e.key === "Enter" && instagramUsername.trim()) {
                     handleSubmit();
                   }
                 }}
@@ -119,12 +127,15 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
                 variant="outline"
                 onClick={() => {
                   setIsOpen(false);
-                  setInstagramUsername('');
+                  setInstagramUsername("");
                 }}
               >
                 Отмена
               </Button>
-              <Button onClick={handleSubmit} disabled={!instagramUsername.trim() || !isActive}>
+              <Button
+                onClick={handleSubmit}
+                disabled={!instagramUsername.trim() || !isActive}
+              >
                 Продолжить
               </Button>
             </div>

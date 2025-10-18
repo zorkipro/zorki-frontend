@@ -1,6 +1,6 @@
-import React, { forwardRef, useEffect, useRef } from 'react';
-import { Loader2 } from 'lucide-react';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import React, { forwardRef, useEffect, useRef } from "react";
+import { Loader2 } from "lucide-react";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface InfiniteScrollListProps<T> {
   data: T[];
@@ -12,8 +12,8 @@ interface InfiniteScrollListProps<T> {
   loadingComponent?: React.ReactNode;
   endMessage?: string;
   emptyMessage?: string;
-  'aria-label'?: string;
-  'aria-live'?: 'polite' | 'assertive' | 'off';
+  "aria-label"?: string;
+  "aria-live"?: "polite" | "assertive" | "off";
   // Новые пропсы для внешнего infinite scroll
   hasMore?: boolean;
   isLoading?: boolean;
@@ -26,12 +26,12 @@ const InfiniteScrollList = <T,>({
   itemsPerPage = 20,
   threshold = 200,
   enabled = true,
-  className = '',
+  className = "",
   loadingComponent,
-  endMessage = 'Вы просмотрели все элементы',
-  emptyMessage = 'Нет данных для отображения',
-  'aria-label': ariaLabel,
-  'aria-live': ariaLive = 'polite',
+  endMessage = "Вы просмотрели все элементы",
+  emptyMessage = "Нет данных для отображения",
+  "aria-label": ariaLabel,
+  "aria-live": ariaLive = "polite",
   // Новые пропсы
   hasMore: externalHasMore,
   isLoading: externalIsLoading,
@@ -46,11 +46,20 @@ const InfiniteScrollList = <T,>({
   });
 
   // Выбираем источник данных в зависимости от того, переданы ли внешние пропсы
-  const visibleItems = externalOnLoadMore ? data : localInfiniteScroll.visibleItems;
-  const hasMore = externalHasMore !== undefined ? externalHasMore : localInfiniteScroll.hasMore;
+  const visibleItems = externalOnLoadMore
+    ? data
+    : localInfiniteScroll.visibleItems;
+  const hasMore =
+    externalHasMore !== undefined
+      ? externalHasMore
+      : localInfiniteScroll.hasMore;
   const isLoading =
-    externalIsLoading !== undefined ? externalIsLoading : localInfiniteScroll.isLoading;
-  const totalItems = externalOnLoadMore ? data.length : localInfiniteScroll.totalItems;
+    externalIsLoading !== undefined
+      ? externalIsLoading
+      : localInfiniteScroll.isLoading;
+  const totalItems = externalOnLoadMore
+    ? data.length
+    : localInfiniteScroll.totalItems;
   const currentPage = externalOnLoadMore ? 1 : localInfiniteScroll.currentPage;
 
   // Ref для Intersection Observer
@@ -68,8 +77,8 @@ const InfiniteScrollList = <T,>({
       },
       {
         threshold: 0.1,
-        rootMargin: '500px', // Загружаем заранее, когда до конца остается 500px
-      }
+        rootMargin: "500px", // Загружаем заранее, когда до конца остается 500px
+      },
     );
 
     if (observerRef.current) {
@@ -82,7 +91,11 @@ const InfiniteScrollList = <T,>({
   }, [externalOnLoadMore, hasMore, isLoading]);
 
   const defaultLoadingComponent = (
-    <div className="flex items-center justify-center py-8" role="status" aria-label="Загрузка">
+    <div
+      className="flex items-center justify-center py-8"
+      role="status"
+      aria-label="Загрузка"
+    >
       <Loader2 className="w-6 h-6 animate-spin mr-2" />
       <span>Загрузка...</span>
     </div>
@@ -90,7 +103,11 @@ const InfiniteScrollList = <T,>({
 
   if (data.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground" role="status" aria-live="polite">
+      <div
+        className="text-center py-12 text-muted-foreground"
+        role="status"
+        aria-live="polite"
+      >
         {emptyMessage}
       </div>
     );
@@ -115,7 +132,11 @@ const InfiniteScrollList = <T,>({
 
       {/* End of list message */}
       {!hasMore && totalItems > 0 && (
-        <div className="text-center py-8 text-muted-foreground" role="status" aria-live="polite">
+        <div
+          className="text-center py-8 text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
           {endMessage}
         </div>
       )}

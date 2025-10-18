@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getBloggerById } from '@/api/endpoints/blogger';
-import { mapApiDetailBloggerToLocal } from '@/utils/api/mappers';
-import { APIError } from '@/api/client';
-import { useToast } from '@/hooks/use-toast';
-import { useErrorHandler } from '@/utils/errorHandler';
+import { useState, useCallback, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getBloggerById } from "@/api/endpoints/blogger";
+import { mapApiDetailBloggerToLocal } from "@/utils/api/mappers";
+import { APIError } from "@/api/client";
+import { useToast } from "@/hooks/use-toast";
+import { useErrorHandler } from "@/utils/errorHandler";
 
 /**
  * Hook for loading blogger profile data
@@ -13,31 +13,38 @@ export const useProfileData = () => {
   const { user, bloggerInfo, bloggerInfoLoading } = useAuth();
   const { toast } = useToast();
   const { handleError } = useErrorHandler({
-    showToast: (message: string, type?: 'error' | 'warning' | 'info') => {
+    showToast: (message: string, type?: "error" | "warning" | "info") => {
       toast({
-        title: type === 'error' ? 'Ошибка' : type === 'warning' ? 'Предупреждение' : 'Информация',
+        title:
+          type === "error"
+            ? "Ошибка"
+            : type === "warning"
+              ? "Предупреждение"
+              : "Информация",
         description: message,
-        variant: type === 'error' ? 'destructive' : 'default',
+        variant: type === "error" ? "destructive" : "default",
       });
     },
     showNotifications: true,
   });
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [availablePlatforms, setAvailablePlatforms] = useState<Record<string, any>>({});
+  const [error, setError] = useState("");
+  const [availablePlatforms, setAvailablePlatforms] = useState<
+    Record<string, any>
+  >({});
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      setError('');
+      setError("");
 
       // Используем данные из AuthContext вместо отдельного запроса
       if (bloggerInfo) {
         const detailedBlogger = await getBloggerById(bloggerInfo.id);
-        
+
         const transformedBlogger = mapApiDetailBloggerToLocal(detailedBlogger);
 
         setProfile(transformedBlogger);
@@ -48,19 +55,23 @@ export const useProfileData = () => {
           detailedBlogger.social.forEach((social) => {
             const platformName = social.type.toLowerCase();
             platformsData[platformName] = {
-              username: social.username || '',
-              profile_url: social.externalId || '',
-              subscribers: parseInt(social.subscribers || '0'),
+              username: social.username || "",
+              profile_url: social.externalId || "",
+              subscribers: parseInt(social.subscribers || "0"),
               er: social.er || 0,
-              reach: parseInt(social.coverage || '0'),
+              reach: parseInt(social.coverage || "0"),
               price: parseFloat(
-                detailedBlogger.price.find((p) => p.type === social.type)?.postPrice || '0'
+                detailedBlogger.price.find((p) => p.type === social.type)
+                  ?.postPrice || "0",
               ),
               storyReach: 0,
               storyPrice: parseFloat(
-                detailedBlogger.price.find((p) => p.type === social.type)?.storiesPrice || '0'
+                detailedBlogger.price.find((p) => p.type === social.type)
+                  ?.storiesPrice || "0",
               ),
-              ...(platformName === 'youtube' && { views: parseInt(social.totalViews || '0') }),
+              ...(platformName === "youtube" && {
+                views: parseInt(social.totalViews || "0"),
+              }),
             };
           });
         }
@@ -68,7 +79,9 @@ export const useProfileData = () => {
         setAvailablePlatforms(platformsData);
       } else {
         // Пользователь не связан с блогером
-        setError('Профиль не найден. Используйте страницу настройки профиля для создания.');
+        setError(
+          "Профиль не найден. Используйте страницу настройки профиля для создания.",
+        );
       }
     } catch (err: unknown) {
       // Используем универсальный обработчик ошибок (он уже логирует)

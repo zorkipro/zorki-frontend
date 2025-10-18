@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/ui-kit';
-import { Skeleton } from '@/ui-kit';
+import { Card, CardContent, CardHeader } from "@/ui-kit";
+import { Skeleton } from "@/ui-kit";
 
 export const BloggerProfileSkeleton = () => {
   return (
@@ -51,7 +51,10 @@ export const BloggerProfileSkeleton = () => {
               <CardContent>
                 <div className="space-y-4">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+                    <div
+                      key={i}
+                      className="flex items-center gap-4 p-4 border rounded-lg"
+                    >
                       <Skeleton className="w-12 h-12 rounded-full" />
                       <div className="flex-1">
                         <Skeleton className="h-5 w-24 mb-2" />

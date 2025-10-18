@@ -134,22 +134,8 @@ export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions =
         onAttempt(attempt);
       }
 
-      // Логирование попытки
-      if (attempt > 1) {
-        logger.debug(`Retry attempt ${attempt}/${maxAttempts}`, {
-          operation: operationName,
-        });
-      }
-
       // Выполняем функцию
       const result = await fn();
-
-      // Успех! Логируем если были повторы
-      if (attempt > 1) {
-        logger.info(`${operationName} succeeded after ${attempt} attempts`, {
-          duration: performance.now() - startTime,
-        });
-      }
 
       return result;
     } catch (error) {
@@ -159,12 +145,6 @@ export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions =
       if (onError) {
         onError(error, attempt);
       }
-
-      // Логируем ошибку
-      logger.warn(`Attempt ${attempt}/${maxAttempts} failed`, {
-        operation: operationName,
-        error: error instanceof Error ? error.message : String(error),
-      });
 
       // Если это последняя попытка или не нужно повторять - выбрасываем ошибку
       if (attempt === maxAttempts || !shouldRetry(error, attempt)) {
@@ -177,9 +157,6 @@ export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions =
 
       // Вычисляем задержку и ждем
       const delayTime = calculateDelay(attempt, { delay, backoff, maxDelay });
-      logger.debug(`Waiting ${delayTime}ms before retry`, {
-        operation: operationName,
-      });
       await sleep(delayTime);
     }
   }

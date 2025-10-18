@@ -1,11 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Blogger } from '@/types/blogger';
-import { getAllBloggers, getBloggerById } from '@/api/endpoints/blogger';
-import { mapApiListBloggerToLocal, mapApiDetailBloggerToLocal } from '@/utils/api/mappers';
-import { useErrorHandler } from '@/utils/errorHandler';
-import { logError } from '@/utils/logger';
-import { useBlogger } from '@/contexts/BloggerContext';
-import { normalizeUsername } from '@/utils/username';
+import { useState, useEffect, useCallback } from "react";
+import { Blogger } from "@/types/blogger";
+import { getAllBloggers, getBloggerById } from "@/api/endpoints/blogger";
+import {
+  mapApiListBloggerToLocal,
+  mapApiDetailBloggerToLocal,
+} from "@/utils/api/mappers";
+import { useErrorHandler } from "@/utils/errorHandler";
+import { logError } from "@/utils/logger";
+import { useBlogger } from "@/contexts/BloggerContext";
+import { normalizeUsername } from "@/utils/username";
 
 /**
  * Hook for loading blogger profile data by username
@@ -23,7 +26,7 @@ export const useBloggerProfile = (username?: string) => {
 
   const fetchBloggerProfile = useCallback(async () => {
     if (!username) {
-      setError('Username не указан');
+      setError("Username не указан");
       return;
     }
 
@@ -42,7 +45,7 @@ export const useBloggerProfile = (username?: string) => {
       });
 
       if (!searchResponse.items || searchResponse.items.length === 0) {
-        setError('Блогер не найден');
+        setError("Блогер не найден");
         return;
       }
 
@@ -56,7 +59,7 @@ export const useBloggerProfile = (username?: string) => {
 
       setBlogger(transformedBlogger);
     } catch (err: unknown) {
-      logError('Error fetching blogger profile:', err);
+      logError("Error fetching blogger profile:", err);
 
       const processedError = handleError(err, {
         showNotification: true,

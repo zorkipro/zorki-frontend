@@ -70,16 +70,18 @@ npm run test:coverage
 ### Тестирование APIError
 
 ```typescript
-it('should identify validation errors', () => {
+it("should identify validation errors", () => {
   const error = new APIError({
-    message: 'Validation failed',
+    message: "Validation failed",
     statusCode: 400,
-    errorField: [{ field: 'email', message: 'Invalid', errorKey: 'invalid_email' }],
+    errorField: [
+      { field: "email", message: "Invalid", errorKey: "invalid_email" },
+    ],
   });
 
   expect(error.isValidationError()).toBe(true);
   expect(error.getValidationErrors()).toEqual({
-    email: 'Invalid',
+    email: "Invalid",
   });
 });
 ```
@@ -87,26 +89,26 @@ it('should identify validation errors', () => {
 ### Тестирование TokenManager
 
 ```typescript
-it('should return admin token with highest priority', async () => {
-  sessionStorage.setItem('adminToken', 'admin-123');
-  sessionStorage.setItem('accessToken', 'user-456');
+it("should return admin token with highest priority", async () => {
+  sessionStorage.setItem("adminToken", "admin-123");
+  sessionStorage.setItem("accessToken", "user-456");
 
   const token = await tokenManager.getAuthToken();
-  expect(token).toBe('admin-123');
+  expect(token).toBe("admin-123");
 });
 ```
 
 ### Тестирование ResponseHandler
 
 ```typescript
-it('should parse successful JSON response', async () => {
-  const mockData = { id: 1, name: 'Test' };
+it("should parse successful JSON response", async () => {
+  const mockData = { id: 1, name: "Test" };
   const response = new Response(JSON.stringify(mockData), {
     status: 200,
-    headers: { 'content-type': 'application/json' },
+    headers: { "content-type": "application/json" },
   });
 
-  const result = await responseHandler.parseResponse(response, '/test');
+  const result = await responseHandler.parseResponse(response, "/test");
 
   expect(result.data).toEqual(mockData);
   expect(result.hasError).toBe(false);

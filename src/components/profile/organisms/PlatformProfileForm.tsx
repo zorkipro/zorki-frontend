@@ -1,11 +1,14 @@
-import { memo, useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui-kit';
-import { PlatformStatsRenderer } from '@/components/profile/PlatformStatsRenderer';
-import { ScreenshotManagement } from '@/components/profile/ScreenshotManagement';
-import { getPlatformIcon, getPlatformName } from '@/components/icons/PlatformIcons';
-import { PlatformManagement } from '@/components/profile/PlatformManagement';
-import type { EditData, PlatformData, Screenshot } from '@/types/profile';
-import { Settings } from 'lucide-react'; // Added Settings icon import
+import { memo, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui-kit";
+import { PlatformStatsRenderer } from "@/components/profile/PlatformStatsRenderer";
+import { ScreenshotManagement } from "@/components/profile/ScreenshotManagement";
+import {
+  getPlatformIcon,
+  getPlatformName,
+} from "@/components/icons/PlatformIcons";
+import { PlatformManagement } from "@/components/profile/PlatformManagement";
+import type { EditData, PlatformData, Screenshot } from "@/types/profile";
+import { Settings } from "lucide-react"; // Added Settings icon import
 
 interface PlatformProfileFormProps {
   // Form data
@@ -14,7 +17,9 @@ interface PlatformProfileFormProps {
 
   // Platform data
   availablePlatforms: Record<string, PlatformData>;
-  onAvailablePlatformsChange?: (platforms: Record<string, PlatformData>) => void;
+  onAvailablePlatformsChange?: (
+    platforms: Record<string, PlatformData>,
+  ) => void;
   formatNumber: (num: number) => string;
 
   // State management
@@ -56,7 +61,9 @@ const PlatformProfileFormComponent = ({
   onDeleteScreenshot,
 }: PlatformProfileFormProps) => {
   // Check if we have reached the maximum number of platforms
-  const hasMaxPlatforms = availablePlatforms ? Object.keys(availablePlatforms).length >= 4 : false;
+  const hasMaxPlatforms = availablePlatforms
+    ? Object.keys(availablePlatforms).length >= 4
+    : false;
 
   return (
     <div className="space-y-6">
@@ -66,8 +73,8 @@ const PlatformProfileFormComponent = ({
             Object.entries(availablePlatforms)
               .sort(([a], [b]) => {
                 // Instagram всегда первый
-                if (a === 'instagram') return -1;
-                if (b === 'instagram') return 1;
+                if (a === "instagram") return -1;
+                if (b === "instagram") return 1;
                 // Остальные в алфавитном порядке
                 return a.localeCompare(b);
               })
@@ -78,7 +85,9 @@ const PlatformProfileFormComponent = ({
                   className="flex items-center space-x-2 shrink-0 px-6 md:px-3 flex-1 md:flex-initial"
                 >
                   {getPlatformIcon(platform)}
-                  <span className="hidden sm:inline">{getPlatformName(platform)}</span>
+                  <span className="hidden sm:inline">
+                    {getPlatformName(platform)}
+                  </span>
                 </TabsTrigger>
               ))}
           <TabsTrigger
@@ -94,13 +103,17 @@ const PlatformProfileFormComponent = ({
           Object.entries(availablePlatforms)
             .sort(([a], [b]) => {
               // Instagram всегда первый
-              if (a === 'instagram') return -1;
-              if (b === 'instagram') return 1;
+              if (a === "instagram") return -1;
+              if (b === "instagram") return 1;
               // Остальные в алфавитном порядке
               return a.localeCompare(b);
             })
             .map(([platform, stats]) => (
-              <TabsContent key={platform} value={platform} className="space-y-6">
+              <TabsContent
+                key={platform}
+                value={platform}
+                className="space-y-6"
+              >
                 {/* Platform Statistics */}
                 <PlatformStatsRenderer
                   platform={platform}

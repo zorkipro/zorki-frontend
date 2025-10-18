@@ -5,8 +5,8 @@
 // Используется админами для настройки Instagram аккаунтов
 // ============================================
 
-import { apiRequest } from '../client';
-import type { IgClientLoginInputDto, IgClientLoginOutputDto } from '../types';
+import { apiRequest } from "../client";
+import type { IgClientLoginInputDto, IgClientLoginOutputDto } from "../types";
 
 // ====== POST /ig-client/login - Логин Instagram аккаунта ======
 
@@ -32,9 +32,11 @@ import type { IgClientLoginInputDto, IgClientLoginOutputDto } from '../types';
  * }
  * ```
  */
-export async function igClientLogin(data: IgClientLoginInputDto): Promise<IgClientLoginOutputDto> {
-  return apiRequest<IgClientLoginOutputDto>('/ig-client/login', {
-    method: 'POST',
+export async function igClientLogin(
+  data: IgClientLoginInputDto,
+): Promise<IgClientLoginOutputDto> {
+  return apiRequest<IgClientLoginOutputDto>("/ig-client/login", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }

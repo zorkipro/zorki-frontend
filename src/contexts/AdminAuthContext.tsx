@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAdminMe } from '@/api/endpoints/admin';
-import { APIError } from '@/api/client';
-import { logError } from '@/utils/logger';
-import type { AdminAuthMeOutputDto } from '@/api/types';
+import { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAdminMe } from "@/api/endpoints/admin";
+import { APIError } from "@/api/client";
+import { logError } from "@/utils/logger";
+import type { AdminAuthMeOutputDto } from "@/api/types";
 
 interface AdminAuthContextType {
   adminInfo: AdminAuthMeOutputDto | null;
@@ -22,19 +22,23 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
 export const useAdminAuth = () => {
   const context = useContext(AdminAuthContext);
   if (!context) {
-    throw new Error('useAdminAuth must be used within an AdminAuthProvider');
+    throw new Error("useAdminAuth must be used within an AdminAuthProvider");
   }
   return context;
 };
 
-export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AdminAuthProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const navigate = useNavigate();
   const [adminInfo, setAdminInfo] = useState<AdminAuthMeOutputDto | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Функция для получения информации об админе
   const fetchAdminInfo = async () => {
-    const adminToken = sessionStorage.getItem('adminToken');
+    const adminToken = sessionStorage.getItem("adminToken");
 
     if (!adminToken) {
       setAdminInfo(null);
@@ -47,13 +51,13 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       const data = await getAdminMe();
       setAdminInfo(data);
     } catch (error) {
-      logError('Failed to fetch admin info:', error);
+      logError("Failed to fetch admin info:", error);
 
       // Если токен невалидный или истек - очищаем и перенаправляем на логин
       if (error instanceof APIError && error.statusCode === 401) {
-        sessionStorage.removeItem('adminToken');
-        sessionStorage.removeItem('adminTempToken');
-        navigate('/admin/login');
+        sessionStorage.removeItem("adminToken");
+        sessionStorage.removeItem("adminTempToken");
+        navigate("/admin/login");
         return;
       }
 
@@ -65,15 +69,15 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
 
   // Функция выхода из админки
   const adminSignOut = () => {
-    sessionStorage.removeItem('adminToken');
-    sessionStorage.removeItem('adminTempToken');
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminTempToken");
     setAdminInfo(null);
-    navigate('/admin/login');
+    navigate("/admin/login");
   };
 
   useEffect(() => {
     // Проверяем наличие токена при монтировании
-    const adminToken = sessionStorage.getItem('adminToken');
+    const adminToken = sessionStorage.getItem("adminToken");
 
     if (adminToken) {
       fetchAdminInfo();

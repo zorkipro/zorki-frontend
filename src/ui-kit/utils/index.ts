@@ -14,7 +14,7 @@
  * @example
  * cn('base-class', isActive && 'active', 'another-class')
  */
-export { cn } from '@/lib/utils';
+export { cn } from "@/lib/utils";
 
 // ============================================================================
 // FORMATTERS - Форматирование данных
@@ -27,7 +27,7 @@ export { cn } from '@/lib/utils';
  * formatNumber(1000000) // "1,000,000"
  */
 export function formatNumber(num: number): string {
-  return new Intl.NumberFormat('ru-RU').format(num);
+  return new Intl.NumberFormat("ru-RU").format(num);
 }
 
 /**
@@ -74,11 +74,11 @@ export function formatPercent(value: number): string {
  * formatDate('2025-01-06') // "6 января 2025"
  */
 export function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("ru-RU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(d);
 }
 
@@ -89,13 +89,13 @@ export function formatDate(date: string | Date): string {
  * formatRelativeDate('2025-01-05') // "вчера"
  */
 export function formatRelativeDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
   const diff = now.getTime() - d.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return 'сегодня';
-  if (days === 1) return 'вчера';
+  if (days === 0) return "сегодня";
+  if (days === 1) return "вчера";
   if (days < 7) return `${days} дней назад`;
   if (days < 30) return `${Math.floor(days / 7)} недель назад`;
   if (days < 365) return `${Math.floor(days / 30)} месяцев назад`;
@@ -126,7 +126,7 @@ export function isValidInstagramUsername(username: string): boolean {
  */
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str;
-  return str.slice(0, length) + '...';
+  return str.slice(0, length) + "...";
 }
 
 /**
@@ -149,9 +149,9 @@ export function slugify(str: string): string {
   return str
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 // ============================================================================
@@ -174,7 +174,7 @@ export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
       result[groupKey].push(item);
       return result;
     },
-    {} as Record<string, T[]>
+    {} as Record<string, T[]>,
   );
 }
 
@@ -194,13 +194,17 @@ export function unique<T>(array: T[]): T[] {
  * @example
  * sortBy(users, 'name') // отсортированные пользователи
  */
-export function sortBy<T>(array: T[], key: keyof T, order: 'asc' | 'desc' = 'asc'): T[] {
+export function sortBy<T>(
+  array: T[],
+  key: keyof T,
+  order: "asc" | "desc" = "asc",
+): T[] {
   return [...array].sort((a, b) => {
     const aVal = a[key];
     const bVal = b[key];
 
-    if (aVal < bVal) return order === 'asc' ? -1 : 1;
-    if (aVal > bVal) return order === 'asc' ? 1 : -1;
+    if (aVal < bVal) return order === "asc" ? -1 : 1;
+    if (aVal > bVal) return order === "asc" ? 1 : -1;
     return 0;
   });
 }
@@ -217,7 +221,7 @@ export function sortBy<T>(array: T[], key: keyof T, order: 'asc' | 'desc' = 'asc
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null;
 
@@ -240,7 +244,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
 

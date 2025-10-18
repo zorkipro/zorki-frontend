@@ -1,13 +1,16 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/ui-kit';
-import { Star, LogOut, Database } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Button } from "@/ui-kit";
+import { Star, LogOut, Database } from "lucide-react";
 
 interface DashboardHeaderProps {
   displayName: string;
   onSignOut: () => void;
 }
 
-export const DashboardHeader = ({ displayName, onSignOut }: DashboardHeaderProps) => {
+export const DashboardHeader = ({
+  displayName,
+  onSignOut,
+}: DashboardHeaderProps) => {
   return (
     <div className="border-b bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
@@ -26,7 +29,9 @@ export const DashboardHeader = ({ displayName, onSignOut }: DashboardHeaderProps
                 Dev Tools
               </Link>
             </Button>
-            <span className="text-sm text-muted-foreground">Добро пожаловать, {displayName}</span>
+            <span className="text-sm text-muted-foreground">
+              Добро пожаловать, {displayName}
+            </span>
             <Button variant="outline" onClick={onSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Выйти

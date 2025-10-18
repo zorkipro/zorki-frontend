@@ -1,26 +1,33 @@
-import { useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getBloggerProfilePath } from '@/config/routes';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Alert, AlertDescription } from '@/ui-kit';
-import { LoadingSpinner } from '@/ui-kit/components';
+import { useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getBloggerProfilePath } from "@/config/routes";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Alert, AlertDescription } from "@/ui-kit";
+import { LoadingSpinner } from "@/ui-kit/components";
 
 // Components
-import { BloggerInfo } from '@/components/profile/BloggerInfo';
-import { VerificationNotice } from '@/components/profile/VerificationNotice';
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { PlatformProfileForm } from '@/components/profile/organisms/PlatformProfileForm';
-import { PricingSection } from '@/components/profile/organisms/PricingSection';
-import { CooperationTermsSection } from '@/components/profile/CooperationTermsSection';
+import { BloggerInfo } from "@/components/profile/BloggerInfo";
+import { VerificationNotice } from "@/components/profile/VerificationNotice";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm";
+import { PricingSection } from "@/components/profile/organisms/PricingSection";
+import { CooperationTermsSection } from "@/components/profile/CooperationTermsSection";
 
 // Hooks
-import { useProfileEditor } from '@/hooks/profile/useProfileEditor';
-import { useScreenshotManager } from '@/hooks/profile/useScreenshotManager';
+import { useProfileEditor } from "@/hooks/profile/useProfileEditor";
+import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager";
 
 // Utils
-import { formatNumber } from '@/utils/formatters';
+import { formatNumber } from "@/utils/formatters";
 
 export const ProfileEditor = () => {
   const { user, bloggerInfo } = useAuth();
@@ -44,7 +51,6 @@ export const ProfileEditor = () => {
     hasDrafts,
   } = useProfileEditor();
 
-
   // Use the fixed useScreenshotManager hook with platform support
   const {
     screenshots,
@@ -56,10 +62,10 @@ export const ProfileEditor = () => {
     deleteScreenshot,
   } = useScreenshotManager(
     profile?.id,
-    activeTab === 'settings'
-      ? 'instagram'
-      : (activeTab as 'instagram' | 'tiktok' | 'youtube' | 'telegram'),
-    true // isEditorPage = true для страницы редактирования
+    activeTab === "settings"
+      ? "instagram"
+      : (activeTab as "instagram" | "tiktok" | "youtube" | "telegram"),
+    true, // isEditorPage = true для страницы редактирования
   );
 
   // Handle screenshot upload with proper file validation and platform support
@@ -73,7 +79,7 @@ export const ProfileEditor = () => {
 
       try {
         const fileArray = Array.from(files);
-        
+
         if (fileArray.length === 1) {
           await uploadScreenshot(fileArray[0], user.id);
         } else {
@@ -82,10 +88,10 @@ export const ProfileEditor = () => {
       } catch (error) {
         // Ошибка загрузки скриншотов
       } finally {
-        event.target.value = '';
+        event.target.value = "";
       }
     },
-    [profile?.id, user?.id, uploadScreenshot, uploadMultipleScreenshots]
+    [profile?.id, user?.id, uploadScreenshot, uploadMultipleScreenshots],
   );
 
   if (loading) {
@@ -125,7 +131,7 @@ export const ProfileEditor = () => {
           if (profile?.handle) {
             navigate(`/${profile.handle}`);
           } else {
-            navigate('/');
+            navigate("/");
           }
         }}
         onFormDataChange={updateFormData}
@@ -192,7 +198,7 @@ export const ProfileEditor = () => {
             />
 
             <CooperationTermsSection
-              cooperationConditions={formData.cooperation_conditions || ''}
+              cooperationConditions={formData.cooperation_conditions || ""}
               editingSection={editingSection}
               saving={saving}
               onEditingSectionChange={setEditingSection}
@@ -200,7 +206,11 @@ export const ProfileEditor = () => {
             />
 
             <VerificationNotice
-              profileStatus={profile?.verificationStatus === 'APPROVED' ? 'verified' : 'unverified'}
+              profileStatus={
+                profile?.verificationStatus === "APPROVED"
+                  ? "verified"
+                  : "unverified"
+              }
             />
           </div>
         </div>

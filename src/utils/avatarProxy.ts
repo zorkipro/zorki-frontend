@@ -8,7 +8,7 @@
  */
 export const isInstagramAvatar = (url: string | null | undefined): boolean => {
   if (!url) return false;
-  return url.includes('scontent-') && url.includes('cdninstagram.com');
+  return url.includes("scontent-") && url.includes("cdninstagram.com");
 };
 
 /**
@@ -21,20 +21,22 @@ export const createAvatarProxyUrl = (originalUrl: string): string => {
   }
 
   // Используем самый быстрый прокси - corsproxy.io (71ms по тестам)
-  const proxyUrl = 'https://corsproxy.io/?';
+  const proxyUrl = "https://corsproxy.io/?";
   return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
 };
 
 /**
  * Альтернативный метод - использование другого быстрого прокси
  */
-export const createAvatarProxyUrlAlternative = (originalUrl: string): string => {
+export const createAvatarProxyUrlAlternative = (
+  originalUrl: string,
+): string => {
   if (!isInstagramAvatar(originalUrl)) {
     return originalUrl;
   }
 
   // Альтернативный быстрый прокси - corsproxy.io (75ms по тестам)
-  const proxyUrl = 'https://corsproxy.io/?';
+  const proxyUrl = "https://corsproxy.io/?";
   return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
 };
 
@@ -47,7 +49,7 @@ export const createAvatarProxyUrlData = (originalUrl: string): string => {
   }
 
   // Третий прокси - corsproxy.io (117ms по тестам)
-  const proxyUrl = 'https://corsproxy.io/?';
+  const proxyUrl = "https://corsproxy.io/?";
   return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
 };
 
@@ -55,15 +57,17 @@ export const createAvatarProxyUrlData = (originalUrl: string): string => {
  * Загружает изображение через Canvas + Blob URL (обходит CORS)
  * Самый эффективный метод для Instagram аватарок
  */
-export const loadImageViaCanvas = async (url: string): Promise<string | null> => {
+export const loadImageViaCanvas = async (
+  url: string,
+): Promise<string | null> => {
   try {
     const response = await fetch(url, {
-      mode: 'no-cors',
-      cache: 'force-cache',
+      mode: "no-cors",
+      cache: "force-cache",
     });
 
     // При mode: 'no-cors' response.ok всегда false, но это нормально
-    if (response.type === 'opaque') {
+    if (response.type === "opaque") {
       // Response is opaque - это ожидаемое поведение при no-cors
     }
 
@@ -81,11 +85,13 @@ export const loadImageViaCanvas = async (url: string): Promise<string | null> =>
  * Загружает изображение через Fetch + Object URL
  * Альтернативный быстрый метод
  */
-export const loadImageViaFetch = async (url: string): Promise<string | null> => {
+export const loadImageViaFetch = async (
+  url: string,
+): Promise<string | null> => {
   try {
     const response = await fetch(url, {
-      mode: 'no-cors',
-      cache: 'force-cache',
+      mode: "no-cors",
+      cache: "force-cache",
     });
 
     const blob = await response.blob();
@@ -102,9 +108,9 @@ export const loadImageViaFetch = async (url: string): Promise<string | null> => 
  */
 export const preloadImage = (url: string): Promise<void> => {
   return new Promise((resolve, reject) => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
     link.href = url;
     link.onload = () => {
       resolve();
@@ -119,15 +125,17 @@ export const preloadImage = (url: string): Promise<void> => {
 /**
  * Альтернативный метод через Image объект
  */
-export const loadImageViaImage = async (url: string): Promise<string | null> => {
+export const loadImageViaImage = async (
+  url: string,
+): Promise<string | null> => {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    img.crossOrigin = "anonymous";
 
     img.onload = () => {
       try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
         if (!ctx) {
           resolve(null);
@@ -145,7 +153,7 @@ export const loadImageViaImage = async (url: string): Promise<string | null> => 
           } else {
             resolve(null);
           }
-        }, 'image/png');
+        }, "image/png");
       } catch (error) {
         resolve(null);
       }
@@ -162,7 +170,9 @@ export const loadImageViaImage = async (url: string): Promise<string | null> => 
 /**
  * Создает безопасный URL для аватарки с прокси
  */
-export const createSafeAvatarUrl = (originalUrl: string | null | undefined): string | null => {
+export const createSafeAvatarUrl = (
+  originalUrl: string | null | undefined,
+): string | null => {
   if (!originalUrl) return null;
 
   // Если это Instagram аватарка, используем прокси
@@ -179,7 +189,7 @@ export const createSafeAvatarUrl = (originalUrl: string | null | undefined): str
  * Используется при ошибке первого метода
  */
 export const createAlternativeSafeAvatarUrl = (
-  originalUrl: string | null | undefined
+  originalUrl: string | null | undefined,
 ): string | null => {
   if (!originalUrl) return null;
 
@@ -196,16 +206,19 @@ export const createAlternativeSafeAvatarUrl = (
  * Создает placeholder URL для аватарки на основе username
  * Используется когда все прокси методы не работают
  */
-export const createPlaceholderAvatarUrl = (username: string, gender?: string): string => {
+export const createPlaceholderAvatarUrl = (
+  username: string,
+  gender?: string,
+): string => {
   // Используем сервис для генерации placeholder аватарок
-  const baseUrl = 'https://ui-avatars.com/api/';
+  const baseUrl = "https://ui-avatars.com/api/";
   const params = new URLSearchParams({
     name: username,
-    size: '200',
-    background: gender === 'мужчина' ? '4f46e5' : 'ec4899', // Синий для мужчин, розовый для женщин
-    color: 'ffffff',
-    bold: 'true',
-    format: 'png',
+    size: "200",
+    background: gender === "мужчина" ? "4f46e5" : "ec4899", // Синий для мужчин, розовый для женщин
+    color: "ffffff",
+    bold: "true",
+    format: "png",
   });
 
   return `${baseUrl}?${params.toString()}`;
@@ -218,7 +231,7 @@ export const createPlaceholderAvatarUrl = (username: string, gender?: string): s
 export const loadAvatarWithCorsBypass = async (
   originalUrl: string,
   username?: string,
-  gender?: string
+  gender?: string,
 ): Promise<string | null> => {
   if (!originalUrl) {
     return username ? createPlaceholderAvatarUrl(username, gender) : null;
@@ -259,5 +272,5 @@ export const loadAvatarWithCorsBypass = async (
   // Если все прокси не работают, используем placeholder
   return username
     ? createPlaceholderAvatarUrl(username, gender)
-    : createPlaceholderAvatarUrl('IG', gender);
+    : createPlaceholderAvatarUrl("IG", gender);
 };

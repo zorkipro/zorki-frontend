@@ -1,9 +1,9 @@
-import { AuthForm } from '@/components/auth/AuthForm';
-import { useAuthForm } from '@/hooks/useAuthForm';
+import { AuthForm } from "@/components/auth/AuthForm";
+import { useAuthForm } from "@/hooks/useAuthForm";
 
 export const Register = () => {
   const { loading, error, handleSubmit, handleGoogleAuth } = useAuthForm({
-    mode: 'register',
+    mode: "register",
   });
 
   return (

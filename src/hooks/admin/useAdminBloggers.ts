@@ -1,23 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getAllBloggers } from '@/api/endpoints/blogger';
-import { mapApiListBloggerToLocal } from '@/utils/api/mappers';
-import { APIError } from '@/api/client';
-import { useToast } from '@/hooks/use-toast';
-import { logError, logWarn } from '@/utils/logger';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useState, useEffect, useCallback } from "react";
+import { getAllBloggers } from "@/api/endpoints/blogger";
+import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
+import { APIError } from "@/api/client";
+import { useToast } from "@/hooks/use-toast";
+import { logError, logWarn } from "@/utils/logger";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   getAdminLinkRequests,
   approveLinkRequest,
   rejectLinkRequest,
   adminGetBloggers,
   adminGetBloggersStats,
-} from '../../api/endpoints/admin';
+} from "../../api/endpoints/admin";
 import type {
   AdminGetLinkBloggerClientRequestOutputDto,
   LinkRequestStatus,
   AdminGetBloggerOutputDto,
   AdminGetBloggersStatsOutputDto,
-} from '../../api/types';
+} from "../../api/types";
 
 interface BloggerStats {
   totalBloggersCount: number;
@@ -29,15 +29,19 @@ interface BloggerStats {
 interface GetLinkRequestsParams {
   page?: number;
   size?: number;
-  sortDirection?: 'asc' | 'desc';
-  sortField?: 'createdAt';
+  sortDirection?: "asc" | "desc";
+  sortField?: "createdAt";
   status?: LinkRequestStatus;
 }
 
 export const useAdminBloggers = () => {
   const { toast } = useToast();
-  const [allBloggers, setAllBloggers] = useState<AdminGetBloggerOutputDto[]>([]);
-  const [linkRequests, setLinkRequests] = useState<AdminGetLinkBloggerClientRequestOutputDto[]>([]);
+  const [allBloggers, setAllBloggers] = useState<AdminGetBloggerOutputDto[]>(
+    [],
+  );
+  const [linkRequests, setLinkRequests] = useState<
+    AdminGetLinkBloggerClientRequestOutputDto[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false); // Отдельное состояние для поиска
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export const useAdminBloggers = () => {
   const [hasMoreBloggers, setHasMoreBloggers] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalBloggersCount, setTotalBloggersCount] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms задержка
   const [stats, setStats] = useState<AdminGetBloggersStatsOutputDto>({
     totalBloggersCount: 0,
@@ -56,7 +60,11 @@ export const useAdminBloggers = () => {
   });
 
   const fetchBloggers = useCallback(
-    async (page: number = 1, append: boolean = false, isSearch: boolean = false) => {
+    async (
+      page: number = 1,
+      append: boolean = false,
+      isSearch: boolean = false,
+    ) => {
       try {
         if (page === 1) {
           if (isSearch) {
@@ -77,8 +85,8 @@ export const useAdminBloggers = () => {
         const bloggersResponse = await adminGetBloggers({
           page: page,
           size: 50,
-          sortDirection: 'desc',
-          sortField: 'createdAt',
+          sortDirection: "desc",
+          sortField: "createdAt",
           username: debouncedSearchTerm || undefined, // Используем debounced поиск
         });
 
@@ -92,7 +100,8 @@ export const useAdminBloggers = () => {
         // Обновляем информацию о пагинации
         setTotalBloggersCount(bloggersResponse.totalCount);
         setHasMoreBloggers(
-          bloggersResponse.items.length === 50 && page * 50 < bloggersResponse.totalCount
+          bloggersResponse.items.length === 50 &&
+            page * 50 < bloggersResponse.totalCount,
         );
         setCurrentPage(page);
 
@@ -105,30 +114,30 @@ export const useAdminBloggers = () => {
         // 3. Загружаем запросы на связывание (только для первой страницы)
         if (page === 1) {
           const linkRequestsResponse = await getAdminLinkRequests({
-            status: 'MODERATION',
+            status: "MODERATION",
             page: 1,
             size: 50,
-            sortDirection: 'desc',
-            sortField: 'createdAt',
+            sortDirection: "desc",
+            sortField: "createdAt",
           });
 
           setLinkRequests(linkRequestsResponse.items);
         }
       } catch (error: unknown) {
-        logError('Error fetching data:', error);
-        setError(error instanceof Error ? error.message : 'Неизвестная ошибка');
+        logError("Error fetching data:", error);
+        setError(error instanceof Error ? error.message : "Неизвестная ошибка");
 
         if (error instanceof APIError) {
           toast({
-            title: 'Ошибка API',
+            title: "Ошибка API",
             description: error.message,
-            variant: 'destructive',
+            variant: "destructive",
           });
         } else {
           toast({
-            title: 'Ошибка',
-            description: 'Не удалось загрузить данные',
-            variant: 'destructive',
+            title: "Ошибка",
+            description: "Не удалось загрузить данные",
+            variant: "destructive",
           });
         }
       } finally {
@@ -143,7 +152,7 @@ export const useAdminBloggers = () => {
         }
       }
     },
-    [debouncedSearchTerm]
+    [debouncedSearchTerm],
   ); // Используем debounced значение
 
   // Эффект для обычной загрузки (без поиска)
@@ -165,56 +174,59 @@ export const useAdminBloggers = () => {
     await fetchBloggers(currentPage + 1, true);
   }, [hasMoreBloggers, isLoadingMore, currentPage, fetchBloggers]);
 
-  const approveRequest = useCallback(
-    async (requestId: number) => {
-      try {
-        setIsProcessing(true);
-        setError(null);
+  const approveRequest = useCallback(async (requestId: number) => {
+    try {
+      setIsProcessing(true);
+      setError(null);
 
-        // Отправляем запрос к API без проверки локального состояния
-        await approveLinkRequest(requestId);
+      // Отправляем запрос к API без проверки локального состояния
+      await approveLinkRequest(requestId);
 
-        // Обновляем локальное состояние запросов на связывание
-        setLinkRequests((prev) => {
-          const filtered = prev.filter((req) => Number(req.request_id) !== Number(requestId));
-          logWarn(`🔄 Обновление состояния после одобрения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`);
-          return filtered;
+      // Обновляем локальное состояние запросов на связывание
+      setLinkRequests((prev) => {
+        const filtered = prev.filter(
+          (req) => Number(req.request_id) !== Number(requestId),
+        );
+        logWarn(
+          `🔄 Обновление состояния после одобрения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`,
+        );
+        return filtered;
+      });
+
+      // Обновляем статистику
+      setStats((prev) => ({
+        ...prev,
+        totalModerationLinkRequestsCount:
+          prev.totalModerationLinkRequestsCount - 1,
+        totalApprovedBloggersCount: prev.totalApprovedBloggersCount + 1,
+      }));
+    } catch (err: unknown) {
+      logError("❌ Ошибка при одобрении запроса:", err);
+
+      // Дополнительная диагностика
+      if (err instanceof Error) {
+        logError("❌ Детали ошибки:", {
+          message: err.message,
+          name: err.name,
+          stack: err.stack,
         });
-
-        // Обновляем статистику
-        setStats((prev) => ({
-          ...prev,
-          totalModerationLinkRequestsCount: prev.totalModerationLinkRequestsCount - 1,
-          totalApprovedBloggersCount: prev.totalApprovedBloggersCount + 1,
-        }));
-      } catch (err: unknown) {
-        logError('❌ Ошибка при одобрении запроса:', err);
-
-        // Дополнительная диагностика
-        if (err instanceof Error) {
-          logError('❌ Детали ошибки:', {
-            message: err.message,
-            name: err.name,
-            stack: err.stack,
-          });
-        }
-
-        // Обрабатываем API ошибки
-        if (err instanceof APIError) {
-          setError(err.message);
-          throw err; // Пробрасываем APIError для обработки в UI
-        }
-        
-        // Обрабатываем обычные ошибки
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка при одобрении запроса';
-        setError(errorMessage);
-        throw new Error(errorMessage); // Создаем новую ошибку для проброса
-      } finally {
-        setIsProcessing(false);
       }
-    },
-    []
-  );
+
+      // Обрабатываем API ошибки
+      if (err instanceof APIError) {
+        setError(err.message);
+        throw err; // Пробрасываем APIError для обработки в UI
+      }
+
+      // Обрабатываем обычные ошибки
+      const errorMessage =
+        err instanceof Error ? err.message : "Ошибка при одобрении запроса";
+      setError(errorMessage);
+      throw new Error(errorMessage); // Создаем новую ошибку для проброса
+    } finally {
+      setIsProcessing(false);
+    }
+  }, []);
 
   const rejectRequest = useCallback(async (requestId: number) => {
     try {
@@ -226,27 +238,33 @@ export const useAdminBloggers = () => {
 
       // Обновляем локальное состояние запросов на связывание
       setLinkRequests((prev) => {
-        const filtered = prev.filter((req) => Number(req.request_id) !== Number(requestId));
-        logWarn(`🔄 Обновление состояния после отклонения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`);
+        const filtered = prev.filter(
+          (req) => Number(req.request_id) !== Number(requestId),
+        );
+        logWarn(
+          `🔄 Обновление состояния после отклонения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`,
+        );
         return filtered;
       });
 
       // Обновляем статистику
       setStats((prev) => ({
         ...prev,
-        totalModerationLinkRequestsCount: prev.totalModerationLinkRequestsCount - 1,
+        totalModerationLinkRequestsCount:
+          prev.totalModerationLinkRequestsCount - 1,
       }));
     } catch (err: unknown) {
-      logError('❌ Ошибка при отклонении запроса:', err);
-      
+      logError("❌ Ошибка при отклонении запроса:", err);
+
       // Обрабатываем API ошибки
       if (err instanceof APIError) {
         setError(err.message);
         throw err; // Пробрасываем APIError для обработки в UI
       }
-      
+
       // Обрабатываем обычные ошибки
-      const errorMessage = err instanceof Error ? err.message : 'Ошибка при отклонении запроса';
+      const errorMessage =
+        err instanceof Error ? err.message : "Ошибка при отклонении запроса";
       setError(errorMessage);
       throw new Error(errorMessage); // Создаем новую ошибку для проброса
     } finally {
@@ -255,19 +273,24 @@ export const useAdminBloggers = () => {
   }, []);
 
   // Функция для обновления видимости блогера в локальном состоянии
-  const updateBloggerVisibility = useCallback((bloggerId: number, isHidden: boolean) => {
-    setAllBloggers((prev) =>
-      prev.map((blogger) => (blogger.id === bloggerId ? { ...blogger, isHidden } : blogger))
-    );
+  const updateBloggerVisibility = useCallback(
+    (bloggerId: number, isHidden: boolean) => {
+      setAllBloggers((prev) =>
+        prev.map((blogger) =>
+          blogger.id === bloggerId ? { ...blogger, isHidden } : blogger,
+        ),
+      );
 
-    // Обновляем статистику видимых блогеров
-    setStats((prev) => ({
-      ...prev,
-      totalVisibleBloggersCount: isHidden
-        ? prev.totalVisibleBloggersCount - 1
-        : prev.totalVisibleBloggersCount + 1,
-    }));
-  }, []);
+      // Обновляем статистику видимых блогеров
+      setStats((prev) => ({
+        ...prev,
+        totalVisibleBloggersCount: isHidden
+          ? prev.totalVisibleBloggersCount - 1
+          : prev.totalVisibleBloggersCount + 1,
+      }));
+    },
+    [],
+  );
 
   return {
     allBloggers,

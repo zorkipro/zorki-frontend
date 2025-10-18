@@ -12,17 +12,26 @@
  */
 
 // Re-export common utilities
-export { parseBigInt, parseDecimal, splitFullName, joinFullName } from './common-mappers';
+export {
+  parseBigInt,
+  parseDecimal,
+  splitFullName,
+  joinFullName,
+} from "./common-mappers";
 
 // Re-export platform mappers
-export { mapSinglePlatform, mapMultiplePlatforms, findPrimaryPlatform } from './platform-mappers';
+export {
+  mapSinglePlatform,
+  mapMultiplePlatforms,
+  findPrimaryPlatform,
+} from "./platform-mappers";
 
 // Re-export profile mappers
 export {
   mapApiListBloggerToLocal,
   mapApiDetailBloggerToLocal,
   mapLocalToApiUpdate,
-} from './profile-mappers';
+} from "./profile-mappers";
 
 // Re-export topic mappers
 export {
@@ -30,7 +39,10 @@ export {
   createTopicReverseLookup,
   convertTopicNamesToIds,
   convertTopicIdsToNames,
-} from './topic-mappers';
+} from "./topic-mappers";
 
 // Re-export draft merge mappers
-export { mergeDraftsWithPublished, extractDraftInfo } from './draft-merge-mappers';
+export {
+  mergeDraftsWithPublished,
+  extractDraftInfo,
+} from "./draft-merge-mappers";

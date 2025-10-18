@@ -71,34 +71,17 @@ export function mapEditDataToProfileUpdate(
   if (data.instagram_story_reach && data.instagram_story_reach !== '') {
     dto.coverageSocialType = 'INSTAGRAM';
     dto.coverage = parseFloat(data.instagram_story_reach);
-    console.log('Admin mapper: Setting Instagram story reach', {
-      value: data.instagram_story_reach,
-      parsed: dto.coverage
-    });
   } else if (data.tiktok_story_reach && data.tiktok_story_reach !== '') {
     dto.coverageSocialType = 'TIKTOK';
     dto.coverage = parseFloat(data.tiktok_story_reach);
-    console.log('Admin mapper: Setting TikTok story reach', {
-      value: data.tiktok_story_reach,
-      parsed: dto.coverage
-    });
   } else if (data.youtube_story_reach && data.youtube_story_reach !== '') {
     dto.coverageSocialType = 'YOUTUBE';
     dto.coverage = parseFloat(data.youtube_story_reach);
-    console.log('Admin mapper: Setting YouTube story reach', {
-      value: data.youtube_story_reach,
-      parsed: dto.coverage
-    });
   } else if (data.telegram_story_reach && data.telegram_story_reach !== '') {
     dto.coverageSocialType = 'TELEGRAM';
     dto.coverage = parseFloat(data.telegram_story_reach);
-    console.log('Admin mapper: Setting Telegram story reach', {
-      value: data.telegram_story_reach,
-      parsed: dto.coverage
-    });
   }
 
-  console.log('Admin mapper: Final DTO', dto);
   return dto;
 }
 

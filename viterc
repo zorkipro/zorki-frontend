@@ -1,7 +1,0 @@
-{
-  "server": {
-    "hmr": {
-      "overlay": false
-    }
-  }
-}

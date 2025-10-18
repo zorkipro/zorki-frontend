@@ -5,9 +5,9 @@
  * Заменяет дублирующийся код в Login и Register
  */
 
-import React, { useState } from 'react';
-import { Lock, Eye, EyeOff } from 'lucide-react';
-import { InputWithIcon } from './InputWithIcon';
+import React, { useState } from "react";
+import { Lock, Eye, EyeOff } from "lucide-react";
+import { InputWithIcon } from "./InputWithIcon";
 
 export interface PasswordInputProps {
   /** Значение пароля */
@@ -39,10 +39,10 @@ export interface PasswordInputProps {
 export const PasswordInput: React.FC<PasswordInputProps> = ({
   value,
   onChange,
-  placeholder = 'Введите пароль',
+  placeholder = "Введите пароль",
   required = false,
-  id = 'password',
-  className = '',
+  id = "password",
+  className = "",
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -51,16 +51,20 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
       type="button"
       onClick={() => setShowPassword(!showPassword)}
       className="text-muted-foreground hover:text-foreground"
-      aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+      aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
     >
-      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      {showPassword ? (
+        <EyeOff className="h-4 w-4" />
+      ) : (
+        <Eye className="h-4 w-4" />
+      )}
     </button>
   );
 
   return (
     <InputWithIcon
       id={id}
-      type={showPassword ? 'text' : 'password'}
+      type={showPassword ? "text" : "password"}
       icon={Lock}
       placeholder={placeholder}
       value={value}

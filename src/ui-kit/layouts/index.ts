@@ -8,7 +8,7 @@
  * Используйте их напрямую для создания структуры страниц
  */
 
-import React from 'react';
+import React from "react";
 
 // ============================================================================
 // ТИПЫ LAYOUTS
@@ -27,7 +27,7 @@ export type LayoutProps = {
  */
 export type SidebarLayoutProps = LayoutProps & {
   sidebar: React.ReactNode;
-  sidebarPosition?: 'left' | 'right';
+  sidebarPosition?: "left" | "right";
 };
 
 /**
@@ -68,7 +68,7 @@ export const layoutPatterns = {
    * );
    * ```
    */
-  main: 'min-h-screen bg-background',
+  main: "min-h-screen bg-background",
 
   /**
    * ContainerLayout - Container с ограниченной шириной
@@ -80,7 +80,7 @@ export const layoutPatterns = {
    * </div>
    * ```
    */
-  container: 'container mx-auto px-4 py-8',
+  container: "container mx-auto px-4 py-8",
 
   /**
    * CenteredLayout - Центрированный layout
@@ -94,8 +94,8 @@ export const layoutPatterns = {
    * </div>
    * ```
    */
-  centered: 'min-h-screen flex items-center justify-center',
-  centeredInner: 'w-full max-w-md p-6',
+  centered: "min-h-screen flex items-center justify-center",
+  centeredInner: "w-full max-w-md p-6",
 
   /**
    * SidebarLayout - Layout с боковой панелью
@@ -108,9 +108,9 @@ export const layoutPatterns = {
    * </div>
    * ```
    */
-  sidebarContainer: 'grid grid-cols-1 lg:grid-cols-4 gap-8',
-  sidebarAside: 'lg:col-span-1',
-  sidebarMain: 'lg:col-span-3',
+  sidebarContainer: "grid grid-cols-1 lg:grid-cols-4 gap-8",
+  sidebarAside: "lg:col-span-1",
+  sidebarMain: "lg:col-span-3",
 
   /**
    * GridLayout - Grid для карточек
@@ -123,10 +123,10 @@ export const layoutPatterns = {
    * ```
    */
   grid: {
-    cols1: 'grid grid-cols-1 gap-6',
-    cols2: 'grid grid-cols-1 md:grid-cols-2 gap-6',
-    cols3: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
-    cols4: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6',
+    cols1: "grid grid-cols-1 gap-6",
+    cols2: "grid grid-cols-1 md:grid-cols-2 gap-6",
+    cols3: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+    cols4: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
   },
 
   /**
@@ -141,8 +141,8 @@ export const layoutPatterns = {
    * </div>
    * ```
    */
-  dashboard: 'space-y-8',
-  dashboardSection: 'mb-8',
+  dashboard: "space-y-8",
+  dashboardSection: "mb-8",
 } as const;
 
 // Экспорт для удобства

@@ -1,13 +1,13 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   checkProfileRedirect,
   isOnModeration,
   validateBloggerInfo,
-} from '@/utils/profile-navigation';
-import { AUTH_PAGES } from '@/config/routes';
-import { LoadingScreen } from './LoadingScreen';
+} from "@/utils/profile-navigation";
+import { AUTH_PAGES } from "@/config/routes";
+import { LoadingScreen } from "./LoadingScreen";
 
 interface ProfileCheckerProps {
   children: React.ReactNode;
@@ -26,7 +26,6 @@ export const ProfileChecker = ({ children }: ProfileCheckerProps) => {
 
   useEffect(() => {
     const performProfileCheck = async () => {
-
       // Пропускаем проверку на auth страницах
       if (AUTH_PAGES.some((page) => location.pathname === page)) {
         return;
@@ -61,9 +60,8 @@ export const ProfileChecker = ({ children }: ProfileCheckerProps) => {
           user,
           loading,
           bloggerInfo,
-          bloggerInfoLoading
+          bloggerInfoLoading,
         );
-
 
         if (redirectPath) {
           navigate(redirectPath);
@@ -80,7 +78,14 @@ export const ProfileChecker = ({ children }: ProfileCheckerProps) => {
     };
 
     performProfileCheck();
-  }, [user, loading, bloggerInfoLoading, bloggerInfo, navigate, location.pathname]);
+  }, [
+    user,
+    loading,
+    bloggerInfoLoading,
+    bloggerInfo,
+    navigate,
+    location.pathname,
+  ]);
 
   // Показываем loader пока загружаются данные
   if (loading || bloggerInfoLoading) {

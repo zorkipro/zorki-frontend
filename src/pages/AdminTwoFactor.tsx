@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Input, Label } from '@/ui-kit';
-import { Shield, ArrowLeft, Clock } from 'lucide-react';
-import { adminConfirm2FA } from '@/api/endpoints/admin';
-import { APIError } from '@/api/client';
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, Input, Label } from "@/ui-kit";
+import { Shield, ArrowLeft, Clock } from "lucide-react";
+import { adminConfirm2FA } from "@/api/endpoints/admin";
+import { APIError } from "@/api/client";
 
 const AdminTwoFactor = () => {
   const navigate = useNavigate();
-  const [code, setCode] = useState(['', '', '', '', '', '']);
-  const [error, setError] = useState('');
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 минут
   const [codeExpired, setCodeExpired] = useState(false);
@@ -16,9 +16,9 @@ const AdminTwoFactor = () => {
 
   // Проверяем наличие временного токена для 2FA
   useEffect(() => {
-    const tempToken = sessionStorage.getItem('adminTempToken');
+    const tempToken = sessionStorage.getItem("adminTempToken");
     if (!tempToken) {
-      navigate('/admin/login');
+      navigate("/admin/login");
     }
   }, [navigate]);
 
@@ -29,7 +29,7 @@ const AdminTwoFactor = () => {
         if (prev <= 1) {
           clearInterval(timer);
           setCodeExpired(true);
-          setCode(['', '', '', '', '', '']); // Очищаем поля
+          setCode(["", "", "", "", "", ""]); // Очищаем поля
           return 0;
         }
         return prev - 1;
@@ -43,7 +43,7 @@ const AdminTwoFactor = () => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   // Обработка изменения кода
@@ -53,7 +53,7 @@ const AdminTwoFactor = () => {
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
-    setError('');
+    setError("");
 
     // Автоматический переход к следующему полю
     if (value && index < 5) {
@@ -63,7 +63,7 @@ const AdminTwoFactor = () => {
 
   // Обработка клавиш
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
@@ -71,7 +71,10 @@ const AdminTwoFactor = () => {
   // Обработка вставки кода
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     const newCode = [...code];
 
     for (let i = 0; i < pastedData.length; i++) {
@@ -90,49 +93,53 @@ const AdminTwoFactor = () => {
     e.preventDefault();
 
     if (codeExpired) {
-      setError('Время действия кода истекло. Запросите новый код.');
+      setError("Время действия кода истекло. Запросите новый код.");
       return;
     }
 
-    const fullCode = code.join('');
+    const fullCode = code.join("");
     if (fullCode.length !== 6) {
-      setError('Введите полный код из 6 цифр');
+      setError("Введите полный код из 6 цифр");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // ✅ Реальная проверка 2FA через API
       const { accessToken } = await adminConfirm2FA(parseInt(fullCode, 10));
 
       // Сохраняем полный токен и очищаем временный
-      sessionStorage.setItem('adminToken', accessToken);
-      sessionStorage.removeItem('adminTempToken');
+      sessionStorage.setItem("adminToken", accessToken);
+      sessionStorage.removeItem("adminTempToken");
 
       // Переходим в админку
-      navigate('/admin');
+      navigate("/admin");
     } catch (err: unknown) {
       // Обработка ошибок API
       if (err instanceof APIError) {
         if (err.statusCode === 400) {
-          setError('Неверный код подтверждения');
+          setError("Неверный код подтверждения");
         } else if (err.statusCode === 401) {
-          setError('Время действия кода истекло. Попробуйте войти заново.');
+          setError("Время действия кода истекло. Попробуйте войти заново.");
           // Перенаправляем на страницу логина
           setTimeout(() => {
-            navigate('/admin/login');
+            navigate("/admin/login");
           }, 2000);
         } else {
           setError(err.message);
         }
       } else {
-        setError(err instanceof Error ? err.message : 'Произошла ошибка при проверке кода');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Произошла ошибка при проверке кода",
+        );
       }
 
       // Очищаем поля и фокусируемся на первом
-      setCode(['', '', '', '', '', '']);
+      setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
       setLoading(false);
@@ -141,7 +148,7 @@ const AdminTwoFactor = () => {
 
   // Возврат назад
   const handleBack = () => {
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -153,7 +160,9 @@ const AdminTwoFactor = () => {
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Двухфакторная аутентификация</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Двухфакторная аутентификация
+            </h1>
             <p className="text-gray-600">
               Введите код из вашего приложения двухфакторной аутентификации
             </p>
@@ -161,12 +170,14 @@ const AdminTwoFactor = () => {
 
           {/* Таймер */}
           <div className="flex items-center justify-center mb-6">
-            <Clock className={`w-5 h-5 mr-2 ${codeExpired ? 'text-red-500' : 'text-orange-500'}`} />
+            <Clock
+              className={`w-5 h-5 mr-2 ${codeExpired ? "text-red-500" : "text-orange-500"}`}
+            />
             <span
-              className={`text-sm font-medium ${codeExpired ? 'text-red-500' : 'text-gray-700'}`}
+              className={`text-sm font-medium ${codeExpired ? "text-red-500" : "text-gray-700"}`}
             >
               {codeExpired
-                ? 'Время действия кода истекло'
+                ? "Время действия кода истекло"
                 : `Код действителен: ${formatTime(timeLeft)}`}
             </span>
           </div>
@@ -209,7 +220,7 @@ const AdminTwoFactor = () => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading || code.join('').length !== 6 || codeExpired}
+                disabled={loading || code.join("").length !== 6 || codeExpired}
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
@@ -217,7 +228,7 @@ const AdminTwoFactor = () => {
                     Проверка...
                   </div>
                 ) : (
-                  'Подтвердить'
+                  "Подтвердить"
                 )}
               </Button>
 

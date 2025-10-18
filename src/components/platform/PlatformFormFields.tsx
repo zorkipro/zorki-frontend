@@ -7,12 +7,12 @@
  * Следует принципу DRY - устраняет дублирование кода для разных платформ.
  */
 
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import type { PlatformType, PlatformFormField } from '@/types/platform';
-import type { EditData } from '@/types/profile';
-import { PLATFORM_CONFIGS } from '@/config/platforms';
+import React from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import type { PlatformType, PlatformFormField } from "@/types/platform";
+import type { EditData } from "@/types/profile";
+import { PLATFORM_CONFIGS } from "@/config/platforms";
 
 export interface PlatformFormFieldsProps {
   /** Тип платформы */
@@ -37,11 +37,11 @@ export interface PlatformFormFieldsProps {
 const getFieldValue = (
   formData: EditData,
   platform: PlatformType,
-  field: PlatformFormField
+  field: PlatformFormField,
 ): string => {
   const key = `${platform}_${field}` as keyof EditData;
   const value = formData[key];
-  return value ? String(value) : '';
+  return value ? String(value) : "";
 };
 
 /**
@@ -49,14 +49,14 @@ const getFieldValue = (
  */
 const getFieldLabel = (field: PlatformFormField): string => {
   const labels: Record<PlatformFormField, string> = {
-    username: 'Username',
-    profile_url: 'Ссылка на профиль',
-    followers: 'Подписчики',
-    engagement_rate: 'Вовлеченность (%)',
-    post_reach: 'Охват поста',
-    story_reach: 'Охват истории',
-    post_price: 'Цена поста (₽)',
-    story_price: 'Цена истории (₽)',
+    username: "Username",
+    profile_url: "Ссылка на профиль",
+    followers: "Подписчики",
+    engagement_rate: "Вовлеченность (%)",
+    post_reach: "Охват поста",
+    story_reach: "Охват истории",
+    post_price: "Цена поста (₽)",
+    story_price: "Цена истории (₽)",
   };
   return labels[field];
 };
@@ -65,12 +65,20 @@ const getFieldLabel = (field: PlatformFormField): string => {
  * Определяет тип input для поля
  */
 const getFieldType = (field: PlatformFormField): string => {
-  if (field === 'profile_url') return 'url';
-  if (['followers', 'post_reach', 'story_reach', 'post_price', 'story_price'].includes(field)) {
-    return 'number';
+  if (field === "profile_url") return "url";
+  if (
+    [
+      "followers",
+      "post_reach",
+      "story_reach",
+      "post_price",
+      "story_price",
+    ].includes(field)
+  ) {
+    return "number";
   }
-  if (field === 'engagement_rate') return 'number';
-  return 'text';
+  if (field === "engagement_rate") return "number";
+  return "text";
 };
 
 /**
@@ -83,13 +91,13 @@ const groupFields = (fields: readonly PlatformFormField[]) => {
   const pricingFields: PlatformFormField[] = [];
 
   fields.forEach((field) => {
-    if (field === 'username' || field === 'profile_url') {
+    if (field === "username" || field === "profile_url") {
       basicFields.push(field);
-    } else if (field === 'followers' || field === 'engagement_rate') {
+    } else if (field === "followers" || field === "engagement_rate") {
       statsFields.push(field);
-    } else if (field === 'post_reach' || field === 'story_reach') {
+    } else if (field === "post_reach" || field === "story_reach") {
       coverageFields.push(field);
-    } else if (field === 'post_price' || field === 'story_price') {
+    } else if (field === "post_price" || field === "story_price") {
       pricingFields.push(field);
     }
   });
@@ -116,10 +124,11 @@ export const PlatformFormFields: React.FC<PlatformFormFieldsProps> = React.memo(
     disabled = false,
     showPricing = true,
     showCoverage = true,
-    className = '',
+    className = "",
   }) => {
     const config = PLATFORM_CONFIGS[platform];
-    const { basicFields, statsFields, coverageFields, pricingFields } = groupFields(config.fields);
+    const { basicFields, statsFields, coverageFields, pricingFields } =
+      groupFields(config.fields);
 
     const handleChange = (field: PlatformFormField, value: string) => {
       const fieldName = `${platform}_${field}`;
@@ -142,8 +151,8 @@ export const PlatformFormFields: React.FC<PlatformFormFieldsProps> = React.memo(
             onChange={(e) => handleChange(field, e.target.value)}
             placeholder={placeholder}
             disabled={disabled}
-            min={type === 'number' ? 0 : undefined}
-            step={field === 'engagement_rate' ? 0.01 : undefined}
+            min={type === "number" ? 0 : undefined}
+            step={field === "engagement_rate" ? 0.01 : undefined}
           />
         </div>
       );
@@ -154,7 +163,9 @@ export const PlatformFormFields: React.FC<PlatformFormFieldsProps> = React.memo(
         {/* Основная информация */}
         {basicFields.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Профиль</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Профиль
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {basicFields.map(renderField)}
             </div>
@@ -164,7 +175,9 @@ export const PlatformFormFields: React.FC<PlatformFormFieldsProps> = React.memo(
         {/* Статистика */}
         {statsFields.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Статистика</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Статистика
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {statsFields.map(renderField)}
             </div>
@@ -174,7 +187,9 @@ export const PlatformFormFields: React.FC<PlatformFormFieldsProps> = React.memo(
         {/* Охваты */}
         {showCoverage && coverageFields.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Охваты</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Охваты
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {coverageFields.map(renderField)}
             </div>
@@ -192,7 +207,7 @@ export const PlatformFormFields: React.FC<PlatformFormFieldsProps> = React.memo(
         )}
       </div>
     );
-  }
+  },
 );
 
-PlatformFormFields.displayName = 'PlatformFormFields';
+PlatformFormFields.displayName = "PlatformFormFields";

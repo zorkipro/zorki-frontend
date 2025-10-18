@@ -10,9 +10,9 @@ import type {
   ApiWorkFormat,
   ApiVerificationStatus,
   LinkRequestStatus,
-} from '@/api/types';
-import type { PlatformType } from '@/types/platform';
-import { APIError } from '@/api/client';
+} from "@/api/types";
+import type { PlatformType } from "@/types/platform";
+import { APIError } from "@/api/client";
 
 /**
  * Type guard: проверка, является ли ошибка APIError
@@ -45,7 +45,8 @@ export function isError(error: unknown): error is Error {
  */
 export function isPlatformType(value: unknown): value is PlatformType {
   return (
-    typeof value === 'string' && ['instagram', 'tiktok', 'youtube', 'telegram'].includes(value)
+    typeof value === "string" &&
+    ["instagram", "tiktok", "youtube", "telegram"].includes(value)
   );
 }
 
@@ -54,8 +55,10 @@ export function isPlatformType(value: unknown): value is PlatformType {
  */
 export function isWorkFormat(value: unknown): value is ApiWorkFormat {
   return (
-    typeof value === 'string' &&
-    ['SOLE_PROPRIETOR', 'SELF_EMPLOYED', 'SERVICE_CONTRACT', 'LLC'].includes(value)
+    typeof value === "string" &&
+    ["SOLE_PROPRIETOR", "SELF_EMPLOYED", "SERVICE_CONTRACT", "LLC"].includes(
+      value,
+    )
   );
 }
 
@@ -63,39 +66,58 @@ export function isWorkFormat(value: unknown): value is ApiWorkFormat {
  * Type guard: проверка, является ли значение локальным форматом работы
  */
 export function isLocalWorkFormat(
-  value: unknown
-): value is 'ИП' | 'профдоход' | 'договор подряда' | 'ООО' {
-  return typeof value === 'string' && ['ИП', 'профдоход', 'договор подряда', 'ООО'].includes(value);
+  value: unknown,
+): value is "ИП" | "профдоход" | "договор подряда" | "ООО" {
+  return (
+    typeof value === "string" &&
+    ["ИП", "профдоход", "договор подряда", "ООО"].includes(value)
+  );
 }
 
 /**
  * Type guard: проверка, является ли значение ApiGender
  */
 export function isGenderType(value: unknown): value is ApiGender {
-  return typeof value === 'string' && ['MALE', 'FEMALE', 'COUPLE', 'PUBLIC_PAGE'].includes(value);
+  return (
+    typeof value === "string" &&
+    ["MALE", "FEMALE", "COUPLE", "PUBLIC_PAGE"].includes(value)
+  );
 }
 
 /**
  * Type guard: проверка, является ли значение локальным типом пола
  */
 export function isLocalGenderType(
-  value: unknown
-): value is 'мужчина' | 'женщина' | 'пара' | 'паблик' {
-  return typeof value === 'string' && ['мужчина', 'женщина', 'пара', 'паблик'].includes(value);
+  value: unknown,
+): value is "мужчина" | "женщина" | "пара" | "паблик" {
+  return (
+    typeof value === "string" &&
+    ["мужчина", "женщина", "пара", "паблик"].includes(value)
+  );
 }
 
 /**
  * Type guard: проверка, является ли значение ApiVerificationStatus
  */
-export function isVerificationStatus(value: unknown): value is ApiVerificationStatus {
-  return typeof value === 'string' && ['NEW', 'APPROVED', 'REJECTED', 'MODERATION'].includes(value);
+export function isVerificationStatus(
+  value: unknown,
+): value is ApiVerificationStatus {
+  return (
+    typeof value === "string" &&
+    ["NEW", "APPROVED", "REJECTED", "MODERATION"].includes(value)
+  );
 }
 
 /**
  * Type guard: проверка, является ли значение LinkRequestStatus
  */
-export function isLinkRequestStatus(value: unknown): value is LinkRequestStatus {
-  return typeof value === 'string' && ['APPROVED', 'REJECTED', 'MODERATION'].includes(value);
+export function isLinkRequestStatus(
+  value: unknown,
+): value is LinkRequestStatus {
+  return (
+    typeof value === "string" &&
+    ["APPROVED", "REJECTED", "MODERATION"].includes(value)
+  );
 }
 
 /**
@@ -106,17 +128,19 @@ export interface RequiredProfileFields {
   lastName: string;
 }
 
-export function hasRequiredProfileFields(data: unknown): data is RequiredProfileFields {
-  if (!data || typeof data !== 'object') {
+export function hasRequiredProfileFields(
+  data: unknown,
+): data is RequiredProfileFields {
+  if (!data || typeof data !== "object") {
     return false;
   }
 
   const profile = data as Partial<RequiredProfileFields>;
 
   return (
-    typeof profile.name === 'string' &&
+    typeof profile.name === "string" &&
     profile.name.length > 0 &&
-    typeof profile.lastName === 'string' &&
+    typeof profile.lastName === "string" &&
     profile.lastName.length > 0
   );
 }
@@ -125,28 +149,28 @@ export function hasRequiredProfileFields(data: unknown): data is RequiredProfile
  * Type guard: проверка, является ли значение строкой
  */
 export function isString(value: unknown): value is string {
-  return typeof value === 'string';
+  return typeof value === "string";
 }
 
 /**
  * Type guard: проверка, является ли значение числом
  */
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value);
+  return typeof value === "number" && !isNaN(value);
 }
 
 /**
  * Type guard: проверка, является ли значение boolean
  */
 export function isBoolean(value: unknown): value is boolean {
-  return typeof value === 'boolean';
+  return typeof value === "boolean";
 }
 
 /**
  * Type guard: проверка, является ли значение объектом (не null, не array)
  */
 export function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -160,14 +184,18 @@ export function isArray<T = unknown>(value: unknown): value is T[] {
  * Type guard: проверка, является ли значение массивом строк
  */
 export function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === "string")
+  );
 }
 
 /**
  * Type guard: проверка, является ли значение массивом чисел
  */
 export function isNumberArray(value: unknown): value is number[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'number');
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === "number")
+  );
 }
 
 /**
@@ -187,36 +215,36 @@ export function isDefined<T>(value: T | null | undefined): value is T {
 /**
  * Type guard: проверка, является ли значение пустой строкой
  */
-export function isEmptyString(value: unknown): value is '' {
-  return value === '';
+export function isEmptyString(value: unknown): value is "" {
+  return value === "";
 }
 
 /**
  * Type guard: проверка, является ли значение непустой строкой
  */
 export function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0;
+  return typeof value === "string" && value.length > 0;
 }
 
 /**
  * Type guard: проверка, является ли значение положительным числом
  */
 export function isPositiveNumber(value: unknown): value is number {
-  return typeof value === 'number' && value > 0 && !isNaN(value);
+  return typeof value === "number" && value > 0 && !isNaN(value);
 }
 
 /**
  * Type guard: проверка, является ли значение неотрицательным числом
  */
 export function isNonNegativeNumber(value: unknown): value is number {
-  return typeof value === 'number' && value >= 0 && !isNaN(value);
+  return typeof value === "number" && value >= 0 && !isNaN(value);
 }
 
 /**
  * Type guard: проверка, является ли значение функцией
  */
 export function isFunction(value: unknown): value is Function {
-  return typeof value === 'function';
+  return typeof value === "function";
 }
 
 /**
@@ -224,10 +252,10 @@ export function isFunction(value: unknown): value is Function {
  */
 export function isPromise<T = unknown>(value: unknown): value is Promise<T> {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'then' in value &&
-    typeof (value as { then: unknown }).then === 'function'
+    "then" in value &&
+    typeof (value as { then: unknown }).then === "function"
   );
 }
 
@@ -241,8 +269,8 @@ export interface HasId {
 export function hasId(value: unknown): value is HasId {
   return (
     isObject(value) &&
-    'id' in value &&
-    (typeof value.id === 'string' || typeof value.id === 'number')
+    "id" in value &&
+    (typeof value.id === "string" || typeof value.id === "number")
   );
 }
 
@@ -254,7 +282,9 @@ export interface HasErrorMessage {
 }
 
 export function hasErrorMessage(value: unknown): value is HasErrorMessage {
-  return isObject(value) && 'message' in value && typeof value.message === 'string';
+  return (
+    isObject(value) && "message" in value && typeof value.message === "string"
+  );
 }
 
 /**
@@ -271,7 +301,10 @@ export function hasErrorMessage(value: unknown): value is HasErrorMessage {
  *   // user.name
  * }
  */
-export function assertType(condition: boolean, message: string): asserts condition {
+export function assertType(
+  condition: boolean,
+  message: string,
+): asserts condition {
   if (!condition) {
     throw new Error(`Type assertion failed: ${message}`);
   }
@@ -280,7 +313,7 @@ export function assertType(condition: boolean, message: string): asserts conditi
 /**
  * Безопасное приведение к строке
  */
-export function asString(value: unknown, defaultValue = ''): string {
+export function asString(value: unknown, defaultValue = ""): string {
   return isString(value) ? value : defaultValue;
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface LoadingScreenProps {
   text?: string;
@@ -8,8 +8,8 @@ interface LoadingScreenProps {
  * Переиспользуемый компонент экрана загрузки
  * Используется в ProtectedRoute и ProfileChecker
  */
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
-  text = "Загрузка..." 
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({
+  text = "Загрузка...",
 }) => (
   <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
     <div className="text-center">

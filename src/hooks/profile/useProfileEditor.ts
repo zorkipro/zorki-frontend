@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { useProfileLoader } from './useProfileLoader';
-import { useProfileForm } from './useProfileForm';
-import { useProfileSaver } from './useProfileSaver';
-import { useTopics } from '@/hooks/useTopics';
+import { useEffect } from "react";
+import { useProfileLoader } from "./useProfileLoader";
+import { useProfileForm } from "./useProfileForm";
+import { useProfileSaver } from "./useProfileSaver";
+import { useTopics } from "@/hooks/useTopics";
 
 /**
  * Главный хук для редактирования профиля
@@ -56,12 +56,17 @@ export const useProfileEditor = () => {
   } = useProfileForm();
 
   // 4. Сохранение изменений
-  const { saving, handleSave } = useProfileSaver(profile, formData, setAvailablePlatforms, topicLookup, updateFormData);
+  const { saving, handleSave } = useProfileSaver(
+    profile,
+    formData,
+    setAvailablePlatforms,
+    topicLookup,
+    updateFormData,
+  );
 
   // Загружаем данные профиля и черновики при монтировании
   useEffect(() => {
     const initializeForm = async () => {
-
       const loadedData = await loadProfileWithDrafts();
 
       if (loadedData) {

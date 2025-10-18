@@ -3,9 +3,9 @@
  * Отвечает за создание и обработку API ошибок
  */
 
-import { ErrorHandler } from '@/utils/errorHandler';
-import { tokenManager } from './TokenManager';
-import type { BadRequestExceptionDto } from './types';
+import { ErrorHandler } from "@/utils/errorHandler";
+import { tokenManager } from "./TokenManager";
+import type { BadRequestExceptionDto } from "./types";
 
 /**
  * Кастомный класс ошибки API
@@ -14,11 +14,11 @@ export class APIError extends Error {
   /** HTTP статус код */
   statusCode: number;
   /** Массив ошибок валидации полей или null */
-  errorField: BadRequestExceptionDto['errorField'];
+  errorField: BadRequestExceptionDto["errorField"];
 
   constructor(data: BadRequestExceptionDto) {
     super(data.message);
-    this.name = 'APIError';
+    this.name = "APIError";
     this.statusCode = data.statusCode;
     this.errorField = data.errorField;
 
@@ -67,7 +67,7 @@ export class APIError extends Error {
         acc[error.field] = error.message;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
   }
 }
@@ -120,7 +120,7 @@ export class ApiErrorHandler {
 
     // Для неизвестных ошибок
     return new APIError({
-      message: processedError.message || 'Unknown error occurred',
+      message: processedError.message || "Unknown error occurred",
       statusCode: 500,
       errorField: null,
     });
@@ -132,7 +132,10 @@ export class ApiErrorHandler {
    * @param errorData - данные ошибки
    * @param redirectPath - путь для редиректа (по умолчанию '/login')
    */
-  handleAuthError(errorData: BadRequestExceptionDto, redirectPath = '/login'): void {
+  handleAuthError(
+    errorData: BadRequestExceptionDto,
+    redirectPath = "/login",
+  ): void {
     // Обрабатываем через универсальный обработчик
     this.errorHandler.handleAuthError(errorData, {
       showNotification: false,

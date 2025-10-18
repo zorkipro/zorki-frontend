@@ -9,23 +9,23 @@ import type {
   PublicGetBloggerByIdCoverageDraftOutputDto,
   PublicGetBloggerByIdOutputDto,
   ApiSocialType,
-} from '@/api/types';
-import type { PlatformType } from '@/types/platform';
-import { ALL_PLATFORMS } from '@/types/platform';
+} from "@/api/types";
+import type { PlatformType } from "@/types/platform";
+import { ALL_PLATFORMS } from "@/types/platform";
 
 /**
  * Маппинг ApiSocialType в локальный формат платформы
  */
 function mapApiSocialTypeToLocal(apiType: ApiSocialType): string | null {
   switch (apiType) {
-    case 'INSTAGRAM':
-      return 'instagram';
-    case 'TIKTOK':
-      return 'tiktok';
-    case 'YOUTUBE':
-      return 'youtube';
-    case 'TELEGRAM':
-      return 'telegram';
+    case "INSTAGRAM":
+      return "instagram";
+    case "TIKTOK":
+      return "tiktok";
+    case "YOUTUBE":
+      return "youtube";
+    case "TELEGRAM":
+      return "telegram";
     default:
       return null;
   }
@@ -47,8 +47,8 @@ export interface ProfileDraftFields {
   description?: string;
   avatar_url?: string;
   contact_link?: string;
-  work_format?: 'ИП' | 'профдоход' | 'договор подряда' | 'ООО';
-  gender_type?: 'мужчина' | 'женщина' | 'пара' | 'паблик';
+  work_format?: "ИП" | "профдоход" | "договор подряда" | "ООО";
+  gender_type?: "мужчина" | "женщина" | "пара" | "паблик";
   barter_available?: boolean;
   mart_registry?: boolean;
   cooperation_conditions?: string;
@@ -62,7 +62,7 @@ export interface ProfileDraftFields {
  * Извлекает данные профиля из черновика
  */
 export function extractProfileDraft(
-  profileDraft: PublicGetBloggerByIdProfileDraftOutputDto | null | undefined
+  profileDraft: PublicGetBloggerByIdProfileDraftOutputDto | null | undefined,
 ): ProfileDraftFields {
   if (!profileDraft) {
     return {};
@@ -82,21 +82,21 @@ export function extractProfileDraft(
  * Маппинг workFormat из API в локальный формат
  */
 function mapWorkFormatFromApi(
-  apiFormat?: string
-): 'ИП' | 'профдоход' | 'договор подряда' | 'ООО' | undefined {
+  apiFormat?: string,
+): "ИП" | "профдоход" | "договор подряда" | "ООО" | undefined {
   if (!apiFormat) return undefined;
 
   switch (apiFormat) {
-    case 'SOLE_PROPRIETOR':
-      return 'ИП';
-    case 'SELF_EMPLOYED':
-      return 'профдоход';
-    case 'SERVICE_CONTRACT':
-      return 'договор подряда';
-    case 'LIMITED_LIABILITY_COMPANY':
-      return 'ООО';
+    case "SOLE_PROPRIETOR":
+      return "ИП";
+    case "SELF_EMPLOYED":
+      return "профдоход";
+    case "SERVICE_CONTRACT":
+      return "договор подряда";
+    case "LIMITED_LIABILITY_COMPANY":
+      return "ООО";
     default:
-      return 'ИП';
+      return "ИП";
   }
 }
 
@@ -104,21 +104,21 @@ function mapWorkFormatFromApi(
  * Маппинг genderType из API в локальный формат
  */
 function mapGenderTypeFromApi(
-  apiGender?: string
-): 'мужчина' | 'женщина' | 'пара' | 'паблик' | undefined {
+  apiGender?: string,
+): "мужчина" | "женщина" | "пара" | "паблик" | undefined {
   if (!apiGender) return undefined;
 
   switch (apiGender) {
-    case 'MALE':
-      return 'мужчина';
-    case 'FEMALE':
-      return 'женщина';
-    case 'COUPLE':
-      return 'пара';
-    case 'PUBLIC':
-      return 'паблик';
+    case "MALE":
+      return "мужчина";
+    case "FEMALE":
+      return "женщина";
+    case "COUPLE":
+      return "пара";
+    case "PUBLIC":
+      return "паблик";
     default:
-      return 'женщина';
+      return "женщина";
   }
 }
 
@@ -131,7 +131,7 @@ function mapGenderTypeFromApi(
  * priceDrafts - массив черновиков, где каждый элемент для одной платформы
  */
 export function extractPriceDrafts(
-  priceDrafts: PublicGetBloggerByIdPriceDraftOutputDto[] | null | undefined
+  priceDrafts: PublicGetBloggerByIdPriceDraftOutputDto[] | null | undefined,
 ): Record<string, PlatformDraftData> {
   if (!priceDrafts || priceDrafts.length === 0) {
     return {};
@@ -144,7 +144,9 @@ export function extractPriceDrafts(
     if (platformKey) {
       platformData[platformKey] = {
         post_price: draft.postPrice ? parseFloat(draft.postPrice) : undefined,
-        story_price: draft.storiesPrice ? parseFloat(draft.storiesPrice) : undefined,
+        story_price: draft.storiesPrice
+          ? parseFloat(draft.storiesPrice)
+          : undefined,
       };
     }
   });
@@ -161,7 +163,10 @@ export function extractPriceDrafts(
  * coverageDrafts - массив черновиков, где каждый элемент для одной платформы
  */
 export function extractCoverageDrafts(
-  coverageDrafts: PublicGetBloggerByIdCoverageDraftOutputDto[] | null | undefined
+  coverageDrafts:
+    | PublicGetBloggerByIdCoverageDraftOutputDto[]
+    | null
+    | undefined,
 ): Record<string, PlatformDraftData> {
   if (!coverageDrafts || coverageDrafts.length === 0) {
     return {};
@@ -172,7 +177,9 @@ export function extractCoverageDrafts(
   coverageDrafts.forEach((draft) => {
     const platformKey = mapApiSocialTypeToLocal(draft.type);
     if (platformKey) {
-      const coverage = draft.coverage ? parseInt(draft.coverage, 10) : undefined;
+      const coverage = draft.coverage
+        ? parseInt(draft.coverage, 10)
+        : undefined;
       platformData[platformKey] = {
         post_reach: coverage,
         // story_reach обычно не хранится отдельно в coverageDraft
@@ -193,7 +200,7 @@ export function extractCoverageDrafts(
 export function mergePlatformDrafts<T extends Record<string, any>>(
   platformsData: T,
   priceDrafts: Record<string, PlatformDraftData>,
-  coverageDrafts: Record<string, PlatformDraftData>
+  coverageDrafts: Record<string, PlatformDraftData>,
 ): T {
   const updatedData: Record<string, any> = { ...platformsData };
 
@@ -201,13 +208,18 @@ export function mergePlatformDrafts<T extends Record<string, any>>(
     const priceData = priceDrafts[platform] || {};
     const coverageData = coverageDrafts[platform] || {};
 
-    if (Object.keys(priceData).length > 0 || Object.keys(coverageData).length > 0) {
+    if (
+      Object.keys(priceData).length > 0 ||
+      Object.keys(coverageData).length > 0
+    ) {
       updatedData[platform] = {
         ...updatedData[platform],
         price: priceData.post_price ?? updatedData[platform]?.price ?? 0,
-        storyPrice: priceData.story_price ?? updatedData[platform]?.storyPrice ?? 0,
+        storyPrice:
+          priceData.story_price ?? updatedData[platform]?.storyPrice ?? 0,
         reach: coverageData.post_reach ?? updatedData[platform]?.reach ?? 0,
-        storyReach: coverageData.story_reach ?? updatedData[platform]?.storyReach ?? 0,
+        storyReach:
+          coverageData.story_reach ?? updatedData[platform]?.storyReach ?? 0,
       };
     }
   });
@@ -218,13 +230,21 @@ export function mergePlatformDrafts<T extends Record<string, any>>(
 /**
  * Извлекает Instagram данные из социальных аккаунтов
  */
-export function extractInstagramAccount(apiResponse: PublicGetBloggerByIdOutputDto) {
-  const instagramAccount = apiResponse.social?.find((account) => account.type === 'INSTAGRAM');
+export function extractInstagramAccount(
+  apiResponse: PublicGetBloggerByIdOutputDto,
+) {
+  const instagramAccount = apiResponse.social?.find(
+    (account) => account.type === "INSTAGRAM",
+  );
   return {
-    username: instagramAccount?.username || '',
-    avatar: instagramAccount?.avatar || '',
-    subscribers: instagramAccount?.subscribers ? parseInt(instagramAccount.subscribers, 10) : 0,
+    username: instagramAccount?.username || "",
+    avatar: instagramAccount?.avatar || "",
+    subscribers: instagramAccount?.subscribers
+      ? parseInt(instagramAccount.subscribers, 10)
+      : 0,
     engagementRate: instagramAccount?.er || 0,
-    coverage: instagramAccount?.postCoverage ? parseInt(instagramAccount.postCoverage, 10) : 0,
+    coverage: instagramAccount?.postCoverage
+      ? parseInt(instagramAccount.postCoverage, 10)
+      : 0,
   };
 }

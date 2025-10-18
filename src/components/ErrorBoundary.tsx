@@ -83,25 +83,12 @@ export class ErrorBoundary extends Component<Props, State> {
       clearTimeout(this.recoveryTimer);
     }
 
-    logger.debug('Scheduling auto-recovery', {
-      component: 'ErrorBoundary',
-      delayMs: this.props.autoRecoverAfter,
-    });
-
     this.recoveryTimer = setTimeout(() => {
-      logger.info('Auto-recovering from error', {
-        component: 'ErrorBoundary',
-      });
       this.handleRetry();
     }, this.props.autoRecoverAfter);
   };
 
   handleRetry = () => {
-    logger.info('Manual retry triggered', {
-      component: 'ErrorBoundary',
-      errorCount: this.state.errorCount,
-    });
-
     this.setState({
       hasError: false,
       error: undefined,
@@ -114,9 +101,6 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    logger.info('Navigating to home from error state', {
-      component: 'ErrorBoundary',
-    });
     window.location.href = '/';
   };
 

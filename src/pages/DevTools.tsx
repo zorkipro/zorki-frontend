@@ -1,13 +1,17 @@
-import React from 'react';
+import React from "react";
 
 const DevTools: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Инструменты разработчика</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          Инструменты разработчика
+        </h1>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Информация о проекте</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Информация о проекте
+          </h2>
           <div className="space-y-2 text-gray-600">
             <p>
               <strong>Название:</strong> Zorki7 - Blogger Platform
@@ -25,7 +29,9 @@ const DevTools: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Доступные маршруты</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Доступные маршруты
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <h3 className="font-medium text-gray-700">Основные</h3>
@@ -47,7 +53,9 @@ const DevTools: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Тестовые маршруты</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Тестовые маршруты
+          </h2>
           <div className="space-y-2 text-sm text-gray-600">
             <p>• /test-pricing - Тест отображения цен</p>
             <p>• /comprehensive-test - Комплексное тестирование</p>

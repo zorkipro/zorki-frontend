@@ -1,15 +1,15 @@
 // Хук для работы с черновиками профиля
 
-import { useState, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import type { PublicGetBloggerByIdOutputDto } from '@/api/types';
+import { useState, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import type { PublicGetBloggerByIdOutputDto } from "@/api/types";
 import {
   extractProfileDraft,
   extractPriceDrafts,
   extractCoverageDrafts,
   mergePlatformDrafts,
   extractInstagramAccount,
-} from '@/utils/draft-helpers';
+} from "@/utils/draft-helpers";
 
 // Локальный интерфейс для совместимости с существующим кодом
 interface EditData {
@@ -19,8 +19,8 @@ interface EditData {
   barter_available: boolean;
   mart_registry: boolean;
   contact_link: string;
-  work_format: 'ИП' | 'профдоход' | 'договор подряда' | 'ООО';
-  gender_type: 'мужчина' | 'женщина' | 'пара' | 'паблик';
+  work_format: "ИП" | "профдоход" | "договор подряда" | "ООО";
+  gender_type: "мужчина" | "женщина" | "пара" | "паблик";
   cooperation_conditions: string;
 
   instagram_username: string;
@@ -95,13 +95,15 @@ export const useProfileDrafts = (profileId?: string) => {
       apiResponse: PublicGetBloggerByIdOutputDto,
       platformsData: Record<string, PlatformData>,
       topics: number[],
-      bannedTopics: number[]
+      bannedTopics: number[],
     ): Promise<EditData | null> => {
       if (!user || !apiResponse) return null;
 
       // Проверяем наличие черновиков в API ответе
       const hasAnyDrafts =
-        !!apiResponse.profileDraft || !!apiResponse.priceDraft || !!apiResponse.coverageDraft;
+        !!apiResponse.profileDraft ||
+        !!apiResponse.priceDraft ||
+        !!apiResponse.coverageDraft;
 
       if (!hasAnyDrafts) {
         setHasDrafts(false);
@@ -116,7 +118,11 @@ export const useProfileDrafts = (profileId?: string) => {
       const coverageDrafts = extractCoverageDrafts(apiResponse.coverageDraft);
 
       // Объединяем черновики с опубликованными данными платформ
-      const updatedPlatformsData = mergePlatformDrafts(platformsData, priceDrafts, coverageDrafts);
+      const updatedPlatformsData = mergePlatformDrafts(
+        platformsData,
+        priceDrafts,
+        coverageDrafts,
+      );
 
       // Получаем Instagram данные
       const instagram = extractInstagramAccount(apiResponse);
@@ -127,97 +133,116 @@ export const useProfileDrafts = (profileId?: string) => {
         full_name:
           profileDraftFields.full_name ||
           (apiResponse.name
-            ? `${apiResponse.name}${apiResponse.lastName ? ' ' + apiResponse.lastName : ''}`
-            : ''),
-        description: '', // Нет в API
+            ? `${apiResponse.name}${apiResponse.lastName ? " " + apiResponse.lastName : ""}`
+            : ""),
+        description: "", // Нет в API
         avatar_url: instagram.avatar, // Берём из Instagram аккаунта
-        contact_link: profileDraftFields.contact_link || apiResponse.contactLink || '',
-        work_format: profileDraftFields.work_format || 'ИП',
-        gender_type: profileDraftFields.gender_type || 'женщина',
+        contact_link:
+          profileDraftFields.contact_link || apiResponse.contactLink || "",
+        work_format: profileDraftFields.work_format || "ИП",
+        gender_type: profileDraftFields.gender_type || "женщина",
         barter_available:
-          profileDraftFields.barter_available ?? apiResponse.isBarterAvailable ?? false,
-        mart_registry: profileDraftFields.mart_registry ?? apiResponse.isMartRegistry ?? false,
-        cooperation_conditions: '', // Нет в API
+          profileDraftFields.barter_available ??
+          apiResponse.isBarterAvailable ??
+          false,
+        mart_registry:
+          profileDraftFields.mart_registry ??
+          apiResponse.isMartRegistry ??
+          false,
+        cooperation_conditions: "", // Нет в API
 
         // Instagram данные
         instagram_username: instagram.username,
-        instagram_profile_url: '', // Нет в текущем API
+        instagram_profile_url: "", // Нет в текущем API
         instagram_followers: instagram.subscribers.toString(),
         instagram_engagement_rate: instagram.engagementRate.toString(),
-        instagram_post_reach: updatedPlatformsData.instagram?.reach?.toString() || '',
-        instagram_story_reach: updatedPlatformsData.instagram?.storyReach?.toString() || '',
+        instagram_post_reach:
+          updatedPlatformsData.instagram?.reach?.toString() || "",
+        instagram_story_reach:
+          updatedPlatformsData.instagram?.storyReach?.toString() || "",
         instagram_post_price:
           priceDrafts.instagram?.post_price?.toString() ||
           updatedPlatformsData.instagram?.price?.toString() ||
-          '',
+          "",
         instagram_story_price:
           priceDrafts.instagram?.story_price?.toString() ||
           updatedPlatformsData.instagram?.storyPrice?.toString() ||
-          '',
+          "",
         instagram_integration_price:
           priceDrafts.instagram?.post_price?.toString() ||
           updatedPlatformsData.instagram?.price?.toString() ||
-          '',
+          "",
 
         // TikTok данные
-        tiktok_username: updatedPlatformsData.tiktok?.username || '',
-        tiktok_profile_url: updatedPlatformsData.tiktok?.profile_url || '',
-        tiktok_followers: updatedPlatformsData.tiktok?.subscribers?.toString() || '',
-        tiktok_engagement_rate: updatedPlatformsData.tiktok?.er?.toString() || '',
-        tiktok_post_reach: updatedPlatformsData.tiktok?.reach?.toString() || '',
-        tiktok_story_reach: updatedPlatformsData.tiktok?.storyReach?.toString() || '',
+        tiktok_username: updatedPlatformsData.tiktok?.username || "",
+        tiktok_profile_url: updatedPlatformsData.tiktok?.profile_url || "",
+        tiktok_followers:
+          updatedPlatformsData.tiktok?.subscribers?.toString() || "",
+        tiktok_engagement_rate:
+          updatedPlatformsData.tiktok?.er?.toString() || "",
+        tiktok_post_reach: updatedPlatformsData.tiktok?.reach?.toString() || "",
+        tiktok_story_reach:
+          updatedPlatformsData.tiktok?.storyReach?.toString() || "",
         tiktok_post_price:
           priceDrafts.tiktok?.post_price?.toString() ||
           updatedPlatformsData.tiktok?.price?.toString() ||
-          '',
+          "",
         tiktok_story_price:
           priceDrafts.tiktok?.story_price?.toString() ||
           updatedPlatformsData.tiktok?.storyPrice?.toString() ||
-          '',
+          "",
         tiktok_integration_price:
           priceDrafts.tiktok?.post_price?.toString() ||
           updatedPlatformsData.tiktok?.price?.toString() ||
-          '',
+          "",
 
         // YouTube данные
-        youtube_username: updatedPlatformsData.youtube?.username || '',
-        youtube_profile_url: updatedPlatformsData.youtube?.profile_url || '',
-        youtube_followers: updatedPlatformsData.youtube?.subscribers?.toString() || '',
-        youtube_engagement_rate: updatedPlatformsData.youtube?.er?.toString() || '',
-        youtube_post_reach: updatedPlatformsData.youtube?.reach?.toString() || '',
-        youtube_story_reach: updatedPlatformsData.youtube?.storyReach?.toString() || '',
+        youtube_username: updatedPlatformsData.youtube?.username || "",
+        youtube_profile_url: updatedPlatformsData.youtube?.profile_url || "",
+        youtube_followers:
+          updatedPlatformsData.youtube?.subscribers?.toString() || "",
+        youtube_engagement_rate:
+          updatedPlatformsData.youtube?.er?.toString() || "",
+        youtube_post_reach:
+          updatedPlatformsData.youtube?.reach?.toString() || "",
+        youtube_story_reach:
+          updatedPlatformsData.youtube?.storyReach?.toString() || "",
         youtube_post_price:
           priceDrafts.youtube?.post_price?.toString() ||
           updatedPlatformsData.youtube?.price?.toString() ||
-          '',
+          "",
         youtube_story_price:
           priceDrafts.youtube?.story_price?.toString() ||
           updatedPlatformsData.youtube?.storyPrice?.toString() ||
-          '',
+          "",
         youtube_integration_price:
           priceDrafts.youtube?.post_price?.toString() ||
           updatedPlatformsData.youtube?.price?.toString() ||
-          '',
+          "",
 
         // Telegram данные
-        telegram_username: updatedPlatformsData.telegram?.username || '',
-        telegram_profile_url: updatedPlatformsData.telegram?.profile_url || '',
-        telegram_followers: updatedPlatformsData.telegram?.subscribers?.toString() || '',
-        telegram_engagement_rate: updatedPlatformsData.telegram?.er?.toString() || '',
-        telegram_post_reach: updatedPlatformsData.telegram?.reach?.toString() || '',
-        telegram_story_reach: updatedPlatformsData.telegram?.storyReach?.toString() || '',
+        telegram_username: updatedPlatformsData.telegram?.username || "",
+        telegram_profile_url: updatedPlatformsData.telegram?.profile_url || "",
+        telegram_followers:
+          updatedPlatformsData.telegram?.subscribers?.toString() || "",
+        telegram_engagement_rate:
+          updatedPlatformsData.telegram?.er?.toString() || "",
+        telegram_post_reach:
+          updatedPlatformsData.telegram?.reach?.toString() || "",
+        telegram_story_reach:
+          updatedPlatformsData.telegram?.storyReach?.toString() || "",
         telegram_post_price:
           priceDrafts.telegram?.post_price?.toString() ||
           updatedPlatformsData.telegram?.price?.toString() ||
-          '',
+          "",
         telegram_story_price:
           priceDrafts.telegram?.story_price?.toString() ||
           updatedPlatformsData.telegram?.storyPrice?.toString() ||
-          '',
+          "",
         telegram_integration_price:
           priceDrafts.telegram?.post_price?.toString() ||
           updatedPlatformsData.telegram?.price?.toString() ||
-          '',
+          "",
 
         // Темы
         topics,
@@ -226,7 +251,7 @@ export const useProfileDrafts = (profileId?: string) => {
 
       return mergedData;
     },
-    [user]
+    [user],
   );
 
   return {

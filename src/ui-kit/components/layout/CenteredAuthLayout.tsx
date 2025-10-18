@@ -5,8 +5,8 @@
  * Заменяет повторяющийся код центрирования
  */
 
-import React from 'react';
-import { Header } from '@/components/layout/Header';
+import React from "react";
+import { Header } from "@/components/layout/Header";
 
 export interface CenteredAuthLayoutProps {
   /** Контент страницы */
@@ -33,10 +33,12 @@ export interface CenteredAuthLayoutProps {
 export const CenteredAuthLayout: React.FC<CenteredAuthLayoutProps> = ({
   children,
   showHeader = true,
-  className = '',
+  className = "",
 }) => {
   return (
-    <div className={`min-h-screen bg-gradient-subtle flex flex-col ${className}`}>
+    <div
+      className={`min-h-screen bg-gradient-subtle flex flex-col ${className}`}
+    >
       {showHeader && <Header />}
 
       <div className="flex-1 flex items-center justify-center p-4">

@@ -3,18 +3,32 @@
  * Трансформация между API DTOs и Frontend типами
  */
 
-import type { Blogger } from '@/types/blogger';
-import type { EditData } from '@/types/profile';
+import type { Blogger } from "@/types/blogger";
+import type { EditData } from "@/types/profile";
 import type {
   PublicGetAllBloggersOutputDto,
   PublicGetBloggerByIdOutputDto,
   BloggerUpdateProfileInputDto,
   ApiSocialType,
-} from '@/api/types';
-import { GENDER_MAP, WORK_FORMAT_MAP, WORK_FORMAT_REVERSE, GENDER_REVERSE } from '@/api/types';
-import { parseBigInt, parseDecimal, splitFullName, joinFullName } from './common-mappers';
-import { mapSinglePlatform, mapMultiplePlatforms, findPrimaryPlatform } from './platform-mappers';
-import { convertTopicsToIds } from './topic-mappers';
+} from "@/api/types";
+import {
+  GENDER_MAP,
+  WORK_FORMAT_MAP,
+  WORK_FORMAT_REVERSE,
+  GENDER_REVERSE,
+} from "@/api/types";
+import {
+  parseBigInt,
+  parseDecimal,
+  splitFullName,
+  joinFullName,
+} from "./common-mappers";
+import {
+  mapSinglePlatform,
+  mapMultiplePlatforms,
+  findPrimaryPlatform,
+} from "./platform-mappers";
+import { convertTopicsToIds } from "./topic-mappers";
 
 /**
  * Маппер для GET /blogger/public (список блогеров)
@@ -28,7 +42,9 @@ import { convertTopicsToIds } from './topic-mappers';
  * @param api - DTO из API
  * @returns объект Blogger для Frontend
  */
-export function mapApiListBloggerToLocal(api: PublicGetAllBloggersOutputDto): Blogger {
+export function mapApiListBloggerToLocal(
+  api: PublicGetAllBloggersOutputDto,
+): Blogger {
   const social = api.social;
   const price = api.price;
 
@@ -36,17 +52,19 @@ export function mapApiListBloggerToLocal(api: PublicGetAllBloggersOutputDto): Bl
   const fullName = joinFullName(api.name, api.lastName);
 
   // Если основное имя пустое, используем title из социального аккаунта
-  const displayName = fullName || social?.title || api.name || '';
+  const displayName = fullName || social?.title || api.name || "";
 
   // Маппим платформу если есть
-  const platforms = social ? { [social.type.toLowerCase()]: mapSinglePlatform(social, price) } : {};
+  const platforms = social
+    ? { [social.type.toLowerCase()]: mapSinglePlatform(social, price) }
+    : {};
 
   return {
     id: String(api.id),
     name: displayName,
-    handle: social ? `@${social.username}` : '',
-    avatar: social?.avatar || '',
-    promoText: social?.description || '',
+    handle: social ? `@${social.username}` : "",
+    avatar: social?.avatar || "",
+    promoText: social?.description || "",
     platforms,
     followers: parseBigInt(social?.subscribers),
     postPrice: parseDecimal(price.postPrice),
@@ -55,17 +73,21 @@ export function mapApiListBloggerToLocal(api: PublicGetAllBloggersOutputDto): Bl
     storyReach: parseBigInt(social?.coverage),
     engagementRate: social?.er || 0,
     gender: api.genderType
-      ? (GENDER_MAP[api.genderType] as 'мужчина' | 'женщина' | 'пара' | 'паблик')
+      ? (GENDER_MAP[api.genderType] as
+          | "мужчина"
+          | "женщина"
+          | "пара"
+          | "паблик")
       : undefined,
-    category: '', // Нет в list response
+    category: "", // Нет в list response
     topics: [], // Нет в list response
     allowsBarter: false, // Нет в list response
     inMartRegistry: false, // Нет в list response
     legalForm: undefined, // Нет в list response
     restrictedTopics: [],
-    cooperationConditions: '',
+    cooperationConditions: "",
     workFormat: undefined,
-    paymentTerms: '',
+    paymentTerms: "",
   };
 }
 
@@ -81,10 +103,13 @@ export function mapApiListBloggerToLocal(api: PublicGetAllBloggersOutputDto): Bl
  * @param api - DTO из API
  * @returns объект Blogger для Frontend
  */
-export function mapApiDetailBloggerToLocal(api: PublicGetBloggerByIdOutputDto): Blogger {
+export function mapApiDetailBloggerToLocal(
+  api: PublicGetBloggerByIdOutputDto,
+): Blogger {
   // Найти основную платформу (Instagram приоритет, иначе первая)
   const primarySocial = findPrimaryPlatform(api.social);
-  const primaryPrice = api.price.find((p) => p.type === primarySocial?.type) || api.price[0];
+  const primaryPrice =
+    api.price.find((p) => p.type === primarySocial?.type) || api.price[0];
 
   // Собрать все платформы
   const platforms = mapMultiplePlatforms(api.social, api.price);
@@ -93,35 +118,43 @@ export function mapApiDetailBloggerToLocal(api: PublicGetBloggerByIdOutputDto): 
   const fullName = joinFullName(api.name, api.lastName);
 
   // Если основное имя пустое, используем title из социального аккаунта
-  const displayName = fullName || primarySocial?.title || api.name || '';
+  const displayName = fullName || primarySocial?.title || api.name || "";
 
   return {
     id: String(api.id),
     name: displayName,
-    handle: primarySocial ? `@${primarySocial.username}` : '',
-    avatar: primarySocial?.avatar || '',
-    promoText: api.description || primarySocial?.description || '', // Приоритет: описание профиля > описание соцсети
+    handle: primarySocial ? `@${primarySocial.username}` : "",
+    avatar: primarySocial?.avatar || "",
+    promoText: api.description || primarySocial?.description || "", // Приоритет: описание профиля > описание соцсети
     platforms,
     followers: parseBigInt(primarySocial?.subscribers),
     postPrice: parseDecimal(primaryPrice?.postPrice),
     storyPrice: parseDecimal(primaryPrice?.storiesPrice),
     postReach: parseBigInt(primarySocial?.postCoverage), // ✅ Исправлено: охват постов
-    storyReach: parseBigInt(primarySocial?.coverage),     // ✅ Исправлено: охват сториз
+    storyReach: parseBigInt(primarySocial?.coverage), // ✅ Исправлено: охват сториз
     engagementRate: primarySocial?.er || 0,
     gender: api.genderType
-      ? (GENDER_MAP[api.genderType] as 'мужчина' | 'женщина' | 'пара' | 'паблик')
+      ? (GENDER_MAP[api.genderType] as
+          | "мужчина"
+          | "женщина"
+          | "пара"
+          | "паблик")
       : undefined,
-    category: api.topics?.[0]?.name || '',
+    category: api.topics?.[0]?.name || "",
     topics: api.topics?.map((t) => t.id) || [],
     allowsBarter: api.isBarterAvailable,
     inMartRegistry: api.isMartRegistry ?? undefined,
     legalForm: api.workFormat
-      ? (WORK_FORMAT_MAP[api.workFormat] as 'ИП' | 'профдоход' | 'договор подряда' | 'ООО')
+      ? (WORK_FORMAT_MAP[api.workFormat] as
+          | "ИП"
+          | "профдоход"
+          | "договор подряда"
+          | "ООО")
       : undefined,
     restrictedTopics: api.restrictedTopics?.map((t) => t.id) || [],
-    cooperationConditions: '',
+    cooperationConditions: "",
     workFormat: api.workFormat ? WORK_FORMAT_MAP[api.workFormat] : undefined,
-    paymentTerms: '',
+    paymentTerms: "",
     contact_url: api.contactLink || undefined,
     verificationStatus: api.verificationStatus || undefined,
   };
@@ -138,13 +171,16 @@ export function mapApiDetailBloggerToLocal(api: PublicGetBloggerByIdOutputDto): 
  */
 export function mapLocalToApiUpdate(
   local: Partial<EditData>,
-  topicsLookup: Record<string, number>
+  topicsLookup: Record<string, number>,
 ): BloggerUpdateProfileInputDto {
   const { name, lastName } = splitFullName(local.full_name);
 
   // Конвертируем topics/banned_topics: названия -> ID, ID -> ID (без изменений)
   const topicIds = convertTopicsToIds(local.topics, topicsLookup);
-  const restrictedTopicIds = convertTopicsToIds(local.banned_topics, topicsLookup);
+  const restrictedTopicIds = convertTopicsToIds(
+    local.banned_topics,
+    topicsLookup,
+  );
 
   // Определяем coverageSocialType и coverage для обновления охвата
   // Приоритет: Instagram > TikTok > YouTube > Telegram
@@ -152,17 +188,17 @@ export function mapLocalToApiUpdate(
   let coverage: number | undefined;
 
   // Проверяем поля охвата сториз для всех платформ (в порядке приоритета)
-  if (local.instagram_story_reach && local.instagram_story_reach !== '') {
-    coverageSocialType = 'INSTAGRAM';
+  if (local.instagram_story_reach && local.instagram_story_reach !== "") {
+    coverageSocialType = "INSTAGRAM";
     coverage = parseFloat(local.instagram_story_reach);
-  } else if (local.tiktok_story_reach && local.tiktok_story_reach !== '') {
-    coverageSocialType = 'TIKTOK';
+  } else if (local.tiktok_story_reach && local.tiktok_story_reach !== "") {
+    coverageSocialType = "TIKTOK";
     coverage = parseFloat(local.tiktok_story_reach);
-  } else if (local.youtube_story_reach && local.youtube_story_reach !== '') {
-    coverageSocialType = 'YOUTUBE';
+  } else if (local.youtube_story_reach && local.youtube_story_reach !== "") {
+    coverageSocialType = "YOUTUBE";
     coverage = parseFloat(local.youtube_story_reach);
-  } else if (local.telegram_story_reach && local.telegram_story_reach !== '') {
-    coverageSocialType = 'TELEGRAM';
+  } else if (local.telegram_story_reach && local.telegram_story_reach !== "") {
+    coverageSocialType = "TELEGRAM";
     coverage = parseFloat(local.telegram_story_reach);
   }
 
@@ -171,8 +207,12 @@ export function mapLocalToApiUpdate(
     lastName: lastName || undefined,
     description: local.description || undefined,
     contactLink: local.contact_link || undefined,
-    workFormat: local.work_format ? WORK_FORMAT_REVERSE[local.work_format] : undefined,
-    genderType: local.gender_type ? GENDER_REVERSE[local.gender_type] : undefined,
+    workFormat: local.work_format
+      ? WORK_FORMAT_REVERSE[local.work_format]
+      : undefined,
+    genderType: local.gender_type
+      ? GENDER_REVERSE[local.gender_type]
+      : undefined,
     // topics и restrictedTopics REQUIRED! (можно пустой массив, но нельзя undefined)
     topics: topicIds,
     restrictedTopics: restrictedTopicIds,
@@ -182,7 +222,6 @@ export function mapLocalToApiUpdate(
     coverageSocialType,
     coverage,
   };
-
 
   return result;
 }

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { APIError } from '@/api/client';
-import { logError } from '@/utils/logger';
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { APIError } from "@/api/client";
+import { logError } from "@/utils/logger";
 
 interface InstagramClientStatus {
   isActive: boolean;
@@ -23,7 +23,7 @@ export const useInstagramClientStatus = () => {
 
       // Попробуем создать тестового блогера с известным username
       // Если это не сработает, значит Instagram клиент не настроен
-      const testUsername = 'instagram'; // Официальный аккаунт Instagram
+      const testUsername = "instagram"; // Официальный аккаунт Instagram
 
       // Здесь можно добавить специальный endpoint для проверки статуса клиента
       // Пока что будем полагаться на ошибки при создании блогера
@@ -34,14 +34,14 @@ export const useInstagramClientStatus = () => {
         error: null,
       });
     } catch (error) {
-      logError('Instagram client status check failed:', error);
+      logError("Instagram client status check failed:", error);
 
-      let errorMessage = 'Неизвестная ошибка';
+      let errorMessage = "Неизвестная ошибка";
       if (error instanceof APIError) {
-        if (error.message.includes('username not found')) {
-          errorMessage = 'Instagram клиент не настроен или недоступен';
-        } else if (error.message.includes('parsing ig error')) {
-          errorMessage = 'Ошибка парсинга Instagram данных';
+        if (error.message.includes("username not found")) {
+          errorMessage = "Instagram клиент не настроен или недоступен";
+        } else if (error.message.includes("parsing ig error")) {
+          errorMessage = "Ошибка парсинга Instagram данных";
         } else {
           errorMessage = error.message;
         }

@@ -1,31 +1,31 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAdminBloggers } from '@/hooks/admin/useAdminBloggers';
-import { useAdminBloggerActions } from '@/hooks/admin/useAdminBloggerActions';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Star, LogOut, Search } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { LoadingSpinner } from '@/ui-kit/components';
-import { StatsCards } from '@/components/admin/StatsCards';
-import { AdminLinkRequestsTable } from '@/components/admin/AdminLinkRequestsTable';
-import { BloggersTable } from '@/components/admin/BloggersTable';
-import { AddBloggerDialog } from '@/components/admin/AddBloggerDialog';
-import { AdminHeader } from '@/components/admin/AdminHeader';
-import { TopicsManagementDialog } from '@/components/admin/TopicsManagementDialog';
-import { formatNumber } from '@/utils/formatters';
-import { logError } from '@/utils/logger';
-import { adminToggleBloggerVisibility } from '@/api/endpoints/admin';
-import { mapLinkRequestToTableFormat } from '@/utils/admin/mappers';
-import type { AdminGetLinkBloggerClientRequestOutputDto } from '@/api/types';
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAdminBloggers } from "@/hooks/admin/useAdminBloggers";
+import { useAdminBloggerActions } from "@/hooks/admin/useAdminBloggerActions";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
+import { Button } from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Star, LogOut, Search } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "@/ui-kit/components";
+import { StatsCards } from "@/components/admin/StatsCards";
+import { AdminLinkRequestsTable } from "@/components/admin/AdminLinkRequestsTable";
+import { BloggersTable } from "@/components/admin/BloggersTable";
+import { AddBloggerDialog } from "@/components/admin/AddBloggerDialog";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import { TopicsManagementDialog } from "@/components/admin/TopicsManagementDialog";
+import { formatNumber } from "@/utils/formatters";
+import { logError } from "@/utils/logger";
+import { adminToggleBloggerVisibility } from "@/api/endpoints/admin";
+import { mapLinkRequestToTableFormat } from "@/utils/admin/mappers";
+import type { AdminGetLinkBloggerClientRequestOutputDto } from "@/api/types";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { adminInfo, loading: adminLoading } = useAdminAuth();
 
-  const [activeTab, setActiveTab] = useState('bloggers'); // По умолчанию показываем блогеров
+  const [activeTab, setActiveTab] = useState("bloggers"); // По умолчанию показываем блогеров
   const [topicsDialogOpen, setTopicsDialogOpen] = useState(false);
 
   const {
@@ -64,9 +64,9 @@ const AdminDashboard = () => {
     // Filter by search term
     if (searchTerm) {
       result = result.filter((request) => {
-        const bloggerName = `${request.name} ${request.lastName}`.trim() || '';
-        const username = request.username || '';
-        const userEmail = request.user_email || '';
+        const bloggerName = `${request.name} ${request.lastName}`.trim() || "";
+        const username = request.username || "";
+        const userEmail = request.user_email || "";
 
         return (
           bloggerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,7 +79,10 @@ const AdminDashboard = () => {
     return result;
   }, [linkRequests, searchTerm]);
 
-  const handleToggleVisibility = async (bloggerId: number, currentVisibility: boolean) => {
+  const handleToggleVisibility = async (
+    bloggerId: number,
+    currentVisibility: boolean,
+  ) => {
     try {
       // ✅ Реализован API вызов для изменения видимости блогера
       await adminToggleBloggerVisibility(bloggerId);
@@ -88,16 +91,16 @@ const AdminDashboard = () => {
       updateBloggerVisibility(bloggerId, !currentVisibility);
 
       toast({
-        title: 'Успех',
-        description: `Блогер ${bloggerId} ${currentVisibility ? 'показан' : 'скрыт'}`,
-        variant: 'default',
+        title: "Успех",
+        description: `Блогер ${bloggerId} ${currentVisibility ? "показан" : "скрыт"}`,
+        variant: "default",
       });
     } catch (error) {
-      logError('Error toggling visibility:', error);
+      logError("Error toggling visibility:", error);
       toast({
-        title: 'Ошибка',
-        description: 'Не удалось изменить видимость блогера',
-        variant: 'destructive',
+        title: "Ошибка",
+        description: "Не удалось изменить видимость блогера",
+        variant: "destructive",
       });
     }
   };
@@ -107,7 +110,7 @@ const AdminDashboard = () => {
       // Используем хук для создания блогера
       await addBlogger(instagramUsername);
     } catch (error) {
-      logError('Error creating blogger:', error);
+      logError("Error creating blogger:", error);
       throw error; // Пробрасываем ошибку для обработки в AddBloggerDialog
     }
   };
@@ -142,15 +145,15 @@ const AdminDashboard = () => {
           <div className="flex gap-2 items-center justify-between">
             <div className="flex gap-2">
               <Button
-                variant={activeTab === 'bloggers' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('bloggers')}
+                variant={activeTab === "bloggers" ? "default" : "outline"}
+                onClick={() => setActiveTab("bloggers")}
                 size="sm"
               >
                 Все блогеры
               </Button>
               <Button
-                variant={activeTab === 'link-requests' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('link-requests')}
+                variant={activeTab === "link-requests" ? "default" : "outline"}
+                onClick={() => setActiveTab("link-requests")}
                 size="sm"
               >
                 Запросы
@@ -158,23 +161,21 @@ const AdminDashboard = () => {
             </div>
 
             {/* Add Blogger Button - только на вкладке блогеров */}
-            {activeTab === 'bloggers' && (
-              <AddBloggerDialog
-                onAddBlogger={handleAddBlogger}
-              />
+            {activeTab === "bloggers" && (
+              <AddBloggerDialog onAddBlogger={handleAddBlogger} />
             )}
           </div>
 
           {/* Info */}
           <div className="text-sm text-muted-foreground">
-            {activeTab === 'link-requests'
-              ? 'Показаны запросы на связывание блогеров с клиентами. При одобрении запроса блогер автоматически становится верифицированным.'
-              : ''}
+            {activeTab === "link-requests"
+              ? "Показаны запросы на связывание блогеров с клиентами. При одобрении запроса блогер автоматически становится верифицированным."
+              : ""}
           </div>
         </div>
 
         {/* Content based on active tab */}
-        {activeTab === 'bloggers' ? (
+        {activeTab === "bloggers" ? (
           <BloggersTable
             bloggers={filteredBloggers}
             onToggleVisibility={handleToggleVisibility}
@@ -183,7 +184,9 @@ const AdminDashboard = () => {
             isLoadingMore={isLoadingMore}
             hasMore={hasMoreBloggers && !searchTerm}
             onLoadMore={loadMoreBloggers}
-            totalCount={searchTerm ? filteredBloggers.length : totalBloggersCount}
+            totalCount={
+              searchTerm ? filteredBloggers.length : totalBloggersCount
+            }
           />
         ) : (
           <AdminLinkRequestsTable

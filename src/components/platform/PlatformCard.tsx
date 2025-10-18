@@ -9,13 +9,13 @@
  * Использует платформенную абстракцию для единообразного отображения.
  */
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import type { PlatformType } from '@/types/platform';
-import type { PlatformData } from '@/types/profile';
-import { PLATFORM_CONFIGS } from '@/config/platforms';
-import { getPlatformDisplayName, getPlatformColor } from '@/config/platforms';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { PlatformType } from "@/types/platform";
+import type { PlatformData } from "@/types/profile";
+import { PLATFORM_CONFIGS } from "@/config/platforms";
+import { getPlatformDisplayName, getPlatformColor } from "@/config/platforms";
 
 export interface PlatformCardProps {
   /** Тип платформы */
@@ -34,16 +34,16 @@ export interface PlatformCardProps {
  * Форматирует число с разделителями тысяч
  */
 const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('ru-RU').format(num);
+  return new Intl.NumberFormat("ru-RU").format(num);
 };
 
 /**
  * Форматирует цену в рубли
  */
 const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
+  return new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "RUB",
     minimumFractionDigits: 0,
   }).format(price);
 };
@@ -59,7 +59,7 @@ const formatPrice = (price: number): string => {
  * />
  */
 export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
-  ({ platform, data, showPricing = false, className = '', onClick }) => {
+  ({ platform, data, showPricing = false, className = "", onClick }) => {
     const config = PLATFORM_CONFIGS[platform];
     const displayName = getPlatformDisplayName(platform);
     const color = getPlatformColor(platform);
@@ -68,7 +68,7 @@ export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
 
     return (
       <Card
-        className={`transition-all hover:shadow-md ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        className={`transition-all hover:shadow-md ${onClick ? "cursor-pointer" : ""} ${className}`}
         onClick={onClick}
         style={{ borderColor: hasData ? color : undefined }}
       >
@@ -79,7 +79,10 @@ export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
               <span>{displayName}</span>
             </div>
             {hasData && (
-              <Badge variant="secondary" style={{ backgroundColor: color, color: 'white' }}>
+              <Badge
+                variant="secondary"
+                style={{ backgroundColor: color, color: "white" }}
+              >
                 Активна
               </Badge>
             )}
@@ -95,7 +98,9 @@ export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground">Подписчики</p>
-                  <p className="text-lg font-semibold">{formatNumber(data.subscribers)}</p>
+                  <p className="text-lg font-semibold">
+                    {formatNumber(data.subscribers)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Вовлеченность</p>
@@ -108,12 +113,18 @@ export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t">
                   <div>
                     <p className="text-xs text-muted-foreground">Охват поста</p>
-                    <p className="text-sm font-medium">{formatNumber(data.reach)}</p>
+                    <p className="text-sm font-medium">
+                      {formatNumber(data.reach)}
+                    </p>
                   </div>
                   {data.storyReach > 0 && (
                     <div>
-                      <p className="text-xs text-muted-foreground">Охват истории</p>
-                      <p className="text-sm font-medium">{formatNumber(data.storyReach)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Охват истории
+                      </p>
+                      <p className="text-sm font-medium">
+                        {formatNumber(data.storyReach)}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -145,7 +156,9 @@ export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
               {data.username && (
                 <div className="pt-2 border-t">
                   <p className="text-xs text-muted-foreground">Профиль</p>
-                  <p className="text-sm font-medium text-blue-600">@{data.username}</p>
+                  <p className="text-sm font-medium text-blue-600">
+                    @{data.username}
+                  </p>
                 </div>
               )}
             </>
@@ -153,7 +166,7 @@ export const PlatformCard: React.FC<PlatformCardProps> = React.memo(
         </CardContent>
       </Card>
     );
-  }
+  },
 );
 
-PlatformCard.displayName = 'PlatformCard';
+PlatformCard.displayName = "PlatformCard";

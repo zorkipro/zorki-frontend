@@ -1,9 +1,10 @@
 // Supabase client for authentication only
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -16,8 +17,8 @@ export const supabase = (() => {
     // Очищаем только старые неиспользуемые ключи, но не активную сессию
     try {
       // Удаляем только старые ключи, которые больше не используются
-      localStorage.removeItem('sb-zorki7-auth-token');
-      sessionStorage.removeItem('sb-zorki7-anon');
+      localStorage.removeItem("sb-zorki7-auth-token");
+      sessionStorage.removeItem("sb-zorki7-anon");
       // НЕ удаляем 'sb-zorki7-anon' из localStorage - это активная сессия
     } catch (error) {
       // Silent - old storage cleanup failed
@@ -26,7 +27,7 @@ export const supabase = (() => {
     supabaseInstance = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         storage: localStorage,
-        storageKey: 'sb-zorki7-anon',
+        storageKey: "sb-zorki7-anon",
         persistSession: true,
         autoRefreshToken: true,
       },

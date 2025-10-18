@@ -5,7 +5,7 @@
 // Использует useTopics и фильтрует по isTopicRestricted: true
 // ============================================
 
-import { useRestrictedTopics as useRestrictedTopicsFromTopics } from './useTopics';
+import { useRestrictedTopics as useRestrictedTopicsFromTopics } from "./useTopics";
 
 /**
  * Хук для получения запрещенных тем

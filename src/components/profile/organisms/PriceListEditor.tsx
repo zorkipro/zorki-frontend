@@ -1,9 +1,15 @@
-import { memo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { FormField } from '@/ui-kit';
-import { Separator } from '@/ui-kit';
-import { Instagram, Youtube, Music, Send } from 'lucide-react';
+import { memo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { FormField } from "@/ui-kit";
+import { Separator } from "@/ui-kit";
+import { Instagram, Youtube, Music, Send } from "lucide-react";
 
 interface PriceData {
   instagram?: {
@@ -23,7 +29,11 @@ interface PriceData {
 
 interface PriceListEditorProps {
   prices: PriceData;
-  onPriceChange: (platform: keyof PriceData, field: string, value: string) => void;
+  onPriceChange: (
+    platform: keyof PriceData,
+    field: string,
+    value: string,
+  ) => void;
   disabled?: boolean;
 }
 
@@ -38,7 +48,9 @@ const PriceListEditorComponent = ({
         <CardTitle className="flex items-center space-x-2">
           <span>Прайс-лист</span>
         </CardTitle>
-        <CardDescription>Настройте цены для всех ваших платформ</CardDescription>
+        <CardDescription>
+          Настройте цены для всех ваших платформ
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Instagram Pricing */}
@@ -48,20 +60,30 @@ const PriceListEditorComponent = ({
             <h3 className="text-sm font-medium">Instagram</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6">
-            <FormField label="Цена за пост" description="Стоимость публикации в BYN">
+            <FormField
+              label="Цена за пост"
+              description="Стоимость публикации в BYN"
+            >
               <Input
                 type="number"
-                value={prices.instagram?.postPrice || ''}
-                onChange={(e) => onPriceChange('instagram', 'postPrice', e.target.value)}
+                value={prices.instagram?.postPrice || ""}
+                onChange={(e) =>
+                  onPriceChange("instagram", "postPrice", e.target.value)
+                }
                 placeholder="0"
                 disabled={disabled}
               />
             </FormField>
-            <FormField label="Цена за сторис" description="Стоимость stories в BYN">
+            <FormField
+              label="Цена за сторис"
+              description="Стоимость stories в BYN"
+            >
               <Input
                 type="number"
-                value={prices.instagram?.storyPrice || ''}
-                onChange={(e) => onPriceChange('instagram', 'storyPrice', e.target.value)}
+                value={prices.instagram?.storyPrice || ""}
+                onChange={(e) =>
+                  onPriceChange("instagram", "storyPrice", e.target.value)
+                }
                 placeholder="0"
                 disabled={disabled}
               />
@@ -78,11 +100,16 @@ const PriceListEditorComponent = ({
             <h3 className="text-sm font-medium">YouTube</h3>
           </div>
           <div className="pl-6">
-            <FormField label="Цена интеграции" description="Стоимость размещения рекламы в BYN">
+            <FormField
+              label="Цена интеграции"
+              description="Стоимость размещения рекламы в BYN"
+            >
               <Input
                 type="number"
-                value={prices.youtube?.price || ''}
-                onChange={(e) => onPriceChange('youtube', 'price', e.target.value)}
+                value={prices.youtube?.price || ""}
+                onChange={(e) =>
+                  onPriceChange("youtube", "price", e.target.value)
+                }
                 placeholder="0"
                 disabled={disabled}
               />
@@ -99,11 +126,16 @@ const PriceListEditorComponent = ({
             <h3 className="text-sm font-medium">TikTok</h3>
           </div>
           <div className="pl-6">
-            <FormField label="Цена интеграции" description="Стоимость размещения рекламы в BYN">
+            <FormField
+              label="Цена интеграции"
+              description="Стоимость размещения рекламы в BYN"
+            >
               <Input
                 type="number"
-                value={prices.tiktok?.price || ''}
-                onChange={(e) => onPriceChange('tiktok', 'price', e.target.value)}
+                value={prices.tiktok?.price || ""}
+                onChange={(e) =>
+                  onPriceChange("tiktok", "price", e.target.value)
+                }
                 placeholder="0"
                 disabled={disabled}
               />
@@ -120,11 +152,16 @@ const PriceListEditorComponent = ({
             <h3 className="text-sm font-medium">Telegram</h3>
           </div>
           <div className="pl-6">
-            <FormField label="Цена публикации" description="Стоимость размещения в канале в BYN">
+            <FormField
+              label="Цена публикации"
+              description="Стоимость размещения в канале в BYN"
+            >
               <Input
                 type="number"
-                value={prices.telegram?.price || ''}
-                onChange={(e) => onPriceChange('telegram', 'price', e.target.value)}
+                value={prices.telegram?.price || ""}
+                onChange={(e) =>
+                  onPriceChange("telegram", "price", e.target.value)
+                }
                 placeholder="0"
                 disabled={disabled}
               />

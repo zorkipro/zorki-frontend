@@ -99,33 +99,9 @@ export const useAdminBloggerEditor = (username?: string) => {
 
       if (response.items && response.items.length > 0) {
         const bloggerSummary = response.items[0];
-        logger.debug('Найден блогер по username', {
-          component: 'useAdminBloggerEditor',
-          bloggerId: bloggerSummary.id,
-          socialUsername: bloggerSummary.social?.username,
-        });
-
-        // Теперь получаем полную информацию о блогере через детальный API
-        const bloggerDetails = await getBloggerById(bloggerSummary.id);
         
-        logger.debug('Загружены детальные данные блогера', {
-          component: 'useAdminBloggerEditor',
-          bloggerId: bloggerDetails.id,
-          hasProfileDraft: !!bloggerDetails.profileDraft,
-          hasPriceDraft: !!bloggerDetails.priceDraft?.length,
-          hasTopics: !!bloggerDetails.topics?.length,
-          hasRestrictedTopics: !!bloggerDetails.restrictedTopics?.length,
-          hasContactLink: !!bloggerDetails.contactLink,
-          hasDescription: !!bloggerDetails.description,
-          // Данные из черновиков (если есть)
-          draftTopics: bloggerDetails.profileDraft?.topics?.length || 0,
-          draftRestrictedTopics: bloggerDetails.profileDraft?.restrictedTopics?.length || 0,
-          // Детальная информация о темах
-          topicsData: bloggerDetails.topics,
-          restrictedTopicsData: bloggerDetails.restrictedTopics,
-          profileDraftTopics: bloggerDetails.profileDraft?.topics,
-          profileDraftRestrictedTopics: bloggerDetails.profileDraft?.restrictedTopics,
-        });
+        // Получаем полные данные блогера по ID
+        const bloggerDetails = await getBloggerById(bloggerSummary.id);
 
         setProfile(bloggerDetails);
 
@@ -159,17 +135,7 @@ export const useAdminBloggerEditor = (username?: string) => {
           instagram_story_price: bloggerDetails.price?.[0]?.storiesPrice || '0',
         }));
 
-        // Логируем что мы установили в formData
-        logger.debug('FormData установлен', {
-          component: 'useAdminBloggerEditor',
-          topics: profileData.topics?.map(t => t.id) || [],
-          banned_topics: profileData.restrictedTopics?.map(t => t.id) || [],
-          topicsCount: profileData.topics?.length || 0,
-          bannedTopicsCount: profileData.restrictedTopics?.length || 0,
-          // Данные охватов
-          instagramPostReach: bloggerDetails.social?.[0]?.postCoverage,
-          instagramStoryReach: bloggerDetails.social?.[0]?.coverage,
-        });
+        // Устанавливаем данные в formData
 
         // Устанавливаем доступные платформы для всех социальных сетей
         const platforms: Record<string, PlatformData> = {};
@@ -198,16 +164,6 @@ export const useAdminBloggerEditor = (username?: string) => {
 
         setAvailablePlatforms(platforms);
 
-        logger.info('Данные блогера успешно загружены', {
-          component: 'useAdminBloggerEditor',
-          bloggerId: bloggerDetails.id,
-          platformsCount: Object.keys(platforms).length,
-          topicsCount: profileData.topics?.length || 0,
-          restrictedTopicsCount: profileData.restrictedTopics?.length || 0,
-          usingProfileDraft: !!bloggerDetails.profileDraft,
-          usingPriceDraft: !!bloggerDetails.priceDraft?.length,
-        });
-
       } else {
         setError('Блогер не найден');
         toast({
@@ -217,10 +173,7 @@ export const useAdminBloggerEditor = (username?: string) => {
         });
       }
     } catch (err: unknown) {
-      logger.error('Ошибка загрузки данных блогера', err, {
-        component: 'useAdminBloggerEditor',
-        username,
-      });
+      logger.error('Ошибка загрузки данных блогера', err);
       const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки данных блогера';
       setError(errorMessage);
 
@@ -241,9 +194,7 @@ export const useAdminBloggerEditor = (username?: string) => {
   const handleSave = useCallback(
     async (data: Partial<EditData>) => {
       if (!profile?.id) {
-        logger.error('Cannot save: profile ID missing', undefined, {
-          component: 'useAdminBloggerEditor',
-        });
+        logger.error('Cannot save: profile ID missing');
         return;
       }
 
@@ -271,11 +222,6 @@ export const useAdminBloggerEditor = (username?: string) => {
         if (hasProfileChanges) {
           const profileDto = mapEditDataToProfileUpdate(data);
           await adminUpdateBlogger(profile.id, profileDto);
-          
-          logger.info('Profile updated successfully', {
-            component: 'useAdminBloggerEditor',
-            bloggerId: profile.id,
-          });
         }
 
         // Сохраняем изменения цен для каждой платформы
@@ -286,12 +232,6 @@ export const useAdminBloggerEditor = (username?: string) => {
             const priceDto = mapPlatformPricesToUpdate(platform, data);
             if (priceDto) {
               await adminUpdateBloggerSocialPrice(profile.id, priceDto);
-              
-              logger.info('Platform prices updated', {
-                component: 'useAdminBloggerEditor',
-                bloggerId: profile.id,
-                platform,
-              });
             }
           }
         }
@@ -309,10 +249,7 @@ export const useAdminBloggerEditor = (username?: string) => {
         await fetchBloggerData();
 
       } catch (err: unknown) {
-        logger.error('Error saving blogger changes', err, {
-          component: 'useAdminBloggerEditor',
-          profileId: profile?.id,
-        });
+        logger.error('Error saving blogger changes', err);
         
         const errorMessage = err instanceof Error ? err.message : 'Не удалось сохранить изменения';
         setError(errorMessage);

@@ -123,11 +123,6 @@ export const useErrorHandler = (
    */
   const handleErrorSilently = useCallback(
     (error: unknown) => {
-      logger.debug('Handling error silently', {
-        component: 'useErrorHandler',
-        error: error instanceof Error ? error.message : String(error),
-      });
-
       errorHandler.handleErrorSilently(error);
     },
     [errorHandler]
@@ -138,11 +133,6 @@ export const useErrorHandler = (
    */
   const handleValidationError = useCallback(
     (error: unknown, options?: ErrorHandlerOptions) => {
-      logger.warn('Handling validation error', {
-        component: 'useErrorHandler',
-        error: error instanceof Error ? error.message : String(error),
-      });
-
       errorHandler.handleValidationError(error, options);
     },
     [errorHandler]
@@ -153,11 +143,6 @@ export const useErrorHandler = (
    */
   const handleAuthError = useCallback(
     (error: unknown) => {
-      logger.warn('Handling auth error', {
-        component: 'useErrorHandler',
-        error: error instanceof Error ? error.message : String(error),
-      });
-
       errorHandler.handleAuthError(error, {
         navigate: () => navigate(ROUTES.AUTH.LOGIN),
       });
@@ -247,14 +232,6 @@ export const useErrorHandlerWithRetry = () => {
             }
             return null;
           }
-
-          // Логируем попытку
-          logger.debug(`Retry attempt ${attempt} failed`, {
-            component: 'useErrorHandlerWithRetry',
-            attempt,
-            maxAttempts,
-            error: error instanceof Error ? error.message : String(error),
-          });
 
           // Ждем перед следующей попыткой
           await new Promise((resolve) => setTimeout(resolve, delay * attempt));

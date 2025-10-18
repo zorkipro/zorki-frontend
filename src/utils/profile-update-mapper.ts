@@ -3,8 +3,8 @@
  * Обеспечивает селективное обновление только измененных полей
  */
 
-import type { EditData } from '@/types/profile';
-import type { ClientBloggerInfo } from '@/api/types';
+import type { EditData } from "@/types/profile";
+import type { ClientBloggerInfo } from "@/api/types";
 
 /**
  * Маппинг полей EditData в поля ClientBloggerInfo
@@ -16,10 +16,10 @@ export interface ProfileUpdateMapping {
   gender?: string;
   legal_form?: string;
   contact_url?: string;
-  
+
   // Статус верификации
-  verification_status?: 'NEW' | 'APPROVED' | 'REJECTED' | 'MODERATION';
-  
+  verification_status?: "NEW" | "APPROVED" | "REJECTED" | "MODERATION";
+
   // Дополнительные поля
   [key: string]: any;
 }
@@ -30,7 +30,7 @@ export interface ProfileUpdateMapping {
  * @returns объект с полями для селективного обновления
  */
 export function mapProfileChangesToBloggerFields(
-  changes: Partial<EditData>
+  changes: Partial<EditData>,
 ): Partial<ClientBloggerInfo> {
   const mappedFields: Partial<ClientBloggerInfo> = {};
 
@@ -55,17 +55,17 @@ export function mapProfileChangesToBloggerFields(
  */
 export function hasProfileChanges(
   oldData: Partial<EditData>,
-  newData: Partial<EditData>
+  newData: Partial<EditData>,
 ): boolean {
   const keys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
-  
+
   for (const key of keys) {
     const typedKey = key as keyof EditData;
     if (oldData[typedKey] !== newData[typedKey]) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -76,19 +76,22 @@ export function hasProfileChanges(
  */
 export function logProfileChanges(
   changes: Partial<EditData>,
-  component: string
+  component: string,
 ): void {
   const changedFields = Object.keys(changes).filter(
-    key => changes[key as keyof EditData] !== undefined
+    (key) => changes[key as keyof EditData] !== undefined,
   );
-  
+
   if (changedFields.length > 0) {
     console.log(`🔄 ${component}: Profile changes detected`, {
       changedFields,
-      changes: changedFields.reduce((acc, key) => {
-        acc[key] = changes[key as keyof EditData];
-        return acc;
-      }, {} as Record<string, any>),
+      changes: changedFields.reduce(
+        (acc, key) => {
+          acc[key] = changes[key as keyof EditData];
+          return acc;
+        },
+        {} as Record<string, any>,
+      ),
     });
   }
 }

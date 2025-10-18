@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Badge } from '@/ui-kit';
-import { Button } from '@/ui-kit';
+import React, { useState, useMemo } from "react";
+import { Badge } from "@/ui-kit";
+import { Button } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -8,21 +8,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Textarea } from '@/ui-kit';
-import { Edit, ArrowLeft, MessageCircle } from 'lucide-react';
-import { Instagram } from 'lucide-react';
-import { type Blogger } from '@/types/blogger';
-import { SafeAvatar } from '@/components/ui/SafeAvatar';
-import { truncateName } from '@/utils/formatters';
-import { useProfileBasicInfo, useVerificationStatus } from '@/hooks/profile/useProfileSelectors';
-import { useBlogger } from '@/contexts/BloggerContext';
-import { useTopics } from '@/hooks/useTopics';
+} from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import { Textarea } from "@/ui-kit";
+import { Edit, ArrowLeft, MessageCircle } from "lucide-react";
+import { Instagram } from "lucide-react";
+import { type Blogger } from "@/types/blogger";
+import { SafeAvatar } from "@/components/ui/SafeAvatar";
+import { truncateName } from "@/utils/formatters";
+import {
+  useProfileBasicInfo,
+  useVerificationStatus,
+} from "@/hooks/profile/useProfileSelectors";
+import { useBlogger } from "@/contexts/BloggerContext";
+import { useTopics } from "@/hooks/useTopics";
 
-import { EditData } from '@/types/profile';
-import { normalizeUsername } from '@/utils/username';
+import { EditData } from "@/types/profile";
+import { normalizeUsername } from "@/utils/username";
 
 interface ProfileHeaderProps {
   profile: Blogger;
@@ -47,22 +50,32 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
     onFormDataChange,
   }) => {
     const { bloggerInfo } = useBlogger();
-    
+
     // Получаем lookup таблицы для конвертации ID в названия
     const { topicReverseLookup } = useTopics();
-    
+
     // Используем селекторы для оптимизированного доступа к данным
     const basicInfo = useProfileBasicInfo(bloggerInfo);
     const verificationStatus = useVerificationStatus(bloggerInfo);
-    
+
     // Состояние для полей редактирования
-    const [editName, setEditName] = useState(formData?.full_name || '');
-    const [editDescription, setEditDescription] = useState(formData?.description || '');
+    const [editName, setEditName] = useState(formData?.full_name || "");
+    const [editDescription, setEditDescription] = useState(
+      formData?.description || "",
+    );
 
     // Мемоизированные значения для предотвращения ненужных перерисовок
     const displayName = useMemo(() => {
-      return basicInfo ? `${basicInfo.name || ''} ${basicInfo.lastName || ''}`.trim() || basicInfo.username : profile.name;
-    }, [basicInfo?.name, basicInfo?.lastName, basicInfo?.username, profile.name]);
+      return basicInfo
+        ? `${basicInfo.name || ""} ${basicInfo.lastName || ""}`.trim() ||
+            basicInfo.username
+        : profile.name;
+    }, [
+      basicInfo?.name,
+      basicInfo?.lastName,
+      basicInfo?.username,
+      profile.name,
+    ]);
 
     const avatarUrl = useMemo(() => {
       return profile.avatar; // Используем данные из profile, так как basicInfo не содержит avatar
@@ -74,8 +87,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
     // Обновляем состояние при изменении formData
     React.useEffect(() => {
-      setEditName(formData?.full_name || '');
-      setEditDescription(formData?.description || '');
+      setEditName(formData?.full_name || "");
+      setEditDescription(formData?.description || "");
     }, [formData?.full_name, formData?.description]);
 
     return (
@@ -95,16 +108,18 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                 src={avatarUrl}
                 alt={displayName}
                 className="w-32 h-32 border-4 border-border-light aspect-square"
-                fallbackIcon={<Instagram className="w-16 h-16 text-muted-foreground" />}
+                fallbackIcon={
+                  <Instagram className="w-16 h-16 text-muted-foreground" />
+                }
               />
 
               <div className="text-center md:text-left flex-1">
                 <div className="flex items-center justify-center md:justify-start space-x-3 mb-3">
                   {/* Editable Name */}
                   <Dialog
-                    open={editingSection === 'fullName'}
+                    open={editingSection === "fullName"}
                     onOpenChange={(open) => {
-                      const newSection = open ? 'fullName' : null;
+                      const newSection = open ? "fullName" : null;
                       onEditingSectionChange(newSection);
                     }}
                   >
@@ -128,7 +143,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                       </DialogHeader>
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="edit_display_name">Отображаемое имя</Label>
+                          <Label htmlFor="edit_display_name">
+                            Отображаемое имя
+                          </Label>
                           <Input
                             id="edit_display_name"
                             value={editName}
@@ -167,25 +184,29 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
                   {verificationStatus && (
                     <Badge
-                      variant={verificationStatus.isVerified ? 'default' : 'destructive'}
+                      variant={
+                        verificationStatus.isVerified
+                          ? "default"
+                          : "destructive"
+                      }
                       className={
                         verificationStatus.isVerified
-                          ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-100'
-                          : 'bg-red-100 text-red-800 border-red-200'
+                          ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-100"
+                          : "bg-red-100 text-red-800 border-red-200"
                       }
                     >
                       {verificationStatus.isVerified
-                        ? 'Верифицирован'
-                        : 'Не верифицирован'}
+                        ? "Верифицирован"
+                        : "Не верифицирован"}
                     </Badge>
                   )}
                 </div>
 
                 {/* Editable Bio */}
                 <Dialog
-                  open={editingSection === 'description'}
+                  open={editingSection === "description"}
                   onOpenChange={(open) => {
-                    const newSection = open ? 'description' : null;
+                    const newSection = open ? "description" : null;
                     onEditingSectionChange(newSection);
                   }}
                 >
@@ -194,7 +215,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                       <p className="text-lg text-muted-foreground max-w-2xl">
                         {formData?.description ||
                           description ||
-                          'Нажмите, чтобы добавить описание профиля...'}
+                          "Нажмите, чтобы добавить описание профиля..."}
                       </p>
                       <Edit className="w-4 h-4 text-muted-foreground mt-1" />
                     </div>
@@ -202,7 +223,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Редактировать описание</DialogTitle>
-                      <DialogDescription>Обновите описание вашего профиля</DialogDescription>
+                      <DialogDescription>
+                        Обновите описание вашего профиля
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
@@ -246,25 +269,33 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
                 <div className="flex flex-wrap justify-center md:justify-start gap-2">
                   {basicInfo?.username && (
-                    <Badge variant="secondary">@{normalizeUsername(basicInfo.username)}</Badge>
+                    <Badge variant="secondary">
+                      @{normalizeUsername(basicInfo.username)}
+                    </Badge>
                   )}
                   {formData?.topics &&
                     formData.topics.length > 0 &&
                     formData.topics.map((topic, index) => {
                       // Конвертируем ID в название, если это число
-                      const topicName = typeof topic === 'number' 
-                        ? topicReverseLookup[topic] 
-                        : topic;
-                      
+                      const topicName =
+                        typeof topic === "number"
+                          ? topicReverseLookup[topic]
+                          : topic;
+
                       return topicName ? (
                         <Badge key={index} variant="secondary">
                           {topicName}
                         </Badge>
                       ) : null;
                     })}
-                  {formData?.barter_available && <Badge variant="secondary">Бартер возможен</Badge>}
+                  {formData?.barter_available && (
+                    <Badge variant="secondary">Бартер возможен</Badge>
+                  )}
                   {formData?.mart_registry && (
-                    <Badge variant="secondary" className="text-success border-success">
+                    <Badge
+                      variant="secondary"
+                      className="text-success border-success"
+                    >
                       В реестре МАРТ
                     </Badge>
                   )}
@@ -277,7 +308,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
               <Button
                 className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto mx-auto md:mx-0"
                 onClick={() => {
-                  window.open(formData.contact_link!, '_blank');
+                  window.open(formData.contact_link!, "_blank");
                 }}
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
@@ -307,7 +338,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
       prevProps.editingSection === nextProps.editingSection &&
       prevProps.saving === nextProps.saving
     );
-  }
+  },
 );
 
-ProfileHeader.displayName = 'ProfileHeader';
+ProfileHeader.displayName = "ProfileHeader";

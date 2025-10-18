@@ -1,22 +1,32 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Mail, ArrowLeft } from 'lucide-react';
-import { CenteredAuthLayout, InputWithIcon, ErrorAlert } from '@/ui-kit/components';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Mail, ArrowLeft } from "lucide-react";
+import {
+  CenteredAuthLayout,
+  InputWithIcon,
+  ErrorAlert,
+} from "@/ui-kit/components";
 
 export const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
     setSuccess(false);
 
     try {
@@ -30,7 +40,7 @@ export const ForgotPassword = () => {
         setSuccess(true);
       }
     } catch (err) {
-      setError('Произошла ошибка при отправке письма');
+      setError("Произошла ошибка при отправке письма");
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +69,7 @@ export const ForgotPassword = () => {
                 variant="outline"
                 onClick={() => {
                   setSuccess(false);
-                  setEmail('');
+                  setEmail("");
                 }}
                 className="w-full"
               >
@@ -118,14 +128,17 @@ export const ForgotPassword = () => {
                   Отправка...
                 </>
               ) : (
-                'Отправить инструкции'
+                "Отправить инструкции"
               )}
             </Button>
           </form>
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Вспомнили пароль? </span>
-            <Link to="/login" className="text-primary hover:text-primary/80 font-medium">
+            <Link
+              to="/login"
+              className="text-primary hover:text-primary/80 font-medium"
+            >
               Войти
             </Link>
           </div>

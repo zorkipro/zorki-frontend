@@ -79,22 +79,8 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
       });
 
       if (!hasChanges) {
-        logger.debug('No changes detected, skipping update', {
-          component: 'BloggerContext',
-          fields,
-        });
         return prev;
       }
-
-      logger.debug('Updating blogger fields', {
-        component: 'BloggerContext',
-        fields,
-        previousFields: Object.keys(fields).reduce((acc, key) => {
-          const typedKey = key as keyof ClientBloggerInfo;
-          (acc as any)[typedKey] = (prev as any)[typedKey];
-          return acc;
-        }, {} as Partial<ClientBloggerInfo>),
-      });
 
       return { ...prev, ...fields };
     });

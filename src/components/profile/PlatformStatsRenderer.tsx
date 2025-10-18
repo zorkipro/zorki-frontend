@@ -1,8 +1,13 @@
-import React from 'react';
-import { InstagramStats, YouTubeStats, TikTokStats, TelegramStats } from './PlatformStats';
-import { Card, CardContent } from '@/ui-kit';
-import { Users, TrendingUp, Eye } from 'lucide-react';
-import { PlatformStats, EditData } from '@/types/profile';
+import React from "react";
+import {
+  InstagramStats,
+  YouTubeStats,
+  TikTokStats,
+  TelegramStats,
+} from "./PlatformStats";
+import { Card, CardContent } from "@/ui-kit";
+import { Users, TrendingUp, Eye } from "lucide-react";
+import { PlatformStats, EditData } from "@/types/profile";
 
 interface PlatformStatsRendererProps {
   platform: string;
@@ -15,18 +20,20 @@ interface PlatformStatsRendererProps {
   formatNumber: (num: number) => string;
 }
 
-export const PlatformStatsRenderer: React.FC<PlatformStatsRendererProps> = (props) => {
+export const PlatformStatsRenderer: React.FC<PlatformStatsRendererProps> = (
+  props,
+) => {
   const { platform, stats } = props;
   // Debug: PlatformStatsRenderer rendering
 
   switch (platform) {
-    case 'instagram':
+    case "instagram":
       return <InstagramStats {...props} />;
-    case 'youtube':
+    case "youtube":
       return <YouTubeStats {...props} />;
-    case 'tiktok':
+    case "tiktok":
       return <TikTokStats {...props} />;
-    case 'telegram':
+    case "telegram":
       return <TelegramStats {...props} />;
     default:
       return null;

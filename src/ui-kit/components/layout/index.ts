@@ -4,5 +4,5 @@
  * Универсальные layout компоненты для страниц
  */
 
-export { CenteredAuthLayout } from './CenteredAuthLayout';
-export type { CenteredAuthLayoutProps } from './CenteredAuthLayout';
+export { CenteredAuthLayout } from "./CenteredAuthLayout";
+export type { CenteredAuthLayoutProps } from "./CenteredAuthLayout";

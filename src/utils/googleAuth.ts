@@ -8,14 +8,14 @@
  * Согласно ТЗ: sessionStorage.setItem('accessToken', accessToken);
  */
 export const saveAccessToken = (token: string): void => {
-  sessionStorage.setItem('accessToken', token);
+  sessionStorage.setItem("accessToken", token);
 };
 
 /**
  * Получает Access Token из sessionStorage
  */
 export const getAccessToken = (): string | null => {
-  return sessionStorage.getItem('accessToken');
+  return sessionStorage.getItem("accessToken");
 };
 
 /**
@@ -23,7 +23,7 @@ export const getAccessToken = (): string | null => {
  * Согласно ТЗ: sessionStorage.removeItem('accessToken');
  */
 export const removeAccessToken = (): void => {
-  sessionStorage.removeItem('accessToken');
+  sessionStorage.removeItem("accessToken");
 };
 
 /**
@@ -47,7 +47,7 @@ export const getAuthHeader = (): { Authorization: string } | {} => {
  */
 export const isSupabaseJWT = (token: string): boolean => {
   // JWT токены Supabase начинаются с eyJ
-  return token.startsWith('eyJ');
+  return token.startsWith("eyJ");
 };
 
 /**

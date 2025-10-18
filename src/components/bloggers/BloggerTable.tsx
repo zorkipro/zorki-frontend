@@ -1,13 +1,20 @@
-import { memo, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Blogger } from '@/types/blogger';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui-kit';
-import { InfiniteScrollList } from '@/ui-kit';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { Button } from '@/ui-kit';
-import { SafeAvatar } from '@/components/ui/SafeAvatar';
-import { truncateName } from '@/utils/formatters';
-import { normalizeUsername } from '@/utils/username';
+import { memo, useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Blogger } from "@/types/blogger";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/ui-kit";
+import { InfiniteScrollList } from "@/ui-kit";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { Button } from "@/ui-kit";
+import { SafeAvatar } from "@/components/ui/SafeAvatar";
+import { truncateName } from "@/utils/formatters";
+import { normalizeUsername } from "@/utils/username";
 
 interface BloggerTableProps {
   bloggers: Blogger[];
@@ -19,7 +26,11 @@ interface BloggerTableProps {
   totalCount?: number;
 }
 
-import { formatNumber, formatReach, formatPriceWithCurrency } from '@/utils/formatters';
+import {
+  formatNumber,
+  formatReach,
+  formatPriceWithCurrency,
+} from "@/utils/formatters";
 
 const BloggerTableComponent = ({
   bloggers,
@@ -67,8 +78,8 @@ const BloggerTableComponent = ({
       },
       {
         threshold: 0.1,
-        rootMargin: '500px', // Загружаем заранее, когда до конца остается 500px
-      }
+        rootMargin: "500px", // Загружаем заранее, когда до конца остается 500px
+      },
     );
 
     if (observerRef.current) {
@@ -103,7 +114,9 @@ const BloggerTableComponent = ({
             >
               {truncateName(blogger.name, 20)}
             </h3>
-            <p className="text-sm text-gray-500 truncate mt-0.5">{blogger.handle}</p>
+            <p className="text-sm text-gray-500 truncate mt-0.5">
+              {blogger.handle}
+            </p>
           </div>
         </div>
 
@@ -124,7 +137,9 @@ const BloggerTableComponent = ({
               <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
                 ER
               </div>
-              <div className="font-bold text-gray-900 text-lg">{blogger.engagementRate}%</div>
+              <div className="font-bold text-gray-900 text-lg">
+                {blogger.engagementRate}%
+              </div>
             </div>
           </div>
 
@@ -155,20 +170,24 @@ const BloggerTableComponent = ({
               <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
                 Цена поста
               </div>
-              <div className="font-bold text-gray-900 text-lg">{formatPriceWithCurrency(blogger.postPrice)}</div>
+              <div className="font-bold text-gray-900 text-lg">
+                {formatPriceWithCurrency(blogger.postPrice)}
+              </div>
             </div>
             <div className="w-px h-12 bg-gray-200 mx-4"></div>
             <div className="flex-1 text-center">
               <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
                 Цена сториз
               </div>
-              <div className="font-bold text-gray-900 text-lg">{formatPriceWithCurrency(blogger.storyPrice)}</div>
+              <div className="font-bold text-gray-900 text-lg">
+                {formatPriceWithCurrency(blogger.storyPrice)}
+              </div>
             </div>
           </div>
         </div>
       </div>
     ),
-    [navigate]
+    [navigate],
   );
 
   return (
@@ -184,11 +203,21 @@ const BloggerTableComponent = ({
             <TableRow>
               <TableHead className="text-center min-w-[80px]">Место</TableHead>
               <TableHead className="min-w-[250px]">Блогер</TableHead>
-              <TableHead className="text-center min-w-[120px]">Подписчиков</TableHead>
-              <TableHead className="text-center min-w-[120px]">Охваты поста</TableHead>
-              <TableHead className="text-center min-w-[120px]">Охваты сториз</TableHead>
-              <TableHead className="text-center min-w-[120px]">Цена поста</TableHead>
-              <TableHead className="text-center min-w-[120px]">Цена сториз</TableHead>
+              <TableHead className="text-center min-w-[120px]">
+                Подписчиков
+              </TableHead>
+              <TableHead className="text-center min-w-[120px]">
+                Охваты поста
+              </TableHead>
+              <TableHead className="text-center min-w-[120px]">
+                Охваты сториз
+              </TableHead>
+              <TableHead className="text-center min-w-[120px]">
+                Цена поста
+              </TableHead>
+              <TableHead className="text-center min-w-[120px]">
+                Цена сториз
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -197,7 +226,9 @@ const BloggerTableComponent = ({
                 <TableCell colSpan={7} className="text-center py-8">
                   <div className="flex items-center justify-center space-x-2">
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-muted-foreground">Загрузка блогеров...</span>
+                    <span className="text-muted-foreground">
+                      Загрузка блогеров...
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -206,14 +237,18 @@ const BloggerTableComponent = ({
                 <TableCell colSpan={7} className="text-center py-8">
                   <div className="flex items-center justify-center space-x-2">
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-muted-foreground">Поиск блогеров...</span>
+                    <span className="text-muted-foreground">
+                      Поиск блогеров...
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : visibleBloggers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8">
-                  <div className="text-muted-foreground">Блогеры не найдены</div>
+                  <div className="text-muted-foreground">
+                    Блогеры не найдены
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -221,18 +256,22 @@ const BloggerTableComponent = ({
                 <TableRow
                   key={blogger.id}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => navigate(`/${normalizeUsername(blogger.handle)}`)}
+                  onClick={() =>
+                    navigate(`/${normalizeUsername(blogger.handle)}`)
+                  }
                   role="button"
                   tabIndex={0}
                   aria-label={`Перейти к профилю блогера ${blogger.name}`}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       navigate(`/${normalizeUsername(blogger.handle)}`);
                     }
                   }}
                 >
-                  <TableCell className="text-center font-medium">{index + 1}</TableCell>
+                  <TableCell className="text-center font-medium">
+                    {index + 1}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-3">
                       <SafeAvatar
@@ -243,30 +282,45 @@ const BloggerTableComponent = ({
                         gender={blogger.gender}
                       />
                       <div>
-                        <div className="font-medium text-foreground" title={blogger.name}>
+                        <div
+                          className="font-medium text-foreground"
+                          title={blogger.name}
+                        >
                           {truncateName(blogger.name, 25)}
                         </div>
-                        <div className="text-sm text-muted-foreground">{blogger.handle}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {blogger.handle}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-medium">{formatNumber(blogger.followers)}</div>
+                    <div className="font-medium">
+                      {formatNumber(blogger.followers)}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {blogger.engagementRate}% ER
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-medium">{formatReach(blogger.postReach)}</div>
+                    <div className="font-medium">
+                      {formatReach(blogger.postReach)}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-medium">{formatReach(blogger.storyReach)}</div>
+                    <div className="font-medium">
+                      {formatReach(blogger.storyReach)}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-medium">{formatPriceWithCurrency(blogger.postPrice)}</div>
+                    <div className="font-medium">
+                      {formatPriceWithCurrency(blogger.postPrice)}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-medium">{formatPriceWithCurrency(blogger.storyPrice)}</div>
+                    <div className="font-medium">
+                      {formatPriceWithCurrency(blogger.storyPrice)}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -299,7 +353,9 @@ const BloggerTableComponent = ({
             <>
               Показано {displayBloggers.length} из {totalCount} блогеров
               {displayHasMore && (
-                <span className="ml-2 text-blue-600">(автозагрузка при прокрутке)</span>
+                <span className="ml-2 text-blue-600">
+                  (автозагрузка при прокрутке)
+                </span>
               )}
             </>
           ) : (
@@ -314,11 +370,15 @@ const BloggerTableComponent = ({
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-muted-foreground">Загрузка блогеров...</span>
+              <span className="text-muted-foreground">
+                Загрузка блогеров...
+              </span>
             </div>
           </div>
         ) : bloggers.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">Блогеры не найдены</div>
+          <div className="text-center py-8 text-muted-foreground">
+            Блогеры не найдены
+          </div>
         ) : (
           <InfiniteScrollList
             data={bloggers}

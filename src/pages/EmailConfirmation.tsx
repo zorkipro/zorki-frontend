@@ -1,7 +1,13 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/ui-kit';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Star, Mail, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Button } from "@/ui-kit";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Star, Mail, CheckCircle, ArrowLeft } from "lucide-react";
 
 export const EmailConfirmation = () => {
   return (
@@ -39,15 +45,20 @@ export const EmailConfirmation = () => {
                 </div>
 
                 <div className="text-sm text-muted-foreground space-y-2">
-                  <p>Мы отправили ссылку для подтверждения на указанный email адрес.</p>
                   <p>
-                    Пожалуйста, проверьте свою почту и перейдите по ссылке для завершения
-                    регистрации.
+                    Мы отправили ссылку для подтверждения на указанный email
+                    адрес.
+                  </p>
+                  <p>
+                    Пожалуйста, проверьте свою почту и перейдите по ссылке для
+                    завершения регистрации.
                   </p>
                 </div>
 
                 <div className="bg-muted/50 rounded-lg p-4 text-sm">
-                  <p className="font-medium text-foreground mb-2">Не получили письмо?</p>
+                  <p className="font-medium text-foreground mb-2">
+                    Не получили письмо?
+                  </p>
                   <div className="text-muted-foreground space-y-1">
                     <p>• Проверьте папку "Спам" или "Нежелательная почта"</p>
                     <p>• Убедитесь, что email адрес указан правильно</p>

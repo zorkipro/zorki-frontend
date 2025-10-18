@@ -1,9 +1,9 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
-import { Button } from '@/ui-kit';
-import { Card, CardContent } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Textarea } from '@/ui-kit';
+import { useParams, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { Button } from "@/ui-kit";
+import { Card, CardContent } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import { Textarea } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -11,26 +11,26 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui-kit';
-import { ArrowLeft, AlertCircle, Edit } from 'lucide-react';
-import { Alert, AlertDescription } from '@/ui-kit';
-import { LoadingSpinner } from '@/ui-kit/components';
-import { logError } from '@/utils/logger';
+} from "@/ui-kit";
+import { ArrowLeft, AlertCircle, Edit } from "lucide-react";
+import { Alert, AlertDescription } from "@/ui-kit";
+import { LoadingSpinner } from "@/ui-kit/components";
+import { logError } from "@/utils/logger";
 
 // Импортируем переиспользуемые компоненты
-import { BloggerInfo } from '@/components/profile/BloggerInfo';
-import { VerificationNotice } from '@/components/profile/VerificationNotice';
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { PlatformProfileForm } from '@/components/profile/organisms/PlatformProfileForm';
-import { PricingSection } from '@/components/profile/organisms/PricingSection';
+import { BloggerInfo } from "@/components/profile/BloggerInfo";
+import { VerificationNotice } from "@/components/profile/VerificationNotice";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm";
+import { PricingSection } from "@/components/profile/organisms/PricingSection";
 
 // Импортируем хук и типы
-import { useAdminBloggerEditor } from '@/hooks/admin/useAdminBloggerEditor';
-import { useAdminStatsFileManagement } from '@/hooks/admin/useAdminStatsFileManagement';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatNumber } from '@/utils/formatters';
-import type { Blogger } from '@/types/blogger';
-import type { ApiSocialType } from '@/api/types';
+import { useAdminBloggerEditor } from "@/hooks/admin/useAdminBloggerEditor";
+import { useAdminStatsFileManagement } from "@/hooks/admin/useAdminStatsFileManagement";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatNumber } from "@/utils/formatters";
+import type { Blogger } from "@/types/blogger";
+import type { ApiSocialType } from "@/api/types";
 
 export const AdminBloggerEditor = () => {
   const { user } = useAuth();
@@ -52,10 +52,34 @@ export const AdminBloggerEditor = () => {
     setActiveTab,
     setEditingSection,
     setAvailablePlatforms,
+    refetch: fetchBloggerData,
   } = useAdminBloggerEditor(username);
 
-  // Создаем стабильную ссылку на пустой массив для предотвращения бесконечных циклов
-  const emptyStatsFiles = useMemo(() => [], []);
+  // Извлекаем скриншоты из профиля для текущей платформы
+  const currentPlatformScreenshots = useMemo(() => {
+    if (!profile?.social) return [];
+    
+    const platformType = activeTab === "settings" 
+      ? "INSTAGRAM" 
+      : activeTab.toUpperCase();
+    
+    const platformSocial = profile.social.find(s => s.type === platformType);
+    if (!platformSocial?.statsFiles) return [];
+    
+    // Преобразуем API формат в формат Screenshot
+    return platformSocial.statsFiles.map(file => ({
+      id: file.id,
+      influencer_id: profile.id,
+      platform: platformSocial.type.toLowerCase(),
+      file_name: file.name,
+      file_url: file.publicUrl,
+      file_size: file.size * 1024, // Конвертируем KB в байты
+      width: file.width,
+      height: file.height,
+      created_at: file.createdAt,
+      is_draft: false,
+    }));
+  }, [profile, activeTab]);
 
   // Управление файлами статистики
   const {
@@ -66,18 +90,24 @@ export const AdminBloggerEditor = () => {
     deleteFile: deleteStatsFile,
   } = useAdminStatsFileManagement(
     profile?.id?.toString(),
-    activeTab === 'settings'
-      ? 'INSTAGRAM'
+    activeTab === "settings"
+      ? "INSTAGRAM"
       : (activeTab.toUpperCase() as ApiSocialType),
-    emptyStatsFiles // TODO: Получить существующие файлы из профиля
+    currentPlatformScreenshots,
+    () => {
+      // Обновляем данные профиля после загрузки файла
+      fetchBloggerData();
+    }
   );
 
   // Загрузка файлов статистики
-  const handleStatsUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStatsUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = event.target.files;
 
     if (!files || !profile?.id) {
-      logError('Missing required data:', {
+      logError("Missing required data:", {
         files: !!files,
         profileId: !!profile?.id,
       });
@@ -88,9 +118,9 @@ export const AdminBloggerEditor = () => {
       const fileArray = Array.from(files);
       await uploadStatsFiles(fileArray);
     } catch (error) {
-      logError('Error uploading stats files:', error);
+      logError("Error uploading stats files:", error);
     } finally {
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
@@ -107,7 +137,7 @@ export const AdminBloggerEditor = () => {
             <p className="text-muted-foreground mb-4">
               Запрашиваемый профиль не существует или у вас нет доступа к нему.
             </p>
-            <Button onClick={() => navigate('/admin')} className="w-full">
+            <Button onClick={() => navigate("/admin")} className="w-full">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Назад к админке
             </Button>
@@ -122,41 +152,44 @@ export const AdminBloggerEditor = () => {
     ? {
         id: profile.id.toString(),
         name:
-          profile.social?.title || profile.name || profile.social?.username || 'Неизвестный блогер',
-        handle: profile.social?.username || '',
-        avatar: profile.social?.avatar || '',
-        promoText: profile.social?.description || '',
+          profile.social?.title ||
+          profile.name ||
+          profile.social?.username ||
+          "Неизвестный блогер",
+        handle: profile.social?.username || "",
+        avatar: profile.social?.avatar || "",
+        promoText: profile.social?.description || "",
         platforms: {
           instagram: profile.social
             ? {
                 username: profile.social.username,
-                followers: parseInt(profile.social.subscribers || '0'),
+                followers: parseInt(profile.social.subscribers || "0"),
                 avatar: profile.social.avatar,
                 engagementRate: profile.social.er || 0,
               }
             : undefined,
         },
-        followers: parseInt(profile.social?.subscribers || '0'),
-        postPrice: parseFloat(profile.price?.postPrice || '0'),
-        storyPrice: parseFloat(profile.price?.storiesPrice || '0'),
-        postReach: parseInt(profile.social?.[0]?.postCoverage || '0'),
-        storyReach: parseInt(profile.social?.[0]?.coverage || '0'),
+        followers: parseInt(profile.social?.subscribers || "0"),
+        postPrice: parseFloat(profile.price?.postPrice || "0"),
+        storyPrice: parseFloat(profile.price?.storiesPrice || "0"),
+        postReach: parseInt(profile.social?.[0]?.postCoverage || "0"),
+        storyReach: parseInt(profile.social?.[0]?.coverage || "0"),
         engagementRate: profile.social?.er || 0,
         gender: profile.genderType?.toLowerCase() as
-          | 'мужчина'
-          | 'женщина'
-          | 'пара'
-          | 'паблик'
+          | "мужчина"
+          | "женщина"
+          | "пара"
+          | "паблик"
           | undefined,
-        category: '',
+        category: "",
         topics: [],
         allowsBarter: false,
         inMartRegistry: false,
         restrictedTopics: [],
-        cooperationConditions: '',
-        workFormat: '',
-        paymentTerms: '',
-        contact_url: '',
+        cooperationConditions: "",
+        workFormat: "",
+        paymentTerms: "",
+        contact_url: "",
         verificationStatus: profile.verificationStatus,
       }
     : null;
@@ -169,7 +202,7 @@ export const AdminBloggerEditor = () => {
           profile={profileForHeader}
           formData={formData}
           hasUnsavedChanges={false}
-          onBack={() => navigate('/admin')}
+          onBack={() => navigate("/admin")}
           onFormDataChange={updateFormData}
           editingSection={editingSection}
           onEditingSectionChange={setEditingSection}
@@ -241,9 +274,9 @@ export const AdminBloggerEditor = () => {
               <CardContent className="p-4">
                 <div className="absolute top-2 right-2">
                   <Dialog
-                    open={editingSection === 'cooperation_conditions'}
+                    open={editingSection === "cooperation_conditions"}
                     onOpenChange={(open) =>
-                      setEditingSection(open ? 'cooperation_conditions' : null)
+                      setEditingSection(open ? "cooperation_conditions" : null)
                     }
                   >
                     <DialogTrigger asChild>
@@ -253,14 +286,18 @@ export const AdminBloggerEditor = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Редактировать условия сотрудничества</DialogTitle>
+                        <DialogTitle>
+                          Редактировать условия сотрудничества
+                        </DialogTitle>
                         <DialogDescription>
                           Обновите условия сотрудничества для профиля
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="cooperation_conditions">Условия сотрудничества</Label>
+                          <Label htmlFor="cooperation_conditions">
+                            Условия сотрудничества
+                          </Label>
                           <Textarea
                             id="cooperation_conditions"
                             defaultValue={formData.cooperation_conditions}
@@ -269,16 +306,21 @@ export const AdminBloggerEditor = () => {
                           />
                         </div>
                         <div className="flex justify-end space-x-2">
-                          <Button variant="outline" onClick={() => setEditingSection(null)}>
+                          <Button
+                            variant="outline"
+                            onClick={() => setEditingSection(null)}
+                          >
                             Отмена
                           </Button>
                           <Button
                             onClick={async () => {
                               const textarea = document.getElementById(
-                                'cooperation_conditions'
+                                "cooperation_conditions",
                               ) as HTMLTextAreaElement;
                               try {
-                                await handleSave({ cooperation_conditions: textarea.value });
+                                await handleSave({
+                                  cooperation_conditions: textarea.value,
+                                });
                                 setEditingSection(null);
                               } catch (error) {
                                 // Ошибка уже обработана в handleSave
@@ -298,14 +340,18 @@ export const AdminBloggerEditor = () => {
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
                     {formData.cooperation_conditions ||
-                      'Нажмите на иконку редактирования, чтобы добавить условия сотрудничества...'}
+                      "Нажмите на иконку редактирования, чтобы добавить условия сотрудничества..."}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
             <VerificationNotice
-              profileStatus={profile?.verificationStatus === 'APPROVED' ? 'verified' : 'unverified'}
+              profileStatus={
+                profile?.verificationStatus === "APPROVED"
+                  ? "verified"
+                  : "unverified"
+              }
             />
           </div>
         </div>

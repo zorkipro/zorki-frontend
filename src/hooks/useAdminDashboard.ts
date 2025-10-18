@@ -1,6 +1,6 @@
-import { useAdminBloggers } from './admin/useAdminBloggers';
-import { useAdminBloggerActions } from './admin/useAdminBloggerActions';
-import { useAdminDraftPublisher } from './admin/useAdminDraftPublisher';
+import { useAdminBloggers } from "./admin/useAdminBloggers";
+import { useAdminBloggerActions } from "./admin/useAdminBloggerActions";
+import { useAdminDraftPublisher } from "./admin/useAdminDraftPublisher";
 
 /**
  * Главный хук для админ-панели
@@ -11,10 +11,12 @@ export const useAdminDashboard = () => {
   const { allBloggers, loading, stats, fetchBloggers } = useAdminBloggers();
 
   // CRUD операции для блогеров
-  const { addBlogger, updateBlogger, toggleVisibility } = useAdminBloggerActions(fetchBloggers);
+  const { addBlogger, updateBlogger, toggleVisibility } =
+    useAdminBloggerActions(fetchBloggers);
 
   // Публикация черновиков и апрув/реджект блогеров
-  const { approveBlogger, rejectBlogger } = useAdminDraftPublisher(fetchBloggers);
+  const { approveBlogger, rejectBlogger } =
+    useAdminDraftPublisher(fetchBloggers);
 
   return {
     allBloggers,

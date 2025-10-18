@@ -10,11 +10,14 @@
  * Устраняет дублирование кода для работы с платформами
  */
 
-import type { PlatformType, IPlatformData } from '@/types/platform';
-import type { ApiSocialType, BloggerUpdateSocialPriceInputDto } from '@/api/types';
-import { platformToApi, ALL_PLATFORMS } from '@/types/platform';
-import { PLATFORM_CONFIGS } from '@/config/platforms';
-import { platformService } from '@/services/PlatformService';
+import type { PlatformType, IPlatformData } from "@/types/platform";
+import type {
+  ApiSocialType,
+  BloggerUpdateSocialPriceInputDto,
+} from "@/api/types";
+import { platformToApi, ALL_PLATFORMS } from "@/types/platform";
+import { PLATFORM_CONFIGS } from "@/config/platforms";
+import { platformService } from "@/services/PlatformService";
 
 /**
  * Интерфейс для обновления цен платформы
@@ -37,7 +40,7 @@ export interface PriceUpdate {
  * // Результат: { instagram_username: '', instagram_followers: '', ... }
  */
 export function generatePlatformFormFields(
-  platforms: PlatformType[] = ALL_PLATFORMS
+  platforms: PlatformType[] = ALL_PLATFORMS,
 ): Record<string, string> {
   const fields: Record<string, string> = {};
 
@@ -46,7 +49,7 @@ export function generatePlatformFormFields(
 
     config.fields.forEach((field) => {
       const fieldName = `${platform}_${field}`;
-      fields[fieldName] = '';
+      fields[fieldName] = "";
     });
   });
 
@@ -65,7 +68,7 @@ export function generatePlatformFormFields(
  */
 export function extractPlatformData(
   formData: Record<string, unknown>,
-  platform: PlatformType
+  platform: PlatformType,
 ): IPlatformData {
   const prefix = `${platform}_`;
 
@@ -103,7 +106,7 @@ export function extractPlatformData(
  */
 export function extractAllPlatformsData(
   formData: Record<string, unknown>,
-  platforms: PlatformType[] = ALL_PLATFORMS
+  platforms: PlatformType[] = ALL_PLATFORMS,
 ): Record<PlatformType, IPlatformData> {
   const result: Partial<Record<PlatformType, IPlatformData>> = {};
 
@@ -123,7 +126,7 @@ export function extractAllPlatformsData(
  */
 export function mapPlatformToApiPriceUpdate(
   platform: PlatformType,
-  data: Partial<IPlatformData>
+  data: Partial<IPlatformData>,
 ): BloggerUpdateSocialPriceInputDto {
   return {
     type: platformToApi(platform),
@@ -147,7 +150,7 @@ export function mapPlatformToApiPriceUpdate(
  */
 export function updatePlatformPrices(
   platforms: Record<string, IPlatformData>,
-  updates: PriceUpdate[]
+  updates: PriceUpdate[],
 ): Record<string, IPlatformData> {
   const updatedPlatforms = { ...platforms };
 
@@ -178,19 +181,19 @@ export function updatePlatformPrices(
  */
 export function populatePlatformFormData(
   platform: PlatformType,
-  data: Partial<IPlatformData>
+  data: Partial<IPlatformData>,
 ): Record<string, string> {
   const prefix = `${platform}_`;
 
   return {
-    [`${prefix}username`]: data.username || '',
-    [`${prefix}profile_url`]: data.profile_url || '',
-    [`${prefix}followers`]: data.subscribers?.toString() || '',
-    [`${prefix}engagement_rate`]: data.er?.toString() || '',
-    [`${prefix}post_reach`]: data.reach?.toString() || '',
-    [`${prefix}story_reach`]: data.storyReach?.toString() || '',
-    [`${prefix}post_price`]: data.price?.toString() || '',
-    [`${prefix}story_price`]: data.storyPrice?.toString() || '',
+    [`${prefix}username`]: data.username || "",
+    [`${prefix}profile_url`]: data.profile_url || "",
+    [`${prefix}followers`]: data.subscribers?.toString() || "",
+    [`${prefix}engagement_rate`]: data.er?.toString() || "",
+    [`${prefix}post_reach`]: data.reach?.toString() || "",
+    [`${prefix}story_reach`]: data.storyReach?.toString() || "",
+    [`${prefix}post_price`]: data.price?.toString() || "",
+    [`${prefix}story_price`]: data.storyPrice?.toString() || "",
   };
 }
 
@@ -201,13 +204,15 @@ export function populatePlatformFormData(
  * @returns Объект со всеми полями формы
  */
 export function populateAllPlatformsFormData(
-  platformsData: Partial<Record<PlatformType, IPlatformData>>
+  platformsData: Partial<Record<PlatformType, IPlatformData>>,
 ): Record<string, string> {
   const allFields: Record<string, string> = {};
 
-  (Object.entries(platformsData) as [PlatformType, IPlatformData][]).forEach(([platform, data]) => {
-    Object.assign(allFields, populatePlatformFormData(platform, data));
-  });
+  (Object.entries(platformsData) as [PlatformType, IPlatformData][]).forEach(
+    ([platform, data]) => {
+      Object.assign(allFields, populatePlatformFormData(platform, data));
+    },
+  );
 
   return allFields;
 }
@@ -222,7 +227,10 @@ export function populateAllPlatformsFormData(
  * @example
  * getPlatformFieldName('instagram', 'followers') // 'instagram_followers'
  */
-export function getPlatformFieldName(platform: PlatformType, field: string): string {
+export function getPlatformFieldName(
+  platform: PlatformType,
+  field: string,
+): string {
   return `${platform}_${field}`;
 }
 
@@ -230,11 +238,11 @@ export function getPlatformFieldName(platform: PlatformType, field: string): str
  * Парсинг строки в число (обрабатывает пустые строки и невалидные значения)
  */
 function parseNumberFromString(value: string | unknown): number {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
 
-  if (typeof value !== 'string' || value === '') {
+  if (typeof value !== "string" || value === "") {
     return 0;
   }
 
@@ -259,7 +267,7 @@ export function isPlatformDataFilled(data: Partial<IPlatformData>): boolean {
  * @returns Массив платформ с заполненными данными
  */
 export function getFilledPlatforms(
-  platformsData: Partial<Record<PlatformType, IPlatformData>>
+  platformsData: Partial<Record<PlatformType, IPlatformData>>,
 ): PlatformType[] {
   return (Object.entries(platformsData) as [PlatformType, IPlatformData][])
     .filter(([_, data]) => isPlatformDataFilled(data))

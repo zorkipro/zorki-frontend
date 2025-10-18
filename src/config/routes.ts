@@ -14,46 +14,46 @@
  */
 export const ROUTES = {
   /** Главная страница */
-  HOME: '/',
+  HOME: "/",
 
   /** Маршруты аутентификации */
   AUTH: {
-    LOGIN: '/login',
-    REGISTER: '/register',
-    EMAIL_CONFIRMATION: '/email-confirmation',
-    FORGOT_PASSWORD: '/forgot-password',
+    LOGIN: "/login",
+    REGISTER: "/register",
+    EMAIL_CONFIRMATION: "/email-confirmation",
+    FORGOT_PASSWORD: "/forgot-password",
   },
 
   /** Маршруты профиля */
   PROFILE: {
     /** Первичная настройка профиля */
-    SETUP: '/profile-setup',
+    SETUP: "/profile-setup",
     /** Редактирование профиля */
-    EDIT: '/profile/edit',
+    EDIT: "/profile/edit",
     /** Просмотр профиля (с параметром :id) */
-    VIEW: '/profile/:id',
+    VIEW: "/profile/:id",
     /** Публичный профиль блогера */
-    BLOGGER: '/blogger/:id',
+    BLOGGER: "/blogger/:id",
   },
 
   /** Дашборд пользователя */
-  DASHBOARD: '/dashboard',
+  DASHBOARD: "/dashboard",
 
   /** Административные маршруты */
   ADMIN: {
-    LOGIN: '/admin/login',
-    TWO_FACTOR: '/admin/2fa',
-    DASHBOARD: '/admin/dashboard',
-    BLOGGERS: '/admin/bloggers',
-    BLOGGER_EDITOR: '/admin/blogger/:id/edit',
-    LINK_REQUESTS: '/admin/link-requests',
+    LOGIN: "/admin/login",
+    TWO_FACTOR: "/admin/2fa",
+    DASHBOARD: "/admin/dashboard",
+    BLOGGERS: "/admin/bloggers",
+    BLOGGER_EDITOR: "/admin/blogger/:id/edit",
+    LINK_REQUESTS: "/admin/link-requests",
   },
 
   /** Статические страницы */
   STATIC: {
-    PRIVACY_POLICY: '/privacy-policy',
-    TERMS_OF_SERVICE: '/terms-of-service',
-    NOT_FOUND: '/404',
+    PRIVACY_POLICY: "/privacy-policy",
+    TERMS_OF_SERVICE: "/terms-of-service",
+    NOT_FOUND: "/404",
   },
 } as const;
 
@@ -105,14 +105,14 @@ export const PROTECTED_PAGES = [
  * Генерация пути для просмотра профиля блогера
  */
 export function getBloggerProfilePath(bloggerId: string | number): string {
-  return ROUTES.PROFILE.BLOGGER.replace(':id', bloggerId.toString());
+  return ROUTES.PROFILE.BLOGGER.replace(":id", bloggerId.toString());
 }
 
 /**
  * Генерация пути для редактирования блогера (админ)
  */
 export function getAdminBloggerEditorPath(bloggerId: string | number): string {
-  return ROUTES.ADMIN.BLOGGER_EDITOR.replace(':id', bloggerId.toString());
+  return ROUTES.ADMIN.BLOGGER_EDITOR.replace(":id", bloggerId.toString());
 }
 
 /**
@@ -133,7 +133,7 @@ export function isPublicPage(pathname: string): boolean {
  * Проверка, является ли путь административной страницей
  */
 export function isAdminPage(pathname: string): boolean {
-  return pathname.startsWith('/admin');
+  return pathname.startsWith("/admin");
 }
 
 /**

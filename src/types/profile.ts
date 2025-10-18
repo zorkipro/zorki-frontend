@@ -1,4 +1,4 @@
-import type { Blogger } from './blogger';
+import type { Blogger } from "./blogger";
 
 // Main influencer type - используем Blogger как временное решение
 export type Influencer = Blogger;
@@ -34,7 +34,7 @@ export type ProfileEdit = {
   field_name: string;
   old_value: string;
   new_value: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   created_at: string;
   updated_at: string;
 };
@@ -96,8 +96,8 @@ export interface EditData {
   barter_available: boolean;
   mart_registry: boolean;
   contact_link: string;
-  work_format: 'ИП' | 'профдоход' | 'договор подряда' | 'ООО' | '';
-  gender_type: 'мужчина' | 'женщина' | 'пара' | 'паблик' | '';
+  work_format: "ИП" | "профдоход" | "договор подряда" | "ООО" | "";
+  gender_type: "мужчина" | "женщина" | "пара" | "паблик" | "";
   cooperation_conditions: string;
 
   // Instagram platform fields (соответствуют таблице influencer_platform_stats)
@@ -161,28 +161,33 @@ export interface PlatformData {
   storyReach: number;
   storyPrice: number;
   views?: number;
+  screenshots?: Screenshot[]; // Добавляем скриншоты
 }
 
 // Form validation errors
 export type ProfileFormErrors = Partial<Record<keyof EditData, string>>;
 
 // Platform types
-export type PlatformType = 'instagram' | 'tiktok' | 'youtube' | 'telegram';
+export type PlatformType = "instagram" | "tiktok" | "youtube" | "telegram";
 
 // Verification status types
-export type VerificationStatus = 'новый' | 'на проверке' | 'одобрен' | 'отклонён';
+export type VerificationStatus =
+  | "новый"
+  | "на проверке"
+  | "одобрен"
+  | "отклонён";
 
 // Visibility status types
-export type VisibilityStatus = 'виден' | 'скрыт' | 'удалён';
+export type VisibilityStatus = "виден" | "скрыт" | "удалён";
 
 // Edit status types
-export type EditStatus = 'new' | 'pending' | 'approved' | 'rejected';
+export type EditStatus = "new" | "pending" | "approved" | "rejected";
 
 // Work format types
-export type WorkFormat = 'ИП' | 'профдоход' | 'договор подряда' | 'ООО';
+export type WorkFormat = "ИП" | "профдоход" | "договор подряда" | "ООО";
 
 // Gender type
-export type GenderType = 'мужчина' | 'женщина' | 'пара' | 'паблик';
+export type GenderType = "мужчина" | "женщина" | "пара" | "паблик";
 
 // Profile editor state interface
 export interface ProfileEditorState {
@@ -193,7 +198,7 @@ export interface ProfileEditorState {
   successMessage: string;
   formData: EditData;
   availablePlatforms: Record<PlatformType, PlatformData>;
-  activeTab: PlatformType | 'settings';
+  activeTab: PlatformType | "settings";
   editingSection: string | null;
 }
 
@@ -205,7 +210,10 @@ export interface UseProfileEditorReturn extends ProfileEditorState {
   setEditingSection: (section: string | null) => void;
   setError: (error: string) => void;
   setSuccessMessage: (message: string) => void;
-  addOrUpdatePlatform?: (platformId: PlatformType, platformData: PlatformData) => Promise<void>;
+  addOrUpdatePlatform?: (
+    platformId: PlatformType,
+    platformData: PlatformData,
+  ) => Promise<void>;
   deletePlatform?: (platformId: PlatformType) => Promise<void>;
 }
 

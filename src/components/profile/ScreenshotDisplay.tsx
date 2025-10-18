@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui-kit';
-import { TrendingUp } from 'lucide-react';
-import Lightbox from 'yet-another-react-lightbox';
-import 'yet-another-react-lightbox/styles.css';
-import type { Screenshot } from '@/types/profile';
-import { getPlatformIcon, getPlatformName } from '@/components/icons/PlatformIcons';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui-kit";
+import { TrendingUp } from "lucide-react";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import type { Screenshot } from "@/types/profile";
+import {
+  getPlatformIcon,
+  getPlatformName,
+} from "@/components/icons/PlatformIcons";
 
 interface ScreenshotDisplayProps {
   platform: string;
@@ -30,7 +33,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
     uploadingScreenshot = false,
     error,
     isVerified = true,
-    createdBy = 'admin',
+    createdBy = "admin",
   }) => {
     const [lightboxIndex, setLightboxIndex] = useState(-1);
 
@@ -46,7 +49,11 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
     }));
 
     const handleDeleteCurrent = () => {
-      if (lightboxIndex >= 0 && screenshots[lightboxIndex] && onDeleteScreenshot) {
+      if (
+        lightboxIndex >= 0 &&
+        screenshots[lightboxIndex] &&
+        onDeleteScreenshot
+      ) {
         onDeleteScreenshot(screenshots[lightboxIndex]);
         setLightboxIndex(-1);
       }
@@ -58,8 +65,9 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
     }
 
     // Если пользователь не верифицирован и блогер создан пользователем, показываем сообщение
-    const shouldShowScreenshots = isVerified || createdBy === 'admin';
-    const shouldShowHiddenMessage = !shouldShowScreenshots && screenshots.length === 0 && !loading;
+    const shouldShowScreenshots = isVerified || createdBy === "admin";
+    const shouldShowHiddenMessage =
+      !shouldShowScreenshots && screenshots.length === 0 && !loading;
 
     return (
       <>
@@ -72,7 +80,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
               <span>Скриншоты статистики {platformName}</span>
               {screenshots.length > 0 && (
                 <span className="text-sm font-normal text-muted-foreground ml-auto">
-                  {screenshots.length} {screenshots.length === 1 ? 'скриншот' : 'скриншотов'}
+                  {screenshots.length}{" "}
+                  {screenshots.length === 1 ? "скриншот" : "скриншотов"}
                 </span>
               )}
             </CardTitle>
@@ -83,7 +92,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
               <div className="mb-6">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf"
                   multiple
                   onChange={(e) => {
                     if (onScreenshotUpload) {
@@ -96,7 +105,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 />
                 <label htmlFor={`screenshot-upload-${platform}`}>
                   <div
-                    className={`w-full h-12 border-dashed border-2 border-muted-foreground/25 rounded-md hover:border-primary hover:bg-primary/5 transition-all duration-200 flex items-center justify-center space-x-3 cursor-pointer ${uploadingScreenshot ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-full h-12 border-dashed border-2 border-muted-foreground/25 rounded-md hover:border-primary hover:bg-primary/5 transition-all duration-200 flex items-center justify-center space-x-3 cursor-pointer ${uploadingScreenshot ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <span className="flex items-center space-x-3">
                       <svg
@@ -114,7 +123,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                       </svg>
                       <span className="font-medium">
                         {uploadingScreenshot
-                          ? 'Загрузка...'
+                          ? "Загрузка..."
                           : `Загрузить скриншоты статистики ${platformName}`}
                       </span>
                       {uploadingScreenshot && (
@@ -123,6 +132,10 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                     </span>
                   </div>
                 </label>
+                {/* File format and size info */}
+                <div className="mt-2 text-xs text-muted-foreground text-center">
+                  Поддерживаемые форматы: JPEG, PNG, GIF, WebP, PDF • Максимальный размер: 10MB • До 25 файлов за раз
+                </div>
               </div>
             )}
 
@@ -144,7 +157,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
             ) : screenshots.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {screenshots.map((screenshot, index) => (
-                  <div key={screenshot.id} className="relative group">
+                  <div key={`screenshot-${screenshot.id}-${index}`} className="relative group">
                     <div
                       className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-all duration-200 border hover:shadow-lg"
                       onClick={() => setLightboxIndex(index)}
@@ -196,7 +209,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 </div>
                 <h3 className="text-lg font-medium mb-2">Скриншоты скрыты</h3>
                 <p className="text-sm text-muted-foreground">
-                  Скриншоты статистики будут доступны после верификации блогера администратором
+                  Скриншоты статистики будут доступны после верификации блогера
+                  администратором
                 </p>
               </div>
             ) : (
@@ -204,7 +218,9 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                   <TrendingUp className="w-10 h-10 opacity-50" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">Скриншоты статистики не загружены</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  Скриншоты статистики не загружены
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   {showUploadButton
                     ? `Загрузите скриншоты вашей статистики ${platformName}`
@@ -212,8 +228,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 </p>
                 {showUploadButton && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Поддерживаемые форматы: JPG, PNG, WebP (макс. 5MB). Можно выбрать несколько
-                    файлов одновременно.
+                    Поддерживаемые форматы: JPG, PNG, WebP (макс. 5MB). Можно
+                    выбрать несколько файлов одновременно.
                   </p>
                 )}
               </div>
@@ -239,7 +255,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
           }}
           styles={{
             container: {
-              backgroundColor: 'rgba(0, 0, 0, 0.95)',
+              backgroundColor: "rgba(0, 0, 0, 0.95)",
             },
           }}
         />
@@ -252,14 +268,20 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 <div className="flex items-center space-x-2 text-white text-sm">
                   {platformIcon}
                   <span>
-                    Скриншот {lightboxIndex + 1} из {screenshots.length} - {platformName}
+                    Скриншот {lightboxIndex + 1} из {screenshots.length} -{" "}
+                    {platformName}
                   </span>
                 </div>
                 <button
                   onClick={handleDeleteCurrent}
                   className="bg-red-500/90 hover:bg-red-600 text-white border-0 ml-4 px-3 py-1 rounded-md flex items-center space-x-2"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -275,7 +297,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
         )}
       </>
     );
-  }
+  },
 );
 
-ScreenshotDisplay.displayName = 'ScreenshotDisplay';
+ScreenshotDisplay.displayName = "ScreenshotDisplay";

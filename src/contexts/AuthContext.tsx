@@ -5,11 +5,11 @@
  * @deprecated Используйте useSession() и useBlogger() напрямую для новых компонентов
  */
 
-import { ReactNode } from 'react';
-import { SessionProvider, useSession } from './SessionContext';
-import { BloggerProvider, useBlogger } from './BloggerContext';
-import type { User, Session } from '@supabase/supabase-js';
-import type { ClientBloggerInfo, ClientLinkRequestInfo } from '@/api/types';
+import { ReactNode } from "react";
+import { SessionProvider, useSession } from "./SessionContext";
+import { BloggerProvider, useBlogger } from "./BloggerContext";
+import type { User, Session } from "@supabase/supabase-js";
+import type { ClientBloggerInfo, ClientLinkRequestInfo } from "@/api/types";
 
 /**
  * Тип для обратной совместимости

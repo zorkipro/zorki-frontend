@@ -3,8 +3,8 @@
  * Отвечает за парсинг ответов и валидацию статусов
  */
 
-import { logger } from '@/utils/logger';
-import type { BadRequestExceptionDto } from './types';
+import { logger } from "@/utils/logger";
+import type { BadRequestExceptionDto } from "./types";
 
 /**
  * Результат обработки ответа
@@ -40,8 +40,8 @@ export class ResponseHandler {
    * Проверяет является ли ответ JSON
    */
   private isJsonResponse(response: Response): boolean {
-    const contentType = response.headers.get('content-type');
-    return !!(contentType && contentType.includes('application/json'));
+    const contentType = response.headers.get("content-type");
+    return !!(contentType && contentType.includes("application/json"));
   }
 
   /**
@@ -51,7 +51,10 @@ export class ResponseHandler {
    * @param endpoint - endpoint для логирования
    * @returns распарсенный ответ
    */
-  async parseResponse<T>(response: Response, endpoint: string): Promise<ParsedResponse<T>> {
+  async parseResponse<T>(
+    response: Response,
+    endpoint: string,
+  ): Promise<ParsedResponse<T>> {
     // Handle 204 No Content
     if (response.status === 204) {
       return {
@@ -69,8 +72,8 @@ export class ResponseHandler {
       try {
         data = await response.json();
       } catch (error) {
-        logger.error('Failed to parse JSON response', error, {
-          component: 'ResponseHandler',
+        logger.error("Failed to parse JSON response", error, {
+          component: "ResponseHandler",
           endpoint,
           status: response.status,
         });
@@ -85,7 +88,7 @@ export class ResponseHandler {
           data: undefined,
           hasError: true,
           errorData: {
-            message: 'Failed to parse response',
+            message: "Failed to parse response",
             statusCode: response.status,
             errorField: null,
           },
@@ -99,7 +102,7 @@ export class ResponseHandler {
 
       // Не OK и нет JSON - создаем ошибку
       data = {
-        message: response.statusText || 'Unknown error',
+        message: response.statusText || "Unknown error",
         statusCode: response.status,
         errorField: null,
       };
@@ -107,8 +110,8 @@ export class ResponseHandler {
 
     // Проверяем статус ответа
     if (!response.ok) {
-      logger.error('API Error Response', {
-        component: 'ResponseHandler',
+      logger.error("API Error Response", {
+        component: "ResponseHandler",
         status: response.status,
         statusText: response.statusText,
         data,
@@ -117,8 +120,8 @@ export class ResponseHandler {
 
       // Дополнительная диагностика для 500 ошибок
       if (response.status === 500) {
-        logger.error('500 Error Details', {
-          component: 'ResponseHandler',
+        logger.error("500 Error Details", {
+          component: "ResponseHandler",
           responseBody: data,
           headers: Object.fromEntries(response.headers.entries()),
           url: endpoint,
@@ -143,7 +146,10 @@ export class ResponseHandler {
   /**
    * Создать Response из ошибки (для тестирования)
    */
-  createErrorResponse(message: string, statusCode: number): BadRequestExceptionDto {
+  createErrorResponse(
+    message: string,
+    statusCode: number,
+  ): BadRequestExceptionDto {
     return {
       message,
       statusCode,

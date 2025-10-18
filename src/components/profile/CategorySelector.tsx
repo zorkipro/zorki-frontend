@@ -1,6 +1,6 @@
-import React from 'react';
-import { MultiSelect } from '@/ui-kit';
-import { useTopics } from '@/hooks/useTopics';
+import React from "react";
+import { MultiSelect } from "@/ui-kit";
+import { useTopics } from "@/hooks/useTopics";
 
 interface CategorySelectorProps {
   value: string[];
@@ -34,7 +34,9 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center p-3 text-sm text-destructive ${className}`}>
+      <div
+        className={`flex items-center justify-center p-3 text-sm text-destructive ${className}`}
+      >
         Ошибка загрузки тематик: {error}
       </div>
     );

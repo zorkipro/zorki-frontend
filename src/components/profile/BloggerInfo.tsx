@@ -291,14 +291,6 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                       ? topicReverseLookup[topic] 
                       : topic;
                     
-                    // Логируем для отладки
-                    console.log('Banned topic debug:', {
-                      topicId: topic,
-                      topicName,
-                      topicReverseLookup,
-                      hasLookup: !!topicReverseLookup[topic]
-                    });
-                    
                     return topicName ? (
                       <Badge key={topic} variant="destructive" className="text-xs">
                         {topicName}

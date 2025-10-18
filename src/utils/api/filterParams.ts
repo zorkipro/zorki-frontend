@@ -78,7 +78,6 @@ export function buildApiParams(
     )?.id;
     if (categoryId) {
       apiParams.topics = [categoryId];
-      console.log('Filtering by category:', filters.category, 'ID:', categoryId);
     }
   }
 
@@ -89,11 +88,8 @@ export function buildApiParams(
     )?.id;
     if (restrictedTopicId) {
       apiParams.restrictedTopics = [restrictedTopicId];
-      console.log('Filtering by restricted topic:', filters.restrictedTopics, 'ID:', restrictedTopicId);
     }
   }
-
-  console.log('API Params:', apiParams);
 
   return apiParams;
 }

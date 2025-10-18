@@ -430,5 +430,5 @@ if (error instanceof APIError && error.isValidationError()) {
 
 ---
 
-**Последнее обновление**: 2025-10-16
+**Последнее обновление**: 2025-01-17
 

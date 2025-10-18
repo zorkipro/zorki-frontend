@@ -1,7 +1,17 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Badge } from '@/ui-kit';
-import { ClientBloggerInfo, ClientLinkRequestInfo, formatLinkRequestStatus } from '@/api/types';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import { Badge } from "@/ui-kit";
+import {
+  ClientBloggerInfo,
+  ClientLinkRequestInfo,
+  formatLinkRequestStatus,
+} from "@/api/types";
 
 interface DashboardProfileCardProps {
   userBlogger: ClientBloggerInfo | null;
@@ -30,20 +40,21 @@ export const DashboardProfileCard = ({
             <Label>Полное имя</Label>
             <p className="text-sm text-muted-foreground">
               {userBlogger
-                ? `${userBlogger.name || ''} ${userBlogger.lastName || ''}`.trim() || 'Не указано'
-                : 'Не указано'}
+                ? `${userBlogger.name || ""} ${userBlogger.lastName || ""}`.trim() ||
+                  "Не указано"
+                : "Не указано"}
             </p>
           </div>
           <div>
             <Label>Статус верификации</Label>
             <p className="text-sm text-muted-foreground">
-              {userBlogger?.verificationStatus === 'APPROVED'
-                ? 'Одобрен'
-                : userBlogger?.verificationStatus === 'MODERATION'
-                  ? 'На рассмотрении'
-                  : userBlogger?.verificationStatus === 'REJECTED'
-                    ? 'Отклонен'
-                    : 'Не указано'}
+              {userBlogger?.verificationStatus === "APPROVED"
+                ? "Одобрен"
+                : userBlogger?.verificationStatus === "MODERATION"
+                  ? "На рассмотрении"
+                  : userBlogger?.verificationStatus === "REJECTED"
+                    ? "Отклонен"
+                    : "Не указано"}
             </p>
           </div>
 
@@ -54,24 +65,26 @@ export const DashboardProfileCard = ({
               <div className="flex items-center space-x-2">
                 <Badge
                   variant={
-                    lastLinkRequest.status === 'APPROVED'
-                      ? 'default'
-                      : lastLinkRequest.status === 'REJECTED'
-                        ? 'destructive'
-                        : 'secondary'
+                    lastLinkRequest.status === "APPROVED"
+                      ? "default"
+                      : lastLinkRequest.status === "REJECTED"
+                        ? "destructive"
+                        : "secondary"
                   }
                   className={
-                    lastLinkRequest.status === 'APPROVED'
-                      ? 'bg-green-100 text-green-800'
-                      : lastLinkRequest.status === 'REJECTED'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                    lastLinkRequest.status === "APPROVED"
+                      ? "bg-green-100 text-green-800"
+                      : lastLinkRequest.status === "REJECTED"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
                   }
                 >
                   {formatLinkRequestStatus(lastLinkRequest.status).label}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(lastLinkRequest.createdAt).toLocaleDateString('ru-RU')}
+                  {new Date(lastLinkRequest.createdAt).toLocaleDateString(
+                    "ru-RU",
+                  )}
                 </span>
               </div>
             ) : (

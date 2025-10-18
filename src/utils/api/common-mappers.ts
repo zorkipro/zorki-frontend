@@ -51,13 +51,16 @@ export function parseDecimal(value: string | null | undefined): number {
  * splitFullName("Иван") // => { name: "Иван", lastName: "" }
  * splitFullName("") // => { name: "", lastName: "" }
  */
-export function splitFullName(fullName: string | undefined): { name: string; lastName: string } {
-  if (!fullName) return { name: '', lastName: '' };
+export function splitFullName(fullName: string | undefined): {
+  name: string;
+  lastName: string;
+} {
+  if (!fullName) return { name: "", lastName: "" };
 
   const parts = fullName.trim().split(/\s+/);
   return {
-    name: parts[0] || '',
-    lastName: parts.slice(1).join(' ') || '',
+    name: parts[0] || "",
+    lastName: parts.slice(1).join(" ") || "",
   };
 }
 
@@ -73,6 +76,9 @@ export function splitFullName(fullName: string | undefined): { name: string; las
  * joinFullName("Иван", "") // => "Иван"
  * joinFullName("", "Иванов") // => "Иванов"
  */
-export function joinFullName(name: string | null, lastName: string | null): string {
-  return [name, lastName].filter(Boolean).join(' ') || '';
+export function joinFullName(
+  name: string | null,
+  lastName: string | null,
+): string {
+  return [name, lastName].filter(Boolean).join(" ") || "";
 }

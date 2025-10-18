@@ -8,28 +8,28 @@
  * - Type guard функции
  */
 
-import type { ApiSocialType } from '@/api/types';
+import type { ApiSocialType } from "@/api/types";
 
 /**
  * Типы платформ социальных сетей (lowercase для внутреннего использования)
  */
-export type PlatformType = 'instagram' | 'tiktok' | 'youtube' | 'telegram';
+export type PlatformType = "instagram" | "tiktok" | "youtube" | "telegram";
 
 /**
  * Маппинг между внутренним типом и API типом
  */
 export const PLATFORM_TO_API: Record<PlatformType, ApiSocialType> = {
-  instagram: 'INSTAGRAM',
-  tiktok: 'TIKTOK',
-  youtube: 'YOUTUBE',
-  telegram: 'TELEGRAM',
+  instagram: "INSTAGRAM",
+  tiktok: "TIKTOK",
+  youtube: "YOUTUBE",
+  telegram: "TELEGRAM",
 };
 
 export const API_TO_PLATFORM: Record<ApiSocialType, PlatformType> = {
-  INSTAGRAM: 'instagram',
-  TIKTOK: 'tiktok',
-  YOUTUBE: 'youtube',
-  TELEGRAM: 'telegram',
+  INSTAGRAM: "instagram",
+  TIKTOK: "tiktok",
+  YOUTUBE: "youtube",
+  TELEGRAM: "telegram",
 };
 
 /**
@@ -78,14 +78,14 @@ export interface IPlatformValidation {
  * Поля формы для платформы
  */
 export type PlatformFormField =
-  | 'username'
-  | 'profile_url'
-  | 'followers'
-  | 'engagement_rate'
-  | 'post_reach'
-  | 'story_reach'
-  | 'post_price'
-  | 'story_price';
+  | "username"
+  | "profile_url"
+  | "followers"
+  | "engagement_rate"
+  | "post_reach"
+  | "story_reach"
+  | "post_price"
+  | "story_price";
 
 /**
  * Конфигурация платформы
@@ -120,7 +120,8 @@ export interface ValidationResult {
  */
 export function isPlatformType(value: unknown): value is PlatformType {
   return (
-    typeof value === 'string' && ['instagram', 'tiktok', 'youtube', 'telegram'].includes(value)
+    typeof value === "string" &&
+    ["instagram", "tiktok", "youtube", "telegram"].includes(value)
   );
 }
 
@@ -128,19 +129,19 @@ export function isPlatformType(value: unknown): value is PlatformType {
  * Type guard: проверка, содержит ли объект обязательные поля IPlatformData
  */
 export function isValidPlatformData(data: unknown): data is IPlatformData {
-  if (!data || typeof data !== 'object') {
+  if (!data || typeof data !== "object") {
     return false;
   }
 
   const platformData = data as Partial<IPlatformData>;
 
   return (
-    typeof platformData.subscribers === 'number' &&
-    typeof platformData.er === 'number' &&
-    typeof platformData.reach === 'number' &&
-    typeof platformData.price === 'number' &&
-    typeof platformData.storyReach === 'number' &&
-    typeof platformData.storyPrice === 'number'
+    typeof platformData.subscribers === "number" &&
+    typeof platformData.er === "number" &&
+    typeof platformData.reach === "number" &&
+    typeof platformData.price === "number" &&
+    typeof platformData.storyReach === "number" &&
+    typeof platformData.storyPrice === "number"
   );
 }
 
@@ -149,7 +150,8 @@ export function isValidPlatformData(data: unknown): data is IPlatformData {
  */
 export function isApiSocialType(value: unknown): value is ApiSocialType {
   return (
-    typeof value === 'string' && ['INSTAGRAM', 'TIKTOK', 'YOUTUBE', 'TELEGRAM'].includes(value)
+    typeof value === "string" &&
+    ["INSTAGRAM", "TIKTOK", "YOUTUBE", "TELEGRAM"].includes(value)
   );
 }
 
@@ -170,4 +172,9 @@ export function apiToPlatform(apiType: ApiSocialType): PlatformType {
 /**
  * Список всех платформ
  */
-export const ALL_PLATFORMS: PlatformType[] = ['instagram', 'tiktok', 'youtube', 'telegram'];
+export const ALL_PLATFORMS: PlatformType[] = [
+  "instagram",
+  "tiktok",
+  "youtube",
+  "telegram",
+];

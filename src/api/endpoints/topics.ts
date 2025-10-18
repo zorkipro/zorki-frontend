@@ -7,13 +7,13 @@
 // DELETE /admin/topic/{topicId} - Удалить топик (admin)
 // ============================================
 
-import { apiRequest } from '../client';
-import type { 
-  TopicsOutputDto, 
-  PaginationUtil, 
-  AdminCreateTopicInputDto, 
-  AdminUpdateTopicInputDto 
-} from '../types';
+import { apiRequest } from "../client";
+import type {
+  TopicsOutputDto,
+  PaginationUtil,
+  AdminCreateTopicInputDto,
+  AdminUpdateTopicInputDto,
+} from "../types";
 
 // ====== GET /topic/public - Публичный список топиков ======
 
@@ -42,24 +42,27 @@ export interface GetTopicsParams {
  * ```
  */
 export async function getTopics(
-  params: GetTopicsParams = {}
+  params: GetTopicsParams = {},
 ): Promise<PaginationUtil<TopicsOutputDto[]>> {
   const query = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       // Для boolean значений используем правильное преобразование
-      if (typeof value === 'boolean') {
-        query.append(key, value ? 'true' : 'false');
+      if (typeof value === "boolean") {
+        query.append(key, value ? "true" : "false");
       } else {
         query.append(key, String(value));
       }
     }
   });
 
-  return apiRequest<PaginationUtil<TopicsOutputDto[]>>(`/topic/public?${query}`, {
-    skipAuth: true
-  });
+  return apiRequest<PaginationUtil<TopicsOutputDto[]>>(
+    `/topic/public?${query}`,
+    {
+      skipAuth: true,
+    },
+  );
 }
 
 /**
@@ -115,9 +118,11 @@ export async function getAllRestrictedTopics(): Promise<TopicsOutputDto[]> {
  * });
  * ```
  */
-export async function createTopic(data: AdminCreateTopicInputDto): Promise<void> {
-  return apiRequest<void>('/admin/topic', {
-    method: 'POST',
+export async function createTopic(
+  data: AdminCreateTopicInputDto,
+): Promise<void> {
+  return apiRequest<void>("/admin/topic", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -143,10 +148,10 @@ export async function createTopic(data: AdminCreateTopicInputDto): Promise<void>
  */
 export async function updateTopic(
   topicId: number,
-  data: AdminUpdateTopicInputDto
+  data: AdminUpdateTopicInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/admin/topic/${topicId}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -168,7 +173,7 @@ export async function updateTopic(
  */
 export async function deleteTopic(topicId: number): Promise<void> {
   return apiRequest<void>(`/admin/topic/${topicId}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 

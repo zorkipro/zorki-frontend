@@ -5,9 +5,9 @@
 // Пользователи отправляют запросы, админы их одобряют
 // ============================================
 
-import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useErrorHandler } from '@/utils/errorHandler';
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useErrorHandler } from "@/utils/errorHandler";
 import {
   linkTgChannelRequest,
   linkYtChannelRequest,
@@ -15,12 +15,12 @@ import {
   linkTgChannel,
   linkYtChannel,
   linkIgUser,
-} from '@/api/endpoints/social-linking';
+} from "@/api/endpoints/social-linking";
 import type {
   BloggerLinkMediaTgRequestInputDto,
   BloggerLinkMediaYtRequestInputDto,
   BloggerLinkMediaIgRequestInputDto,
-} from '@/api/types';
+} from "@/api/types";
 
 interface UseSocialLinkingReturn {
   // Состояние загрузки
@@ -28,9 +28,18 @@ interface UseSocialLinkingReturn {
   error: string | null;
 
   // Действия для пользователей (отправка запросов)
-  requestTgLink: (bloggerId: number, data: BloggerLinkMediaTgRequestInputDto) => Promise<void>;
-  requestYtLink: (bloggerId: number, data: BloggerLinkMediaYtRequestInputDto) => Promise<void>;
-  requestIgLink: (bloggerId: number, data: BloggerLinkMediaIgRequestInputDto) => Promise<void>;
+  requestTgLink: (
+    bloggerId: number,
+    data: BloggerLinkMediaTgRequestInputDto,
+  ) => Promise<void>;
+  requestYtLink: (
+    bloggerId: number,
+    data: BloggerLinkMediaYtRequestInputDto,
+  ) => Promise<void>;
+  requestIgLink: (
+    bloggerId: number,
+    data: BloggerLinkMediaIgRequestInputDto,
+  ) => Promise<void>;
 
   // Действия для админов (одобрение запросов)
   approveTgLink: (bloggerId: number, requestId: number) => Promise<void>;
@@ -81,7 +90,10 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
 
   // Отправка запроса на связывание Telegram канала
   const requestTgLink = useCallback(
-    async (bloggerId: number, data: BloggerLinkMediaTgRequestInputDto): Promise<void> => {
+    async (
+      bloggerId: number,
+      data: BloggerLinkMediaTgRequestInputDto,
+    ): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
@@ -89,17 +101,19 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         await linkTgChannelRequest(bloggerId, data);
 
         toast({
-          title: 'Запрос отправлен',
-          description: 'Запрос на связывание Telegram канала отправлен на модерацию',
+          title: "Запрос отправлен",
+          description:
+            "Запрос на связывание Telegram канала отправлен на модерацию",
         });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка отправки запроса';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка отправки запроса";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -107,12 +121,15 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Отправка запроса на связывание YouTube канала
   const requestYtLink = useCallback(
-    async (bloggerId: number, data: BloggerLinkMediaYtRequestInputDto): Promise<void> => {
+    async (
+      bloggerId: number,
+      data: BloggerLinkMediaYtRequestInputDto,
+    ): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
@@ -120,17 +137,19 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         await linkYtChannelRequest(bloggerId, data);
 
         toast({
-          title: 'Запрос отправлен',
-          description: 'Запрос на связывание YouTube канала отправлен на модерацию',
+          title: "Запрос отправлен",
+          description:
+            "Запрос на связывание YouTube канала отправлен на модерацию",
         });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка отправки запроса';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка отправки запроса";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -138,12 +157,15 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Отправка запроса на связывание Instagram аккаунта
   const requestIgLink = useCallback(
-    async (bloggerId: number, data: BloggerLinkMediaIgRequestInputDto): Promise<void> => {
+    async (
+      bloggerId: number,
+      data: BloggerLinkMediaIgRequestInputDto,
+    ): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
@@ -151,17 +173,19 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         await linkIgUserRequest(bloggerId, data);
 
         toast({
-          title: 'Запрос отправлен',
-          description: 'Запрос на связывание Instagram аккаунта отправлен на модерацию',
+          title: "Запрос отправлен",
+          description:
+            "Запрос на связывание Instagram аккаунта отправлен на модерацию",
         });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка отправки запроса';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка отправки запроса";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -169,7 +193,7 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Одобрение связывания Telegram канала (админ)
@@ -182,17 +206,18 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         await linkTgChannel(bloggerId, requestId);
 
         toast({
-          title: 'Успешно',
-          description: 'Telegram канал успешно связан с блогером',
+          title: "Успешно",
+          description: "Telegram канал успешно связан с блогером",
         });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка одобрения запроса';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка одобрения запроса";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -200,7 +225,7 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Одобрение связывания YouTube канала (админ)
@@ -213,17 +238,18 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         await linkYtChannel(bloggerId, requestId);
 
         toast({
-          title: 'Успешно',
-          description: 'YouTube канал успешно связан с блогером',
+          title: "Успешно",
+          description: "YouTube канал успешно связан с блогером",
         });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка одобрения запроса';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка одобрения запроса";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -231,7 +257,7 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Одобрение связывания Instagram аккаунта (админ)
@@ -244,17 +270,18 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         await linkIgUser(bloggerId, requestId);
 
         toast({
-          title: 'Успешно',
-          description: 'Instagram аккаунт успешно связан с блогером',
+          title: "Успешно",
+          description: "Instagram аккаунт успешно связан с блогером",
         });
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка одобрения запроса';
+        const errorMessage =
+          err instanceof Error ? err.message : "Ошибка одобрения запроса";
         setError(errorMessage);
 
         toast({
-          title: 'Ошибка',
+          title: "Ошибка",
           description: errorMessage,
-          variant: 'destructive',
+          variant: "destructive",
         });
 
         throw err;
@@ -262,7 +289,7 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   // Очистка ошибки

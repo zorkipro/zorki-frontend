@@ -1,18 +1,21 @@
-import { Button } from '@/ui-kit';
-import { Badge } from '@/ui-kit';
-import { ArrowLeft, MessageCircle, Instagram } from 'lucide-react';
-import { SafeAvatar } from '@/components/ui/SafeAvatar';
-import { truncateName } from '@/utils/formatters';
-import { Blogger } from '@/types/blogger';
-import { normalizeUsername } from '@/utils/username';
-import { useTopics } from '@/hooks/useTopics';
+import { Button } from "@/ui-kit";
+import { Badge } from "@/ui-kit";
+import { ArrowLeft, MessageCircle, Instagram } from "lucide-react";
+import { SafeAvatar } from "@/components/ui/SafeAvatar";
+import { truncateName } from "@/utils/formatters";
+import { Blogger } from "@/types/blogger";
+import { normalizeUsername } from "@/utils/username";
+import { useTopics } from "@/hooks/useTopics";
 
 interface BloggerProfileHeaderProps {
   blogger: Blogger;
   onBack: () => void;
 }
 
-export const BloggerProfileHeader = ({ blogger, onBack }: BloggerProfileHeaderProps) => {
+export const BloggerProfileHeader = ({
+  blogger,
+  onBack,
+}: BloggerProfileHeaderProps) => {
   const { getCategoryNameById, loading: topicsLoading } = useTopics();
 
   return (
@@ -31,37 +34,56 @@ export const BloggerProfileHeader = ({ blogger, onBack }: BloggerProfileHeaderPr
               className="w-32 h-32 border-4 border-border-light mx-auto md:mx-0 aspect-square"
               username={normalizeUsername(blogger.handle)}
               gender={blogger.gender}
-              fallbackIcon={<Instagram className="w-16 h-16 text-muted-foreground" />}
+              fallbackIcon={
+                <Instagram className="w-16 h-16 text-muted-foreground" />
+              }
             />
 
             <div className="text-center md:text-left flex-1">
               <div className="flex items-center justify-center md:justify-start space-x-3 mb-3">
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground" title={blogger.name}>
+                <h1
+                  className="text-3xl md:text-4xl font-bold text-foreground"
+                  title={blogger.name}
+                >
                   {truncateName(blogger.name, 40)}
                 </h1>
               </div>
 
-              <p className="text-lg text-muted-foreground mb-4 max-w-2xl">{blogger.promoText}</p>
+              <p className="text-lg text-muted-foreground mb-4 max-w-2xl">
+                {blogger.promoText}
+              </p>
 
               <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                <Badge variant="secondary">@{normalizeUsername(blogger.handle)}</Badge>
+                <Badge variant="secondary">
+                  @{normalizeUsername(blogger.handle)}
+                </Badge>
                 {blogger.topics && blogger.topics.length > 0
                   ? blogger.topics.map((topic, index) => {
                       // Конвертируем ID в название, если это число
-                      const topicName = typeof topic === 'number' 
-                        ? (topicsLoading ? `Загрузка...` : (getCategoryNameById(topic) || `Тематика ${topic}`)) 
-                        : topic;
-                      
+                      const topicName =
+                        typeof topic === "number"
+                          ? topicsLoading
+                            ? `Загрузка...`
+                            : getCategoryNameById(topic) || `Тематика ${topic}`
+                          : topic;
+
                       return (
                         <Badge key={index} variant="secondary">
                           {topicName}
                         </Badge>
                       );
                     })
-                  : blogger.category && <Badge variant="secondary">{blogger.category}</Badge>}
-                {blogger.allowsBarter && <Badge variant="secondary">Бартер возможен</Badge>}
+                  : blogger.category && (
+                      <Badge variant="secondary">{blogger.category}</Badge>
+                    )}
+                {blogger.allowsBarter && (
+                  <Badge variant="secondary">Бартер возможен</Badge>
+                )}
                 {blogger.inMartRegistry === true && (
-                  <Badge variant="secondary" className="text-success border-success">
+                  <Badge
+                    variant="secondary"
+                    className="text-success border-success"
+                  >
                     В реестре МАРТ
                   </Badge>
                 )}
@@ -73,7 +95,7 @@ export const BloggerProfileHeader = ({ blogger, onBack }: BloggerProfileHeaderPr
             <Button
               className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto mx-auto md:mx-0"
               onClick={() => {
-                window.open(blogger.contact_url!, '_blank');
+                window.open(blogger.contact_url!, "_blank");
               }}
             >
               <MessageCircle className="w-4 h-4 mr-2" />

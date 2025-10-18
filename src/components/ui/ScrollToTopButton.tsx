@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/ui-kit';
-import { ChevronUp } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/ui-kit";
+import { ChevronUp } from "lucide-react";
 
 export const ScrollToTopButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,14 +15,14 @@ export const ScrollToTopButton: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    window.addEventListener("scroll", toggleVisibility);
+    return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 

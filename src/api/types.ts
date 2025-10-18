@@ -8,57 +8,65 @@
 
 // ====== ENUM TYPES (точное соответствие Prisma schema) ======
 
-export type ApiSocialType = 'YOUTUBE' | 'INSTAGRAM' | 'TELEGRAM' | 'TIKTOK';
-export type ApiGender = 'MALE' | 'FEMALE' | 'COUPLE' | 'PUBLIC_PAGE';
-export type ApiWorkFormat = 'SOLE_PROPRIETOR' | 'SELF_EMPLOYED' | 'SERVICE_CONTRACT' | 'LLC';
-export type ApiVerificationStatus = 'NEW' | 'APPROVED' | 'REJECTED' | 'MODERATION';
+export type ApiSocialType = "YOUTUBE" | "INSTAGRAM" | "TELEGRAM" | "TIKTOK";
+export type ApiGender = "MALE" | "FEMALE" | "COUPLE" | "PUBLIC_PAGE";
+export type ApiWorkFormat =
+  | "SOLE_PROPRIETOR"
+  | "SELF_EMPLOYED"
+  | "SERVICE_CONTRACT"
+  | "LLC";
+export type ApiVerificationStatus =
+  | "NEW"
+  | "APPROVED"
+  | "REJECTED"
+  | "MODERATION";
 
 // ====== NEW TYPES FROM BACKEND UPDATE ======
 
-export type BloggerVerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type BloggerVerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 // ====== ENUM MAPPERS (Backend UPPERCASE <-> Frontend русский) ======
 
 export const GENDER_MAP: Record<ApiGender, string> = {
-  MALE: 'мужчина',
-  FEMALE: 'женщина',
-  COUPLE: 'пара',
-  PUBLIC_PAGE: 'паблик',
+  MALE: "мужчина",
+  FEMALE: "женщина",
+  COUPLE: "пара",
+  PUBLIC_PAGE: "паблик",
 };
 
 export const GENDER_REVERSE: Record<string, ApiGender> = {
-  мужчина: 'MALE',
-  женщина: 'FEMALE',
-  пара: 'COUPLE',
-  паблик: 'PUBLIC_PAGE',
+  мужчина: "MALE",
+  женщина: "FEMALE",
+  пара: "COUPLE",
+  паблик: "PUBLIC_PAGE",
 };
 
 export const WORK_FORMAT_MAP: Record<ApiWorkFormat, string> = {
-  SOLE_PROPRIETOR: 'ИП',
-  SELF_EMPLOYED: 'профдоход',
-  SERVICE_CONTRACT: 'договор подряда',
-  LLC: 'ООО',
+  SOLE_PROPRIETOR: "ИП",
+  SELF_EMPLOYED: "профдоход",
+  SERVICE_CONTRACT: "договор подряда",
+  LLC: "ООО",
 };
 
 export const WORK_FORMAT_REVERSE: Record<string, ApiWorkFormat> = {
-  ИП: 'SOLE_PROPRIETOR',
-  профдоход: 'SELF_EMPLOYED',
-  'договор подряда': 'SERVICE_CONTRACT',
-  ООО: 'LLC',
+  ИП: "SOLE_PROPRIETOR",
+  профдоход: "SELF_EMPLOYED",
+  "договор подряда": "SERVICE_CONTRACT",
+  ООО: "LLC",
 };
 
 export const VERIFICATION_MAP: Record<ApiVerificationStatus, string> = {
-  NEW: 'новый',
-  APPROVED: 'одобрен',
-  REJECTED: 'отклонён',
-  MODERATION: 'на проверке',
+  NEW: "новый",
+  APPROVED: "одобрен",
+  REJECTED: "отклонён",
+  MODERATION: "на проверке",
 };
 
 export const VERIFICATION_REVERSE: Record<string, ApiVerificationStatus> = {
-  новый: 'NEW',
-  одобрен: 'APPROVED',
-  отклонён: 'REJECTED',
-  'на проверке': 'MODERATION',
+  новый: "NEW",
+  одобрен: "APPROVED",
+  отклонён: "REJECTED",
+  "на проверке": "MODERATION",
 };
 
 // ====== COMMON TYPES ======
@@ -66,7 +74,90 @@ export const VERIFICATION_REVERSE: Record<string, ApiVerificationStatus> = {
 export interface BadRequestErrorFieldExceptionDto {
   message: string;
   field: string;
-  errorKey: 'error.incorrect_input_data' | 'error.session_not_found' | 'error.session_unauthorized' | 'error.username_is_not_tg_channel' | 'error.can_not_get_tg_channel_info' | 'error.can_not_get_yt_channel_info' | 'error.can_not_get_ig_user_info' | 'error.blogger_not_found' | 'error.channel_not_found' | 'error.user_not_found' | 'error.unauthorized' | 'error.can_not_load_ig_client' | 'error.email_is_exist' | 'error.username_is_exist' | 'error.account_is_already_linked' | 'error.request_has_been_sent' | 'error.request_not_found' | 'error.request_not_under_moderation' | 'error.request_not_belong_user' | 'error.ig_user_not_found_or_no_active_parser_acc' | 'error.blogger_linked_to_another_user' | 'error.blogger_not_belong_user' | 'error.invalid_page' | 'error.social_media_not_found' | 'error.topic_not_found' | 'error.operation_is_impossible' | 'error.code_is_invalid' | 'error.blogger_already_exist' | 'error.topic_already_exist' | 'error.invalid_file_type' | 'error.exceeded_size' | 'error.file_required' | 'error.incorrect_quantity' | 'error.unknown' | 'error.too_many_files' | 'error.file_not_found' | 'error.file_not_belong_to_blogger' | 'error.file_not_belong_to_user' | 'error_input.username' | 'error_input.password' | 'error_input.channel' | 'error_input.phone' | 'error_input.apiHash' | 'error_input.apiId' | 'error_input.email' | 'error_input.requestId' | 'error_input.bloggerId' | 'error_input.name' | 'error_input.lastName' | 'error_input.contactLink' | 'error_input.workFormat' | 'error_input.genderType' | 'error_input.isBarterAvailable' | 'error_input.isMartRegistry' | 'error_input.topics' | 'error_input.restrictedTopics' | 'error_input.type' | 'error_input.postPrice' | 'error_input.storiesPrice' | 'error_input.integrationPrice' | 'error_input.page' | 'error_input.size' | 'error_input.status' | 'error_input.sortField' | 'error_input.sortDirection' | 'error_input.socialType' | 'error_input.gender' | 'error_input.subCountTo' | 'error_input.subCountFrom' | 'error_input.postPriceFrom' | 'error_input.postPriceTo' | 'error_input.storyPriceFrom' | 'error_input.storyPriceTo' | 'error_input.integrationPriceFrom' | 'error_input.integrationPriceTo' | 'error_input.coverageSocialType' | 'error_input.coverage' | 'error_input.code' | 'error_input.files' | 'error_input.fileId' | 'error_input.isRestricted' | 'error_input.topicId' | 'error_input.description';
+  errorKey:
+    | "error.incorrect_input_data"
+    | "error.session_not_found"
+    | "error.session_unauthorized"
+    | "error.username_is_not_tg_channel"
+    | "error.can_not_get_tg_channel_info"
+    | "error.can_not_get_yt_channel_info"
+    | "error.can_not_get_ig_user_info"
+    | "error.blogger_not_found"
+    | "error.channel_not_found"
+    | "error.user_not_found"
+    | "error.unauthorized"
+    | "error.can_not_load_ig_client"
+    | "error.email_is_exist"
+    | "error.username_is_exist"
+    | "error.account_is_already_linked"
+    | "error.request_has_been_sent"
+    | "error.request_not_found"
+    | "error.request_not_under_moderation"
+    | "error.request_not_belong_user"
+    | "error.ig_user_not_found_or_no_active_parser_acc"
+    | "error.blogger_linked_to_another_user"
+    | "error.blogger_not_belong_user"
+    | "error.invalid_page"
+    | "error.social_media_not_found"
+    | "error.topic_not_found"
+    | "error.operation_is_impossible"
+    | "error.code_is_invalid"
+    | "error.blogger_already_exist"
+    | "error.topic_already_exist"
+    | "error.invalid_file_type"
+    | "error.exceeded_size"
+    | "error.file_required"
+    | "error.incorrect_quantity"
+    | "error.unknown"
+    | "error.too_many_files"
+    | "error.file_not_found"
+    | "error.file_not_belong_to_blogger"
+    | "error.file_not_belong_to_user"
+    | "error_input.username"
+    | "error_input.password"
+    | "error_input.channel"
+    | "error_input.phone"
+    | "error_input.apiHash"
+    | "error_input.apiId"
+    | "error_input.email"
+    | "error_input.requestId"
+    | "error_input.bloggerId"
+    | "error_input.name"
+    | "error_input.lastName"
+    | "error_input.contactLink"
+    | "error_input.workFormat"
+    | "error_input.genderType"
+    | "error_input.isBarterAvailable"
+    | "error_input.isMartRegistry"
+    | "error_input.topics"
+    | "error_input.restrictedTopics"
+    | "error_input.type"
+    | "error_input.postPrice"
+    | "error_input.storiesPrice"
+    | "error_input.integrationPrice"
+    | "error_input.page"
+    | "error_input.size"
+    | "error_input.status"
+    | "error_input.sortField"
+    | "error_input.sortDirection"
+    | "error_input.socialType"
+    | "error_input.gender"
+    | "error_input.subCountTo"
+    | "error_input.subCountFrom"
+    | "error_input.postPriceFrom"
+    | "error_input.postPriceTo"
+    | "error_input.storyPriceFrom"
+    | "error_input.storyPriceTo"
+    | "error_input.integrationPriceFrom"
+    | "error_input.integrationPriceTo"
+    | "error_input.coverageSocialType"
+    | "error_input.coverage"
+    | "error_input.code"
+    | "error_input.files"
+    | "error_input.fileId"
+    | "error_input.isRestricted"
+    | "error_input.topicId"
+    | "error_input.description";
 }
 
 export interface BadRequestExceptionDto {
@@ -187,7 +278,7 @@ export interface PublicGetBloggerByIdOutputDto {
   verificationStatus: ApiVerificationStatus | null;
   isMartRegistry: boolean;
   isBarterAvailable: boolean;
-  social: PublicGetAllBloggersSocialAccOutputDto[] | null; // МАССИВ платформ!
+  social: PublicGetBloggerByIdSocialAccOutputDto[] | null; // МАССИВ платформ!
   price: PublicGetAllBloggersSocialPriceOutputDto[]; // МАССИВ цен!
   topics: PublicGetBloggerByIdTopicOutputDto[] | null;
   restrictedTopics: PublicGetBloggerByIdTopicOutputDto[] | null;
@@ -244,6 +335,26 @@ export interface PublicGetBloggerByIdSocialStatsFileOutputDto {
   createdAt: string; // ISO date string
 }
 
+export interface PublicGetBloggerByIdSocialAccOutputDto {
+  id: number;
+  type: ApiSocialType;
+  title: string | null;
+  description: string | null;
+  username: string;
+  er: number; // engagement rate
+  coverage: string | null; // BigInt as string
+  postCoverage: string | null; // BigInt as string - охват поста
+  externalId: string | null;
+  avatar: string | null;
+  media: string | null; // BigInt as string
+  subscribers: string | null; // BigInt as string
+  totalViews: string | null; // BigInt as string
+  createdAt: string; // ISO date string
+  updatedAt: string | null; // ISO date string
+  stats: PublicGetAllBloggersSocialAccStatsOutputDto | null;
+  statsFiles: PublicGetBloggerByIdSocialStatsFileOutputDto[] | null;
+}
+
 // ====== ADMIN AUTH ======
 
 export interface AdminLoginInputDto {
@@ -280,8 +391,8 @@ export interface AdminLogin2faFakeInputDto {
 export interface AdminGetBloggersQuery {
   page?: number; // default: 1
   size?: number; // default: 50
-  sortDirection?: 'asc' | 'desc'; // default: 'desc'
-  sortField?: 'createdAt'; // default: 'createdAt'
+  sortDirection?: "asc" | "desc"; // default: 'desc'
+  sortField?: "createdAt"; // default: 'createdAt'
   username?: string; // поиск по username соцсетей
   socialType?: ApiSocialType;
   gender?: ApiGender;
@@ -463,7 +574,7 @@ export interface AdminUpdateTopicInputDto {
 
 // ====== ADMIN LINK REQUESTS (Backend реализован) ======
 
-export type LinkRequestStatus = 'APPROVED' | 'REJECTED' | 'MODERATION';
+export type LinkRequestStatus = "APPROVED" | "REJECTED" | "MODERATION";
 
 export interface AdminGetLinkBloggerClientRequestBloggerSocialAccountOutputDto {
   id: number;
@@ -503,8 +614,8 @@ export interface AdminGetLinkBloggerClientRequestOutputDto {
 export interface GetLinkRequestsParams {
   page?: number;
   size?: number;
-  sortDirection?: 'asc' | 'desc';
-  sortField?: 'createdAt';
+  sortDirection?: "asc" | "desc";
+  sortField?: "createdAt";
   status?: LinkRequestStatus;
 }
 
@@ -573,10 +684,10 @@ export const parseStringNumber = (value: string | null): number | null => {
  * Поддерживает как строки, так и числа
  */
 export const formatLargeNumber = (value: string | number | null): string => {
-  if (!value) return '-';
+  if (!value) return "-";
 
-  const num = typeof value === 'string' ? parseInt(value, 10) : value;
-  if (isNaN(num)) return '-';
+  const num = typeof value === "string" ? parseInt(value, 10) : value;
+  if (isNaN(num)) return "-";
 
   if (num >= 1_000_000_000) {
     return `${(num / 1_000_000_000).toFixed(1)}B`;
@@ -593,19 +704,20 @@ export const formatLargeNumber = (value: string | number | null): string => {
  * Валидация файлов статистики
  */
 const SUPPORTED_MIME_TYPES = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'application/pdf',
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
 ];
 
 const MAX_FILES = 25;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB в байтах
 
 export const validateStatsFiles = (files: File[]): string | null => {
   if (files.length === 0) {
-    return 'Выберите хотя бы один файл';
+    return "Выберите хотя бы один файл";
   }
 
   if (files.length > MAX_FILES) {
@@ -616,6 +728,10 @@ export const validateStatsFiles = (files: File[]): string | null => {
     if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
       return `Неподдерживаемый формат файла: ${file.name}`;
     }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return `Файл ${file.name} слишком большой. Максимальный размер: 10MB`;
+    }
   }
 
   return null; // Валидация пройдена
@@ -625,31 +741,31 @@ export const validateStatsFiles = (files: File[]): string | null => {
  * Форматирование статуса верификации с цветами
  */
 export const formatVerificationStatus = (
-  status: ApiVerificationStatus
+  status: ApiVerificationStatus,
 ): { label: string; color: string } => {
   const config = {
-    NEW: { label: 'Новый', color: 'blue' },
-    APPROVED: { label: 'Одобрен', color: 'green' },
-    REJECTED: { label: 'Отклонён', color: 'red' },
-    MODERATION: { label: 'На модерации', color: 'yellow' },
+    NEW: { label: "Новый", color: "blue" },
+    APPROVED: { label: "Одобрен", color: "green" },
+    REJECTED: { label: "Отклонён", color: "red" },
+    MODERATION: { label: "На модерации", color: "yellow" },
   };
 
-  return config[status] || { label: status, color: 'gray' };
+  return config[status] || { label: status, color: "gray" };
 };
 
 /**
  * Форматирование статуса запроса на связывание
  */
 export const formatLinkRequestStatus = (
-  status: LinkRequestStatus
+  status: LinkRequestStatus,
 ): { label: string; color: string } => {
   const config = {
-    APPROVED: { label: 'Одобрен', color: 'green' },
-    REJECTED: { label: 'Отклонён', color: 'red' },
-    MODERATION: { label: 'На рассмотрении', color: 'yellow' },
+    APPROVED: { label: "Одобрен", color: "green" },
+    REJECTED: { label: "Отклонён", color: "red" },
+    MODERATION: { label: "На рассмотрении", color: "yellow" },
   };
 
-  return config[status] || { label: status, color: 'gray' };
+  return config[status] || { label: status, color: "gray" };
 };
 
 /**
@@ -657,10 +773,10 @@ export const formatLinkRequestStatus = (
  */
 export const formatWorkFormat = (format: ApiWorkFormat): string => {
   const labels = {
-    SOLE_PROPRIETOR: 'ИП',
-    SELF_EMPLOYED: 'Самозанятый',
-    SERVICE_CONTRACT: 'Договор услуг',
-    LLC: 'ООО',
+    SOLE_PROPRIETOR: "ИП",
+    SELF_EMPLOYED: "Самозанятый",
+    SERVICE_CONTRACT: "Договор услуг",
+    LLC: "ООО",
   };
 
   return labels[format] || format;
@@ -671,10 +787,10 @@ export const formatWorkFormat = (format: ApiWorkFormat): string => {
  */
 export const formatGenderType = (gender: ApiGender): string => {
   const labels = {
-    MALE: 'Мужской',
-    FEMALE: 'Женский',
-    COUPLE: 'Пара',
-    PUBLIC_PAGE: 'Публичная страница',
+    MALE: "Мужской",
+    FEMALE: "Женский",
+    COUPLE: "Пара",
+    PUBLIC_PAGE: "Публичная страница",
   };
 
   return labels[gender] || gender;

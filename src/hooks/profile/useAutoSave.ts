@@ -7,9 +7,9 @@
  * Следует принципу оптимизации производительности.
  */
 
-import React, { useEffect, useCallback, useRef } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
-import type { EditData } from '@/types/profile';
+import React, { useEffect, useCallback, useRef } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import type { EditData } from "@/types/profile";
 
 export interface UseAutoSaveOptions {
   /** Данные формы для сохранения */
@@ -61,12 +61,15 @@ export const useAutoSave = ({
   /**
    * Проверяет, изменились ли данные с момента последнего сохранения
    */
-  const hasChanges = useCallback((current: EditData, previous: EditData | null): boolean => {
-    if (!previous) return true;
+  const hasChanges = useCallback(
+    (current: EditData, previous: EditData | null): boolean => {
+      if (!previous) return true;
 
-    // Быстрая проверка через JSON (не идеально, но работает для большинства случаев)
-    return JSON.stringify(current) !== JSON.stringify(previous);
-  }, []);
+      // Быстрая проверка через JSON (не идеально, но работает для большинства случаев)
+      return JSON.stringify(current) !== JSON.stringify(previous);
+    },
+    [],
+  );
 
   /**
    * Сохраняет черновик
@@ -98,7 +101,7 @@ export const useAutoSave = ({
         isSavingRef.current = false;
       }
     },
-    [onSave, hasChanges]
+    [onSave, hasChanges],
   );
 
   /**
@@ -141,21 +144,28 @@ export const useAutoSave = ({
 export function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
 
-  if (seconds < 60) return 'только что';
+  if (seconds < 60) return "только что";
 
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} ${pluralize(minutes, 'минуту', 'минуты', 'минут')} назад`;
+  if (minutes < 60)
+    return `${minutes} ${pluralize(minutes, "минуту", "минуты", "минут")} назад`;
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} ${pluralize(hours, 'час', 'часа', 'часов')} назад`;
+  if (hours < 24)
+    return `${hours} ${pluralize(hours, "час", "часа", "часов")} назад`;
 
-  return date.toLocaleString('ru-RU');
+  return date.toLocaleString("ru-RU");
 }
 
 /**
  * Склонение русских слов
  */
-function pluralize(num: number, one: string, few: string, many: string): string {
+function pluralize(
+  num: number,
+  one: string,
+  few: string,
+  many: string,
+): string {
   const mod10 = num % 10;
   const mod100 = num % 100;
 

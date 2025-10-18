@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
+import React, { useState } from "react";
+import { Button } from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -9,20 +9,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui-kit';
-import { Settings, Eye, EyeOff } from 'lucide-react';
-import { useInstagramClientManager } from '@/hooks/admin/useInstagramClientManager';
+} from "@/ui-kit";
+import { Settings, Eye, EyeOff } from "lucide-react";
+import { useInstagramClientManager } from "@/hooks/admin/useInstagramClientManager";
 
 interface InstagramClientSetupDialogProps {
   onSuccess?: () => void;
 }
 
-export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProps> = ({
-  onSuccess,
-}) => {
+export const InstagramClientSetupDialog: React.FC<
+  InstagramClientSetupDialogProps
+> = ({ onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const { loginInstagramClient, isLoading } = useInstagramClientManager();
@@ -39,8 +39,8 @@ export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProp
 
     if (success) {
       setIsOpen(false);
-      setUsername('');
-      setPassword('');
+      setUsername("");
+      setPassword("");
       onSuccess?.();
     }
   };
@@ -57,7 +57,8 @@ export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProp
         <DialogHeader>
           <DialogTitle>Настройка Instagram клиента</DialogTitle>
           <DialogDescription>
-            Введите учетные данные Instagram аккаунта для парсинга данных блогеров
+            Введите учетные данные Instagram аккаунта для парсинга данных
+            блогеров
           </DialogDescription>
         </DialogHeader>
 
@@ -79,7 +80,7 @@ export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProp
               <div className="relative">
                 <Input
                   id="ig_password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -91,15 +92,19 @@ export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProp
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <div className="text-sm text-yellow-800">
-                <strong>Важно:</strong> Используйте отдельный Instagram аккаунт для парсинга данных.
-                Не используйте свой основной аккаунт.
+                <strong>Важно:</strong> Используйте отдельный Instagram аккаунт
+                для парсинга данных. Не используйте свой основной аккаунт.
               </div>
             </div>
 
@@ -108,13 +113,16 @@ export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProp
                 variant="outline"
                 onClick={() => {
                   setIsOpen(false);
-                  setUsername('');
-                  setPassword('');
+                  setUsername("");
+                  setPassword("");
                 }}
               >
                 Отмена
               </Button>
-              <Button onClick={handleSubmit} disabled={!username.trim() || !password.trim()}>
+              <Button
+                onClick={handleSubmit}
+                disabled={!username.trim() || !password.trim()}
+              >
                 Настроить
               </Button>
             </div>
@@ -124,7 +132,9 @@ export const InstagramClientSetupDialog: React.FC<InstagramClientSetupDialogProp
             <div className="flex flex-col items-center justify-center space-y-4">
               <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
               <div className="text-center space-y-2">
-                <p className="text-lg font-medium">Настройка Instagram клиента</p>
+                <p className="text-lg font-medium">
+                  Настройка Instagram клиента
+                </p>
                 <p className="text-sm text-muted-foreground">
                   Это может занять несколько секунд...
                 </p>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface UseInfiniteScrollOptions<T> {
   data: T[];
@@ -65,7 +65,7 @@ export const useInfiniteScroll = <T>({
       {
         rootMargin: `${threshold}px`,
         threshold: 0.1,
-      }
+      },
     );
 
     observerRef.current.observe(loadMoreRef.current);

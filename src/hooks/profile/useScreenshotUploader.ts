@@ -1,29 +1,32 @@
-import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { APIError } from '@/api/client';
-import { logError } from '@/utils/logger';
-import { uploadBloggerStats } from '@/api/endpoints/blogger';
-import { validateStatsFiles } from '@/api/types';
-import type { ApiSocialType } from '@/api/types';
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { APIError } from "@/api/client";
+import { logError } from "@/utils/logger";
+import { uploadBloggerStats } from "@/api/endpoints/blogger";
+import { validateStatsFiles } from "@/api/types";
+import type { ApiSocialType } from "@/api/types";
 
 /**
  * Хук для загрузки скриншотов
  */
-export const useScreenshotUploader = (profileId?: string, platform: string = 'instagram') => {
+export const useScreenshotUploader = (
+  profileId?: string,
+  platform: string = "instagram",
+) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const uploadScreenshot = useCallback(
     async (file: File, userId: string): Promise<any | null> => {
       if (!profileId) {
-        logError('No profileId provided to uploadScreenshot');
+        logError("No profileId provided to uploadScreenshot");
         return null;
       }
 
       try {
         setUploading(true);
-        setError('');
+        setError("");
 
         // ✅ Реализован API вызов для загрузки статистики
         const bloggerId = parseInt(profileId, 10);
@@ -41,38 +44,58 @@ export const useScreenshotUploader = (profileId?: string, platform: string = 'in
         });
 
         toast({
-          title: 'Успех',
-          description: 'Файл статистики успешно загружен',
-          variant: 'default',
+          title: "Успех",
+          description: "Файл статистики успешно загружен",
+          variant: "default",
         });
 
-        return { success: true };
+        // Возвращаем объект в формате Screenshot для обновления кеша
+        return {
+          id: Date.now(), // Временный ID, будет заменен при следующей загрузке
+          influencer_id: bloggerId,
+          platform: platform.toLowerCase(),
+          file_name: file.name,
+          file_url: URL.createObjectURL(file), // Временный URL для предпросмотра
+          file_size: file.size,
+          width: 0, // Будет обновлено при следующей загрузке
+          height: 0, // Будет обновлено при следующей загрузке
+          created_at: new Date().toISOString(),
+          is_draft: false,
+        };
       } catch (error: unknown) {
-        logError('Error uploading screenshot:', error);
+        logError("Error uploading screenshot:", error);
+
+        let errorMessage = "Не удалось загрузить файл статистики";
+        let errorTitle = "Ошибка";
 
         if (error instanceof APIError) {
-          setError(error.message);
-          toast({
-            title: 'Ошибка API',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          const errorMessage =
-            error instanceof Error ? error.message : 'Не удалось загрузить файл статистики';
-          setError(errorMessage);
-          toast({
-            title: 'Ошибка',
-            description: errorMessage,
-            variant: 'destructive',
-          });
+          // Обрабатываем специфичные ошибки API
+          if (error.message.includes("request entity too large")) {
+            errorMessage = "Файл слишком большой. Максимальный размер: 10MB";
+            errorTitle = "Файл слишком большой";
+          } else if (error.message.includes("invalid file type")) {
+            errorMessage = "Неподдерживаемый формат файла. Разрешены: JPEG, PNG, GIF, WebP, PDF";
+            errorTitle = "Неподдерживаемый формат";
+          } else {
+            errorMessage = error.message;
+            errorTitle = "Ошибка API";
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
         }
+
+        setError(errorMessage);
+        toast({
+          title: errorTitle,
+          description: errorMessage,
+          variant: "destructive",
+        });
         return null;
       } finally {
         setUploading(false);
       }
     },
-    [profileId, platform, toast]
+    [profileId, platform, toast],
   );
 
   const uploadMultipleScreenshots = useCallback(
@@ -81,7 +104,7 @@ export const useScreenshotUploader = (profileId?: string, platform: string = 'in
 
       try {
         setUploading(true);
-        setError('');
+        setError("");
 
         // ✅ Реализован API вызов для массовой загрузки статистики
         const bloggerId = parseInt(profileId, 10);
@@ -99,38 +122,61 @@ export const useScreenshotUploader = (profileId?: string, platform: string = 'in
         });
 
         toast({
-          title: 'Успех',
+          title: "Успех",
           description: `${files.length} файлов статистики успешно загружено`,
-          variant: 'default',
+          variant: "default",
         });
 
-        return files.map(() => ({ success: true }));
+        // Возвращаем массив объектов в формате Screenshot для обновления кеша
+        return files.map((file, index) => ({
+          id: Date.now() + index, // Временный ID, будет заменен при следующей загрузке
+          influencer_id: bloggerId,
+          platform: platform.toLowerCase(),
+          file_name: file.name,
+          file_url: URL.createObjectURL(file), // Временный URL для предпросмотра
+          file_size: file.size,
+          width: 0, // Будет обновлено при следующей загрузке
+          height: 0, // Будет обновлено при следующей загрузке
+          created_at: new Date().toISOString(),
+          is_draft: false,
+        }));
       } catch (error: unknown) {
-        logError('Error uploading screenshots:', error);
+        logError("Error uploading screenshots:", error);
+
+        let errorMessage = "Не удалось загрузить файлы статистики";
+        let errorTitle = "Ошибка";
 
         if (error instanceof APIError) {
-          setError(error.message);
-          toast({
-            title: 'Ошибка API',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } else {
-          const errorMessage =
-            error instanceof Error ? error.message : 'Не удалось загрузить файлы статистики';
-          setError(errorMessage);
-          toast({
-            title: 'Ошибка',
-            description: errorMessage,
-            variant: 'destructive',
-          });
+          // Обрабатываем специфичные ошибки API
+          if (error.message.includes("request entity too large")) {
+            errorMessage = "Один или несколько файлов слишком большие. Максимальный размер: 10MB";
+            errorTitle = "Файлы слишком большие";
+          } else if (error.message.includes("invalid file type")) {
+            errorMessage = "Неподдерживаемый формат файла. Разрешены: JPEG, PNG, GIF, WebP, PDF";
+            errorTitle = "Неподдерживаемый формат";
+          } else if (error.message.includes("too many files")) {
+            errorMessage = "Слишком много файлов. Максимум: 25 файлов за раз";
+            errorTitle = "Слишком много файлов";
+          } else {
+            errorMessage = error.message;
+            errorTitle = "Ошибка API";
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
         }
+
+        setError(errorMessage);
+        toast({
+          title: errorTitle,
+          description: errorMessage,
+          variant: "destructive",
+        });
         return [];
       } finally {
         setUploading(false);
       }
     },
-    [profileId, platform, toast]
+    [profileId, platform, toast],
   );
 
   return {

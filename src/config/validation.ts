@@ -64,15 +64,21 @@ export const FILE_VALIDATION = {
   /** Максимальный размер файла в байтах */
   MAX_SIZE_BYTES: 5 * 1024 * 1024,
   /** Разрешенные MIME типы изображений */
-  ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
+  ALLOWED_IMAGE_TYPES: [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ],
   /** Разрешенные MIME типы для скриншотов статистики */
   ALLOWED_STATS_TYPES: [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/webp',
-    'image/gif',
-    'application/pdf',
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "application/pdf",
   ],
   /** Максимальное количество файлов для загрузки статистики */
   MAX_STATS_FILES: 25,
@@ -105,26 +111,28 @@ export const VALIDATION_PATTERNS = {
   /** Цифры с десятичной точкой */
   DECIMAL: /^\d+(\.\d{1,2})?$/,
   /** Телефон (российский формат) */
-  PHONE_RU: /^(\+7|8)?[\s-]?\(?[489][0-9]{2}\)?[\s-]?[0-9]{3}[\s-]?[0-9]{2}[\s-]?[0-9]{2}$/,
+  PHONE_RU:
+    /^(\+7|8)?[\s-]?\(?[489][0-9]{2}\)?[\s-]?[0-9]{3}[\s-]?[0-9]{2}[\s-]?[0-9]{2}$/,
 } as const;
 
 /**
  * Сообщения об ошибках валидации
  */
 export const VALIDATION_MESSAGES = {
-  REQUIRED: 'Это поле обязательно для заполнения',
-  INVALID_EMAIL: 'Неверный формат email',
-  INVALID_URL: 'Неверный формат URL',
-  INVALID_PHONE: 'Неверный формат телефона',
+  REQUIRED: "Это поле обязательно для заполнения",
+  INVALID_EMAIL: "Неверный формат email",
+  INVALID_URL: "Неверный формат URL",
+  INVALID_PHONE: "Неверный формат телефона",
   MIN_LENGTH: (min: number) => `Минимальная длина: ${min} символов`,
   MAX_LENGTH: (max: number) => `Максимальная длина: ${max} символов`,
   MIN_VALUE: (min: number) => `Минимальное значение: ${min}`,
   MAX_VALUE: (max: number) => `Максимальное значение: ${max}`,
-  INVALID_NUMBER: 'Значение должно быть числом',
-  INVALID_INTEGER: 'Значение должно быть целым числом',
-  FILE_TOO_LARGE: (maxMB: number) => `Файл слишком большой. Максимальный размер: ${maxMB} МБ`,
+  INVALID_NUMBER: "Значение должно быть числом",
+  INVALID_INTEGER: "Значение должно быть целым числом",
+  FILE_TOO_LARGE: (maxMB: number) =>
+    `Файл слишком большой. Максимальный размер: ${maxMB} МБ`,
   INVALID_FILE_TYPE: (allowed: string[]) =>
-    `Недопустимый тип файла. Разрешены: ${allowed.join(', ')}`,
+    `Недопустимый тип файла. Разрешены: ${allowed.join(", ")}`,
   TOO_MANY_FILES: (max: number) => `Слишком много файлов. Максимум: ${max}`,
   MIN_ITEMS: (min: number) => `Минимальное количество элементов: ${min}`,
   MAX_ITEMS: (max: number) => `Максимальное количество элементов: ${max}`,
@@ -133,7 +141,10 @@ export const VALIDATION_MESSAGES = {
 /**
  * Валидация email
  */
-export function validateEmail(email: string): { isValid: boolean; error?: string } {
+export function validateEmail(email: string): {
+  isValid: boolean;
+  error?: string;
+} {
   if (!email) {
     return { isValid: false, error: VALIDATION_MESSAGES.REQUIRED };
   }
@@ -162,7 +173,7 @@ export function validateUrl(url: string): { isValid: boolean; error?: string } {
 export function validateLength(
   value: string,
   min: number,
-  max: number
+  max: number,
 ): { isValid: boolean; error?: string } {
   if (value.length < min) {
     return { isValid: false, error: VALIDATION_MESSAGES.MIN_LENGTH(min) };
@@ -179,7 +190,7 @@ export function validateLength(
 export function validateNumberRange(
   value: number,
   min: number,
-  max: number
+  max: number,
 ): { isValid: boolean; error?: string } {
   if (value < min) {
     return { isValid: false, error: VALIDATION_MESSAGES.MIN_VALUE(min) };
@@ -195,11 +206,14 @@ export function validateNumberRange(
  */
 export function validateFileSize(
   file: File,
-  maxSizeMB: number
+  maxSizeMB: number,
 ): { isValid: boolean; error?: string } {
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
   if (file.size > maxSizeBytes) {
-    return { isValid: false, error: VALIDATION_MESSAGES.FILE_TOO_LARGE(maxSizeMB) };
+    return {
+      isValid: false,
+      error: VALIDATION_MESSAGES.FILE_TOO_LARGE(maxSizeMB),
+    };
   }
   return { isValid: true };
 }
@@ -209,10 +223,13 @@ export function validateFileSize(
  */
 export function validateFileType(
   file: File,
-  allowedTypes: string[]
+  allowedTypes: string[],
 ): { isValid: boolean; error?: string } {
   if (!allowedTypes.includes(file.type)) {
-    return { isValid: false, error: VALIDATION_MESSAGES.INVALID_FILE_TYPE(allowedTypes) };
+    return {
+      isValid: false,
+      error: VALIDATION_MESSAGES.INVALID_FILE_TYPE(allowedTypes),
+    };
   }
   return { isValid: true };
 }
@@ -220,9 +237,14 @@ export function validateFileType(
 /**
  * Валидация изображения
  */
-export function validateImage(file: File): { isValid: boolean; error?: string } {
+export function validateImage(file: File): {
+  isValid: boolean;
+  error?: string;
+} {
   // Проверка типа
-  const typeValidation = validateFileType(file, [...FILE_VALIDATION.ALLOWED_IMAGE_TYPES]);
+  const typeValidation = validateFileType(file, [
+    ...FILE_VALIDATION.ALLOWED_IMAGE_TYPES,
+  ]);
   if (!typeValidation.isValid) {
     return typeValidation;
   }

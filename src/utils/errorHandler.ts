@@ -1,12 +1,12 @@
 // Универсальный обработчик ошибок с переводами на русский язык
 
-import { APIError } from '@/api/client';
+import { APIError } from "@/api/client";
 import {
   translateError,
   getMainErrorMessage,
   getValidationErrors,
   isValidationError,
-} from '@/utils/errorTranslations';
+} from "@/utils/errorTranslations";
 
 // Error Handler Types
 
@@ -18,7 +18,7 @@ export interface ErrorHandlerOptions {
   /** Перенаправить на страницу ошибки */
   redirectOnError?: boolean;
   /** Функция для показа уведомлений */
-  showToast?: (message: string, type?: 'error' | 'warning' | 'info') => void;
+  showToast?: (message: string, type?: "error" | "warning" | "info") => void;
   /** Функция для перенаправления */
   navigate?: (path: string) => void;
 }
@@ -61,12 +61,15 @@ export class ErrorHandler {
   /**
    * Обрабатывает ошибку и возвращает структурированную информацию
    */
-  processError(error: unknown, options: ErrorHandlerOptions = {}): ProcessedError {
+  processError(
+    error: unknown,
+    options: ErrorHandlerOptions = {},
+  ): ProcessedError {
     const mergedOptions = { ...this.defaultOptions, ...options };
 
     // Логируем ошибку если нужно
     if (mergedOptions.logError) {
-      logger.error('Error processed', error);
+      logger.error("Error processed", error);
     }
 
     // Получаем основное сообщение об ошибке
@@ -79,11 +82,11 @@ export class ErrorHandler {
     let statusCode: number | undefined;
     if (error instanceof APIError) {
       statusCode = error.statusCode;
-    } else if (error && typeof error === 'object') {
+    } else if (error && typeof error === "object") {
       const errorObj = error as Record<string, unknown>;
-      if (typeof errorObj.statusCode === 'number') {
+      if (typeof errorObj.statusCode === "number") {
         statusCode = errorObj.statusCode;
-      } else if (typeof errorObj.status === 'number') {
+      } else if (typeof errorObj.status === "number") {
         statusCode = errorObj.status;
       }
     }
@@ -98,7 +101,7 @@ export class ErrorHandler {
 
     // Показываем уведомление если нужно
     if (mergedOptions.showNotification && mergedOptions.showToast) {
-      mergedOptions.showToast(message, 'error');
+      mergedOptions.showToast(message, "error");
     }
 
     // Перенаправляем если нужно
@@ -112,7 +115,10 @@ export class ErrorHandler {
   /**
    * Обрабатывает ошибку и показывает уведомление
    */
-  handleError(error: unknown, options: ErrorHandlerOptions = {}): ProcessedError {
+  handleError(
+    error: unknown,
+    options: ErrorHandlerOptions = {},
+  ): ProcessedError {
     return this.processError(error, options);
   }
 
@@ -129,16 +135,22 @@ export class ErrorHandler {
   /**
    * Обрабатывает ошибку валидации
    */
-  handleValidationError(error: unknown, options: ErrorHandlerOptions = {}): ProcessedError {
+  handleValidationError(
+    error: unknown,
+    options: ErrorHandlerOptions = {},
+  ): ProcessedError {
     const processedError = this.processError(error, options);
 
     // Для ошибок валидации показываем более детальное сообщение
-    if (processedError.isValidationError && Object.keys(processedError.fieldErrors).length > 0) {
+    if (
+      processedError.isValidationError &&
+      Object.keys(processedError.fieldErrors).length > 0
+    ) {
       const fieldNames = Object.keys(processedError.fieldErrors);
-      const detailedMessage = `Ошибки в полях: ${fieldNames.join(', ')}`;
+      const detailedMessage = `Ошибки в полях: ${fieldNames.join(", ")}`;
 
       if (options.showToast) {
-        options.showToast(detailedMessage, 'warning');
+        options.showToast(detailedMessage, "warning");
       }
     }
 
@@ -148,26 +160,30 @@ export class ErrorHandler {
   /**
    * Обрабатывает ошибки авторизации
    */
-  handleAuthError(error: unknown, options: ErrorHandlerOptions = {}): ProcessedError {
+  handleAuthError(
+    error: unknown,
+    options: ErrorHandlerOptions = {},
+  ): ProcessedError {
     const processedError = this.processError(error, options);
 
     // Специальная обработка для ошибок авторизации
     if (processedError.statusCode === 401) {
       // Очищаем токены
-      sessionStorage.removeItem('accessToken');
-      sessionStorage.removeItem('adminToken');
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("adminToken");
 
       // Перенаправляем на страницу входа
       if (options.navigate) {
-        options.navigate('/login');
+        options.navigate("/login");
       } else {
-        window.location.href = '/login';
+        window.location.href = "/login";
       }
     } else if (processedError.statusCode === 403) {
       // Показываем специальное сообщение для ошибок доступа
-      const accessDeniedMessage = 'У вас нет прав для выполнения этого действия';
+      const accessDeniedMessage =
+        "У вас нет прав для выполнения этого действия";
       if (options.showToast) {
-        options.showToast(accessDeniedMessage, 'warning');
+        options.showToast(accessDeniedMessage, "warning");
       }
     }
 
@@ -177,21 +193,24 @@ export class ErrorHandler {
   /**
    * Определяет нужно ли перенаправлять пользователя
    */
-  private handleRedirect(statusCode: number | undefined, navigate: (path: string) => void): void {
+  private handleRedirect(
+    statusCode: number | undefined,
+    navigate: (path: string) => void,
+  ): void {
     if (!statusCode) return;
 
     switch (statusCode) {
       case 401:
-        navigate('/login');
+        navigate("/login");
         break;
       case 403:
-        navigate('/unauthorized');
+        navigate("/unauthorized");
         break;
       case 404:
-        navigate('/not-found');
+        navigate("/not-found");
         break;
       case 500:
-        navigate('/server-error');
+        navigate("/server-error");
         break;
       default:
         // Не перенаправляем для других ошибок
@@ -209,8 +228,8 @@ export class ErrorHandler {
 
 // React Hook for Error Handling
 
-import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 export interface UseErrorHandlerOptions extends ErrorHandlerOptions {
   /** Показывать уведомления по умолчанию */
@@ -234,28 +253,28 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}) {
     (error: unknown, customOptions?: ErrorHandlerOptions) => {
       return errorHandler.handleError(error, customOptions);
     },
-    [errorHandler]
+    [errorHandler],
   );
 
   const handleErrorSilently = useCallback(
     (error: unknown) => {
       return errorHandler.handleErrorSilently(error);
     },
-    [errorHandler]
+    [errorHandler],
   );
 
   const handleValidationError = useCallback(
     (error: unknown, customOptions?: ErrorHandlerOptions) => {
       return errorHandler.handleValidationError(error, customOptions);
     },
-    [errorHandler]
+    [errorHandler],
   );
 
   const handleAuthError = useCallback(
     (error: unknown, customOptions?: ErrorHandlerOptions) => {
       return errorHandler.handleAuthError(error, customOptions);
     },
-    [errorHandler]
+    [errorHandler],
   );
 
   return {

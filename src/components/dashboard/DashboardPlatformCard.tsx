@@ -1,8 +1,14 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Button } from '@/ui-kit';
-import { Link } from 'react-router-dom';
-import { Instagram, Edit } from 'lucide-react';
-import { ClientBloggerInfo } from '@/api/types';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Button } from "@/ui-kit";
+import { Link } from "react-router-dom";
+import { Instagram, Edit } from "lucide-react";
+import { ClientBloggerInfo } from "@/api/types";
 
 interface DashboardPlatformCardProps {
   userBlogger: ClientBloggerInfo | null;
@@ -33,18 +39,22 @@ export const DashboardPlatformCard = ({
                 <div>
                   <h3 className="font-semibold">{displayName}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Статус:{' '}
-                    {userBlogger.verificationStatus === 'APPROVED'
-                      ? 'Одобрен'
-                      : userBlogger.verificationStatus === 'PENDING'
-                        ? 'На рассмотрении'
-                        : userBlogger.verificationStatus === 'REJECTED'
-                          ? 'Отклонен'
-                          : 'Неизвестно'}
+                    Статус:{" "}
+                    {userBlogger.verificationStatus === "APPROVED"
+                      ? "Одобрен"
+                      : userBlogger.verificationStatus === "PENDING"
+                        ? "На рассмотрении"
+                        : userBlogger.verificationStatus === "REJECTED"
+                          ? "Отклонен"
+                          : "Неизвестно"}
                   </p>
                   <div className="flex items-center space-x-2 mt-1">
-                    <div className={`w-2 h-2 rounded-full ${profileStatusInfo?.color}`}></div>
-                    <span className="text-xs text-muted-foreground">{profileStatusInfo?.text}</span>
+                    <div
+                      className={`w-2 h-2 rounded-full ${profileStatusInfo?.color}`}
+                    ></div>
+                    <span className="text-xs text-muted-foreground">
+                      {profileStatusInfo?.text}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -56,11 +66,14 @@ export const DashboardPlatformCard = ({
               </Link>
             </div>
 
-            {userBlogger.verificationStatus === 'PENDING' && (
+            {userBlogger.verificationStatus === "PENDING" && (
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 className="font-medium text-yellow-800 mb-2">Требуется верификация</h4>
+                <h4 className="font-medium text-yellow-800 mb-2">
+                  Требуется верификация
+                </h4>
                 <p className="text-sm text-yellow-700">
-                  Отредактируйте ваш профиль и следуйте инструкциям для верификации.
+                  Отредактируйте ваш профиль и следуйте инструкциям для
+                  верификации.
                 </p>
               </div>
             )}

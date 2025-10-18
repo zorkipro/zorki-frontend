@@ -1,11 +1,11 @@
-import React from 'react';
-import { Card, CardContent } from '@/ui-kit';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { EditableCard } from '@/ui-kit';
-import { Users, TrendingUp, Eye, Wallet } from 'lucide-react';
-import { PlatformStats, EditData } from '@/types/profile';
+import React from "react";
+import { Card, CardContent } from "@/ui-kit";
+import { Button } from "@/ui-kit";
+import { Input } from "@/ui-kit";
+import { Label } from "@/ui-kit";
+import { EditableCard } from "@/ui-kit";
+import { Users, TrendingUp, Eye, Wallet } from "lucide-react";
+import { PlatformStats, EditData } from "@/types/profile";
 
 interface PlatformStatsProps {
   stats: PlatformStats;
@@ -26,7 +26,6 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
   onSave,
   formatNumber,
 }) => {
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
       {/* Подписчики - НЕ редактируемое */}
@@ -53,7 +52,9 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
       <Card>
         <CardContent className="p-4 text-center">
           <Eye className="w-6 h-6 text-warning mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">{formatNumber(stats.reach)}</div>
+          <div className="text-2xl font-bold text-foreground">
+            {formatNumber(stats.reach)}
+          </div>
           <div className="text-sm text-muted-foreground">Охват публикаций</div>
         </CardContent>
       </Card>
@@ -64,7 +65,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
         icon={<Eye className="w-6 h-6 text-warning mx-auto mb-2" />}
         value={stats.storyReach}
         editKey="instagram_story_reach"
-        isEditing={editingSection === 'instagram_story_reach'}
+        isEditing={editingSection === "instagram_story_reach"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
@@ -92,7 +93,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               <Button
                 onClick={async () => {
                   const input = document.getElementById(
-                    'instagram_story_reach'
+                    "instagram_story_reach",
                   ) as HTMLInputElement;
                   try {
                     await onSave({ instagram_story_reach: input.value });
@@ -116,11 +117,13 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="instagram_post_price"
-        isEditing={editingSection === 'instagram_post_price'}
+        isEditing={editingSection === "instagram_post_price"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
-            <div className="text-2xl font-bold text-primary">{stats.price || 0} BYN</div>
+            <div className="text-2xl font-bold text-primary">
+              {stats.price || 0} BYN
+            </div>
             <div className="text-sm text-muted-foreground">Цена публикации</div>
           </>
         )}
@@ -141,7 +144,9 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               </Button>
               <Button
                 onClick={async () => {
-                  const input = document.getElementById('instagram_post_price') as HTMLInputElement;
+                  const input = document.getElementById(
+                    "instagram_post_price",
+                  ) as HTMLInputElement;
                   try {
                     await onSave({ instagram_post_price: input.value });
                     onEditingChange(null);
@@ -164,18 +169,22 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.storyPrice}
         editKey="instagram_story_price"
-        isEditing={editingSection === 'instagram_story_price'}
+        isEditing={editingSection === "instagram_story_price"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
-            <div className="text-2xl font-bold text-primary">{stats.storyPrice || 0} BYN</div>
+            <div className="text-2xl font-bold text-primary">
+              {stats.storyPrice || 0} BYN
+            </div>
             <div className="text-sm text-muted-foreground">Цена сторис</div>
           </>
         )}
         renderEditForm={() => (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="instagram_story_price">Цена за сторис (BYN)</Label>
+              <Label htmlFor="instagram_story_price">
+                Цена за сторис (BYN)
+              </Label>
               <Input
                 id="instagram_story_price"
                 type="number"
@@ -190,7 +199,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               <Button
                 onClick={async () => {
                   const input = document.getElementById(
-                    'instagram_story_price'
+                    "instagram_story_price",
                   ) as HTMLInputElement;
                   try {
                     await onSave({ instagram_story_price: input.value });
@@ -250,22 +259,26 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="tiktok_post_price"
-        isEditing={editingSection === 'tiktok_post_price'}
+        isEditing={editingSection === "tiktok_post_price"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
-            <div className="text-2xl font-bold text-primary">{stats.price || 0} BYN</div>
+            <div className="text-2xl font-bold text-primary">
+              {stats.price || 0} BYN
+            </div>
             <div className="text-sm text-muted-foreground">Цена публикации</div>
           </>
         )}
         renderEditForm={() => (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="tiktok_post_price">Цена за публикацию (BYN)</Label>
+              <Label htmlFor="tiktok_post_price">
+                Цена за публикацию (BYN)
+              </Label>
               <Input
                 id="tiktok_post_price"
                 type="number"
-                defaultValue={formData.tiktok_post_price || stats.price || ''}
+                defaultValue={formData.tiktok_post_price || stats.price || ""}
                 placeholder="0"
               />
             </div>
@@ -275,7 +288,9 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
               </Button>
               <Button
                 onClick={async () => {
-                  const input = document.getElementById('tiktok_post_price') as HTMLInputElement;
+                  const input = document.getElementById(
+                    "tiktok_post_price",
+                  ) as HTMLInputElement;
                   try {
                     await onSave({ tiktok_post_price: input.value });
                     onEditingChange(null);
@@ -334,22 +349,26 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="telegram_post_price"
-        isEditing={editingSection === 'telegram_post_price'}
+        isEditing={editingSection === "telegram_post_price"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
-            <div className="text-2xl font-bold text-primary">{stats.price || 0} BYN</div>
+            <div className="text-2xl font-bold text-primary">
+              {stats.price || 0} BYN
+            </div>
             <div className="text-sm text-muted-foreground">Цена публикации</div>
           </>
         )}
         renderEditForm={() => (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="telegram_post_price">Цена за публикацию (BYN)</Label>
+              <Label htmlFor="telegram_post_price">
+                Цена за публикацию (BYN)
+              </Label>
               <Input
                 id="telegram_post_price"
                 type="number"
-                defaultValue={formData.telegram_post_price || stats.price || ''}
+                defaultValue={formData.telegram_post_price || stats.price || ""}
                 placeholder="0"
               />
             </div>
@@ -359,7 +378,9 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
               </Button>
               <Button
                 onClick={async () => {
-                  const input = document.getElementById('telegram_post_price') as HTMLInputElement;
+                  const input = document.getElementById(
+                    "telegram_post_price",
+                  ) as HTMLInputElement;
                   try {
                     await onSave({ telegram_post_price: input.value });
                     onEditingChange(null);
@@ -405,7 +426,9 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
       <Card>
         <CardContent className="p-4 text-center">
           <Eye className="w-6 h-6 text-warning mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">{formatNumber(stats.views || 0)}</div>
+          <div className="text-2xl font-bold text-foreground">
+            {formatNumber(stats.views || 0)}
+          </div>
           <div className="text-sm text-muted-foreground">Просмотров</div>
         </CardContent>
       </Card>
@@ -416,22 +439,26 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="youtube_post_price"
-        isEditing={editingSection === 'youtube_post_price'}
+        isEditing={editingSection === "youtube_post_price"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
-            <div className="text-2xl font-bold text-primary">{stats.price || 0} BYN</div>
+            <div className="text-2xl font-bold text-primary">
+              {stats.price || 0} BYN
+            </div>
             <div className="text-sm text-muted-foreground">Цена интеграции</div>
           </>
         )}
         renderEditForm={() => (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="youtube_post_price">Цена за интеграцию (BYN)</Label>
+              <Label htmlFor="youtube_post_price">
+                Цена за интеграцию (BYN)
+              </Label>
               <Input
                 id="youtube_post_price"
                 type="number"
-                defaultValue={formData.youtube_post_price || stats.price || ''}
+                defaultValue={formData.youtube_post_price || stats.price || ""}
                 placeholder="0"
               />
             </div>
@@ -441,7 +468,9 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
               </Button>
               <Button
                 onClick={async () => {
-                  const input = document.getElementById('youtube_post_price') as HTMLInputElement;
+                  const input = document.getElementById(
+                    "youtube_post_price",
+                  ) as HTMLInputElement;
                   try {
                     await onSave({ youtube_post_price: input.value });
                     onEditingChange(null);

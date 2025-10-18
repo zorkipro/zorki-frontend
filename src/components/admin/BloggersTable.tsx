@@ -1,16 +1,29 @@
-import React, { useEffect, useRef } from 'react';
-import { Button } from '@/ui-kit';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui-kit';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui-kit';
-import { Eye, EyeOff, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { SafeAvatar } from '@/components/ui/SafeAvatar';
-import { truncateName } from '@/utils/formatters';
-import { formatLargeNumber } from '@/api/types';
-import type { AdminGetBloggerOutputDto } from '@/api/types';
-import { logger } from '@/utils/logger';
-import { getStatusColor, getStatusText } from '@/utils/admin/status';
-import { prepareBloggerData } from '@/utils/admin/blogger';
+import React, { useEffect, useRef } from "react";
+import { Button } from "@/ui-kit";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/ui-kit";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/ui-kit";
+import { Eye, EyeOff, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { SafeAvatar } from "@/components/ui/SafeAvatar";
+import { truncateName } from "@/utils/formatters";
+import { formatLargeNumber } from "@/api/types";
+import type { AdminGetBloggerOutputDto } from "@/api/types";
+import { logger } from "@/utils/logger";
+import { getStatusColor, getStatusText } from "@/utils/admin/status";
+import { prepareBloggerData } from "@/utils/admin/blogger";
 
 interface BloggersTableProps {
   bloggers: AdminGetBloggerOutputDto[];
@@ -47,8 +60,8 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
       },
       {
         threshold: 0.1,
-        rootMargin: '100px',
-      }
+        rootMargin: "100px",
+      },
     );
 
     if (loadMoreRef.current) {
@@ -62,10 +75,10 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
     };
   }, [hasMore, isLoadingMore, onLoadMore]);
 
-
   // Функция для рендера мобильной карточки
   const renderMobileCard = (blogger: AdminGetBloggerOutputDto) => {
-    const { mainSocial, displayName, username, subscribers } = prepareBloggerData(blogger);
+    const { mainSocial, displayName, username, subscribers } =
+      prepareBloggerData(blogger);
 
     return (
       <Card key={blogger.id} className="mb-4">
@@ -74,7 +87,7 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
             {/* Avatar */}
             <div className="flex-shrink-0">
               <SafeAvatar
-                src={mainSocial?.avatarUrl || ''}
+                src={mainSocial?.avatarUrl || ""}
                 alt={displayName}
                 className="w-12 h-12 aspect-square"
                 username={username}
@@ -85,7 +98,10 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
             {/* Content */}
             <div className="flex-1 min-w-0">
               {/* Name */}
-              <h3 className="font-medium text-sm truncate mb-1" title={displayName}>
+              <h3
+                className="font-medium text-sm truncate mb-1"
+                title={displayName}
+              >
                 {truncateName(displayName, 20)}
               </h3>
 
@@ -106,9 +122,11 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   ) : (
                     <EyeOff className="w-3 h-3 text-gray-500" />
                   )}
-                  <span>{!blogger.isHidden ? 'Виден' : 'Скрыт'}</span>
+                  <span>{!blogger.isHidden ? "Виден" : "Скрыт"}</span>
                 </div>
-                <span className="font-medium">{formatLargeNumber(subscribers)}</span>
+                <span className="font-medium">
+                  {formatLargeNumber(subscribers)}
+                </span>
               </div>
             </div>
 
@@ -122,7 +140,11 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                 onToggleVisibility(blogger.id, blogger.isHidden);
               }}
             >
-              {!blogger.isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {!blogger.isHidden ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </CardContent>
@@ -154,19 +176,24 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   <TableCell colSpan={4} className="text-center py-8">
                     <div className="flex items-center justify-center space-x-2">
                       <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      <span className="text-muted-foreground">Поиск блогеров...</span>
+                      <span className="text-muted-foreground">
+                        Поиск блогеров...
+                      </span>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : bloggers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8">
-                    <div className="text-muted-foreground">Блогеры не найдены</div>
+                    <div className="text-muted-foreground">
+                      Блогеры не найдены
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 bloggers.map((blogger) => {
-                  const { mainSocial, displayName, username, subscribers } = prepareBloggerData(blogger);
+                  const { mainSocial, displayName, username, subscribers } =
+                    prepareBloggerData(blogger);
 
                   return (
                     <TableRow
@@ -174,23 +201,29 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={() => {
                         // Используем username из социальных аккаунтов для навигации
-                        const mainSocial = blogger.social.find((s) => s.type === 'INSTAGRAM');
+                        const mainSocial = blogger.social.find(
+                          (s) => s.type === "INSTAGRAM",
+                        );
                         const username = mainSocial?.username;
 
                         if (username) {
                           navigate(`/admin/blogger/${username}/edit`);
                         } else {
-                          logger.error('Username not found for blogger', undefined, {
-                            component: 'BloggersTable',
-                            bloggerId: blogger.id,
-                          });
+                          logger.error(
+                            "Username not found for blogger",
+                            undefined,
+                            {
+                              component: "BloggersTable",
+                              bloggerId: blogger.id,
+                            },
+                          );
                         }
                       }}
                     >
                       <TableCell className="font-medium">
                         <div className="flex items-center space-x-3">
                           <SafeAvatar
-                            src={mainSocial?.avatarUrl || ''}
+                            src={mainSocial?.avatarUrl || ""}
                             alt={displayName}
                             className="w-8 h-8 aspect-square"
                             username={username}
@@ -198,21 +231,29 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                           />
                           <div>
                             <div className="font-medium flex items-center gap-2">
-                              <span title={displayName}>{truncateName(displayName, 25)}</span>
+                              <span title={displayName}>
+                                {truncateName(displayName, 25)}
+                              </span>
                             </div>
-                            <div className="text-sm text-muted-foreground">@{username}</div>
+                            <div className="text-sm text-muted-foreground">
+                              @{username}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="font-medium">{formatLargeNumber(subscribers)}</div>
+                        <div className="font-medium">
+                          {formatLargeNumber(subscribers)}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <div
                             className={`w-2 h-2 rounded-full ${getStatusColor(blogger.status)}`}
                           ></div>
-                          <span className="text-sm">{getStatusText(blogger.status)}</span>
+                          <span className="text-sm">
+                            {getStatusText(blogger.status)}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -222,7 +263,9 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                           ) : (
                             <EyeOff className="w-4 h-4 text-gray-500" />
                           )}
-                          <span className="text-sm">{!blogger.isHidden ? 'Виден' : 'Скрыт'}</span>
+                          <span className="text-sm">
+                            {!blogger.isHidden ? "Виден" : "Скрыт"}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -240,7 +283,7 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                             ) : (
                               <Eye className="w-4 h-4 mr-1" />
                             )}
-                            {!blogger.isHidden ? 'Скрыть' : 'Показать'}
+                            {!blogger.isHidden ? "Скрыть" : "Показать"}
                           </Button>
                         </div>
                       </TableCell>
@@ -260,7 +303,9 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   <span>Загрузка...</span>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">Прокрутите вниз для загрузки</div>
+                <div className="text-sm text-muted-foreground">
+                  Прокрутите вниз для загрузки
+                </div>
               )}
             </div>
           )}
@@ -284,7 +329,9 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   <span>Загрузка...</span>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">Прокрутите вниз для загрузки</div>
+                <div className="text-sm text-muted-foreground">
+                  Прокрутите вниз для загрузки
+                </div>
               )}
             </div>
           )}

@@ -3,11 +3,17 @@
  * Отвечает только за auth state (SRP - Single Responsibility Principle)
  */
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
-import { saveAccessToken, removeAccessToken } from '@/utils/googleAuth';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
+import { saveAccessToken, removeAccessToken } from "@/utils/googleAuth";
 
 export interface SessionContextType {
   /** Текущий пользователь Supabase */
@@ -33,7 +39,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const useSession = () => {
   const context = useContext(SessionContext);
   if (!context) {
-    throw new Error('useSession must be used within a SessionProvider');
+    throw new Error("useSession must be used within a SessionProvider");
   }
   return context;
 };
@@ -60,7 +66,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
 
     const token = newSession?.access_token ?? null;
     setAccessToken(token);
-    
+
     // Обновляем sessionStorage только при изменении токена
     if (token) {
       saveAccessToken(token);
@@ -78,7 +84,9 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       if (error) throw error;
       updateSession(data.session);
     } catch (error) {
-      logger.error('Failed to refresh session', error, { component: 'SessionProvider' });
+      logger.error("Failed to refresh session", error, {
+        component: "SessionProvider",
+      });
     }
   }, [updateSession]);
 
@@ -97,7 +105,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       setUser(null);
       setSession(null);
     } catch (error) {
-      logger.error('Sign out failed', error, { component: 'SessionProvider' });
+      logger.error("Sign out failed", error, { component: "SessionProvider" });
       throw error;
     }
   }, []);
@@ -132,5 +140,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     refreshSession,
   };
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  return (
+    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+  );
 };

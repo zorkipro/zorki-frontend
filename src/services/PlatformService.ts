@@ -19,9 +19,9 @@ import type {
   IPlatformData,
   PlatformFormField,
   ValidationResult,
-} from '@/types/platform';
-import { PLATFORM_CONFIGS } from '@/config/platforms';
-import { isPlatformType } from '@/types/platform';
+} from "@/types/platform";
+import { PLATFORM_CONFIGS } from "@/config/platforms";
+import { isPlatformType } from "@/types/platform";
 
 /**
  * Сервис для работы с платформами
@@ -35,33 +35,43 @@ export class PlatformService {
    * @param data - Сырые данные (может быть любой объект)
    * @returns Стандартизированные данные платформы
    */
-  getPlatformData(platform: PlatformType, data: Record<string, unknown>): IPlatformData {
+  getPlatformData(
+    platform: PlatformType,
+    data: Record<string, unknown>,
+  ): IPlatformData {
     return {
-      username: this.extractString(data, 'username'),
+      username: this.extractString(data, "username"),
       profile_url:
-        this.extractString(data, 'profile_url') || this.extractString(data, 'profileUrl'),
+        this.extractString(data, "profile_url") ||
+        this.extractString(data, "profileUrl"),
       subscribers:
-        this.extractNumber(data, 'subscribers') || this.extractNumber(data, 'followers') || 0,
+        this.extractNumber(data, "subscribers") ||
+        this.extractNumber(data, "followers") ||
+        0,
       er:
-        this.extractNumber(data, 'er') ||
-        this.extractNumber(data, 'engagement_rate') ||
-        this.extractNumber(data, 'engagementRate') ||
+        this.extractNumber(data, "er") ||
+        this.extractNumber(data, "engagement_rate") ||
+        this.extractNumber(data, "engagementRate") ||
         0,
       reach:
-        this.extractNumber(data, 'reach') ||
-        this.extractNumber(data, 'post_reach') ||
-        this.extractNumber(data, 'postReach') ||
+        this.extractNumber(data, "reach") ||
+        this.extractNumber(data, "post_reach") ||
+        this.extractNumber(data, "postReach") ||
         0,
       price:
-        this.extractNumber(data, 'price') ||
-        this.extractNumber(data, 'post_price') ||
-        this.extractNumber(data, 'postPrice') ||
+        this.extractNumber(data, "price") ||
+        this.extractNumber(data, "post_price") ||
+        this.extractNumber(data, "postPrice") ||
         0,
       storyReach:
-        this.extractNumber(data, 'storyReach') || this.extractNumber(data, 'story_reach') || 0,
+        this.extractNumber(data, "storyReach") ||
+        this.extractNumber(data, "story_reach") ||
+        0,
       storyPrice:
-        this.extractNumber(data, 'storyPrice') || this.extractNumber(data, 'story_price') || 0,
-      views: this.extractNumber(data, 'views'),
+        this.extractNumber(data, "storyPrice") ||
+        this.extractNumber(data, "story_price") ||
+        0,
+      views: this.extractNumber(data, "views"),
     };
   }
 
@@ -72,7 +82,10 @@ export class PlatformService {
    * @param data - Данные для валидации
    * @returns Результат валидации с ошибками (если есть)
    */
-  validatePlatformData(platform: PlatformType, data: Partial<IPlatformData>): ValidationResult {
+  validatePlatformData(
+    platform: PlatformType,
+    data: Partial<IPlatformData>,
+  ): ValidationResult {
     const config = PLATFORM_CONFIGS[platform];
     const errors: Partial<Record<PlatformFormField, string>> = {};
 
@@ -86,12 +99,15 @@ export class PlatformService {
         config.validation.usernamePattern &&
         !config.validation.usernamePattern.test(data.username)
       ) {
-        errors.username = 'Неверный формат username';
+        errors.username = "Неверный формат username";
       }
     }
 
     // Валидация подписчиков
-    if (data.subscribers !== undefined && data.subscribers < config.validation.minSubscribers) {
+    if (
+      data.subscribers !== undefined &&
+      data.subscribers < config.validation.minSubscribers
+    ) {
       errors.followers = `Минимальное количество: ${config.validation.minSubscribers}`;
     }
 
@@ -106,11 +122,11 @@ export class PlatformService {
 
     // Валидация цен (не могут быть отрицательными)
     if (data.price !== undefined && data.price < 0) {
-      errors.post_price = 'Цена не может быть отрицательной';
+      errors.post_price = "Цена не может быть отрицательной";
     }
 
     if (data.storyPrice !== undefined && data.storyPrice < 0) {
-      errors.story_price = 'Цена не может быть отрицательной';
+      errors.story_price = "Цена не может быть отрицательной";
     }
 
     return {
@@ -127,30 +143,36 @@ export class PlatformService {
    * @param value - Значение поля
    * @returns Отформатированное значение
    */
-  formatPlatformField(platform: PlatformType, field: PlatformFormField, value: unknown): string {
+  formatPlatformField(
+    platform: PlatformType,
+    field: PlatformFormField,
+    value: unknown,
+  ): string {
     if (value === null || value === undefined) {
-      return '-';
+      return "-";
     }
 
     switch (field) {
-      case 'followers':
+      case "followers":
         return this.formatNumber(value as number);
 
-      case 'engagement_rate':
+      case "engagement_rate":
         return `${value}%`;
 
-      case 'post_price':
-      case 'story_price':
+      case "post_price":
+      case "story_price":
         return this.formatPrice(value as number);
 
-      case 'post_reach':
-      case 'story_reach':
+      case "post_reach":
+      case "story_reach":
         return this.formatNumber(value as number);
 
-      case 'username':
-        return value.toString().startsWith('@') ? value.toString() : `@${value}`;
+      case "username":
+        return value.toString().startsWith("@")
+          ? value.toString()
+          : `@${value}`;
 
-      case 'profile_url':
+      case "profile_url":
         return value.toString();
 
       default:
@@ -166,12 +188,15 @@ export class PlatformService {
    * @param prefix - Префикс для имен полей (например, 'instagram_')
    * @returns Объект с пустыми полями формы
    */
-  generateEmptyFormFields(platform: PlatformType, prefix?: string): Record<string, string> {
+  generateEmptyFormFields(
+    platform: PlatformType,
+    prefix?: string,
+  ): Record<string, string> {
     const platformPrefix = prefix || `${platform}_`;
     const fields: Record<string, string> = {};
 
     PLATFORM_CONFIGS[platform].fields.forEach((field) => {
-      fields[`${platformPrefix}${field}`] = '';
+      fields[`${platformPrefix}${field}`] = "";
     });
 
     return fields;
@@ -200,7 +225,10 @@ export class PlatformService {
    * @param draft - Черновик (частичные данные)
    * @returns Объединенные данные (черновик переопределяет опубликованные)
    */
-  mergePlatformDrafts(published: IPlatformData, draft: Partial<IPlatformData>): IPlatformData {
+  mergePlatformDrafts(
+    published: IPlatformData,
+    draft: Partial<IPlatformData>,
+  ): IPlatformData {
     return {
       username: draft.username ?? published.username,
       profile_url: draft.profile_url ?? published.profile_url,
@@ -217,23 +245,29 @@ export class PlatformService {
   /**
    * Извлечение строки из объекта данных
    */
-  private extractString(data: Record<string, unknown>, key: string): string | undefined {
+  private extractString(
+    data: Record<string, unknown>,
+    key: string,
+  ): string | undefined {
     const value = data[key];
-    return typeof value === 'string' ? value : undefined;
+    return typeof value === "string" ? value : undefined;
   }
 
   /**
    * Извлечение числа из объекта данных
    * Поддерживает строковые числа (из API)
    */
-  private extractNumber(data: Record<string, unknown>, key: string): number | undefined {
+  private extractNumber(
+    data: Record<string, unknown>,
+    key: string,
+  ): number | undefined {
     const value = data[key];
 
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       return value;
     }
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       const parsed = parseFloat(value);
       return isNaN(parsed) ? undefined : parsed;
     }
@@ -252,14 +286,14 @@ export class PlatformService {
     } else if (value >= 1_000) {
       return `${(value / 1_000).toFixed(1)}K`;
     }
-    return value.toLocaleString('ru-RU');
+    return value.toLocaleString("ru-RU");
   }
 
   /**
    * Форматирование цены (добавляет символ рубля)
    */
   private formatPrice(value: number): string {
-    return `${value.toLocaleString('ru-RU')} ₽`;
+    return `${value.toLocaleString("ru-RU")} ₽`;
   }
 }
 

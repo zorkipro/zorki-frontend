@@ -1,11 +1,11 @@
-import { useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { APIError } from '@/api/client';
-import { logError } from '@/utils/logger';
-import { useScreenshotLoader } from './useScreenshotLoader';
-import { useScreenshotUploader } from './useScreenshotUploader';
-import { useStatsFileManagement } from './useStatsFileManagement';
-import type { Screenshot } from '@/types/profile';
+import { useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { APIError } from "@/api/client";
+import { logError } from "@/utils/logger";
+import { useScreenshotLoader } from "./useScreenshotLoader";
+import { useScreenshotUploader } from "./useScreenshotUploader";
+import { useStatsFileManagement } from "./useStatsFileManagement";
+import type { Screenshot } from "@/types/profile";
 
 /**
  * Главный хук для управления скриншотами
@@ -13,17 +13,14 @@ import type { Screenshot } from '@/types/profile';
  */
 export const useScreenshotManager = (
   profileId?: string,
-  platform: string = 'instagram',
-  isEditorPage: boolean = false
+  platform: string = "instagram",
+  isEditorPage: boolean = false,
 ) => {
   const { toast } = useToast();
 
   // Загрузка скриншотов
-  const { screenshots, loading, error, fetchScreenshots, setScreenshots } = useScreenshotLoader(
-    profileId,
-    platform,
-    isEditorPage
-  );
+  const { screenshots, loading, error, fetchScreenshots, setScreenshots } =
+    useScreenshotLoader(profileId, platform, isEditorPage);
 
   // Загрузка новых скриншотов
   const {
@@ -44,7 +41,7 @@ export const useScreenshotManager = (
         setScreenshots((prev) => [result, ...prev]);
       }
     },
-    [upload, profileId, setScreenshots]
+    [upload, profileId, setScreenshots],
   );
 
   const uploadMultipleScreenshots = useCallback(
@@ -54,7 +51,7 @@ export const useScreenshotManager = (
         setScreenshots((prev) => [...results, ...prev]);
       }
     },
-    [uploadMultiple, profileId, setScreenshots]
+    [uploadMultiple, profileId, setScreenshots],
   );
 
   // Удаление скриншота с обновлением кеша
@@ -62,24 +59,28 @@ export const useScreenshotManager = (
     async (screenshot: Screenshot) => {
       if (!profileId) {
         toast({
-          title: 'Ошибка',
-          description: 'ID профиля не найден',
-          variant: 'destructive',
+          title: "Ошибка",
+          description: "ID профиля не найден",
+          variant: "destructive",
         });
         return;
       }
 
       try {
-        await confirmDelete(Number(profileId), screenshot.id, screenshot.file_name);
-        
+        await confirmDelete(
+          Number(profileId),
+          screenshot.id,
+          screenshot.file_name,
+        );
+
         // Обновляем кеш - удаляем скриншот из списка
-        setScreenshots((prev) => prev.filter(s => s.id !== screenshot.id));
+        setScreenshots((prev) => prev.filter((s) => s.id !== screenshot.id));
       } catch (error) {
         // Ошибка уже обработана в confirmDelete
-        logError('Error deleting screenshot:', error);
+        logError("Error deleting screenshot:", error);
       }
     },
-    [profileId, confirmDelete, setScreenshots, toast]
+    [profileId, confirmDelete, setScreenshots, toast],
   );
 
   // Cache management

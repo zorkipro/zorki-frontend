@@ -3,9 +3,9 @@
  * Предупреждает пользователя при попытке покинуть страницу с несохраненными изменениями
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useBeforeUnload } from 'react-router-dom';
-import { logger } from '@/utils/logger';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { useBeforeUnload } from "react-router-dom";
+import { logger } from "@/utils/logger";
 
 export interface UseUnsavedChangesOptions<T = unknown> {
   /** Текущие данные формы */
@@ -42,7 +42,7 @@ export const useUnsavedChanges = <T = unknown>({
   currentData,
   initialData,
   enabled = true,
-  message = 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?',
+  message = "У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?",
 }: UseUnsavedChangesOptions<T>) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const savedDataRef = useRef<T | null>(initialData);
@@ -74,7 +74,7 @@ export const useUnsavedChanges = <T = unknown>({
       savedDataRef.current = dataToSave;
       setHasUnsavedChanges(false);
     },
-    [currentData]
+    [currentData],
   );
 
   /**
@@ -107,9 +107,9 @@ export const useUnsavedChanges = <T = unknown>({
           return message;
         }
       },
-      [hasUnsavedChanges, enabled, message]
+      [hasUnsavedChanges, enabled, message],
     ),
-    { capture: true }
+    { capture: true },
   );
 
   // ПРИМЕЧАНИЕ: useBlocker требует data router (createBrowserRouter)

@@ -5,7 +5,7 @@
 // Используется админами для настройки Telegram аккаунтов
 // ============================================
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -17,23 +17,41 @@ import {
   Label,
   Alert,
   AlertDescription,
-} from '@/ui-kit';
-import { MessageSquare, Phone, Key, Hash, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { useTelegramClient } from '@/hooks/admin/useTelegramClient';
+} from "@/ui-kit";
+import {
+  MessageSquare,
+  Phone,
+  Key,
+  Hash,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import { useTelegramClient } from "@/hooks/admin/useTelegramClient";
 
 interface TelegramClientManagerProps {
   className?: string;
 }
 
-export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ className }) => {
-  const { loading, error, isAuthorized, isVerify, login, confirm, clearError, reset } =
-    useTelegramClient();
+export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({
+  className,
+}) => {
+  const {
+    loading,
+    error,
+    isAuthorized,
+    isVerify,
+    login,
+    confirm,
+    clearError,
+    reset,
+  } = useTelegramClient();
 
-  const [step, setStep] = useState<'login' | 'confirm'>('login');
-  const [phone, setPhone] = useState('');
-  const [apiHash, setApiHash] = useState('');
-  const [apiId, setApiId] = useState('');
-  const [code, setCode] = useState('');
+  const [step, setStep] = useState<"login" | "confirm">("login");
+  const [phone, setPhone] = useState("");
+  const [apiHash, setApiHash] = useState("");
+  const [apiId, setApiId] = useState("");
+  const [code, setCode] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +68,7 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
       });
 
       if (isAuthorized && !isVerify) {
-        setStep('confirm');
+        setStep("confirm");
       }
     } catch (error) {
       // Ошибка обрабатывается в хуке
@@ -72,12 +90,12 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
 
       if (isAuthorized && isVerify) {
         // Успешное подтверждение
-        setStep('login');
+        setStep("login");
         reset();
-        setPhone('');
-        setApiHash('');
-        setApiId('');
-        setCode('');
+        setPhone("");
+        setApiHash("");
+        setApiId("");
+        setCode("");
       }
     } catch (error) {
       // Ошибка обрабатывается в хуке
@@ -86,11 +104,11 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
 
   const handleReset = () => {
     reset();
-    setStep('login');
-    setPhone('');
-    setApiHash('');
-    setApiId('');
-    setCode('');
+    setStep("login");
+    setPhone("");
+    setApiHash("");
+    setApiId("");
+    setCode("");
     clearError();
   };
 
@@ -101,7 +119,9 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
           <MessageSquare className="w-5 h-5 text-blue-500" />
           <span>Telegram Клиент</span>
         </CardTitle>
-        <CardDescription>Настройка Telegram аккаунта для парсинга данных</CardDescription>
+        <CardDescription>
+          Настройка Telegram аккаунта для парсинга данных
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -137,7 +157,7 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
         )}
 
         {/* Форма логина */}
-        {step === 'login' && (
+        {step === "login" && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Номер телефона</Label>
@@ -183,14 +203,17 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
             </div>
 
             <div className="flex space-x-2">
-              <Button type="submit" disabled={loading || !phone || !apiHash || !apiId}>
+              <Button
+                type="submit"
+                disabled={loading || !phone || !apiHash || !apiId}
+              >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Авторизация...
                   </>
                 ) : (
-                  'Авторизовать'
+                  "Авторизовать"
                 )}
               </Button>
 
@@ -204,12 +227,13 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
         )}
 
         {/* Форма подтверждения */}
-        {step === 'confirm' && (
+        {step === "confirm" && (
           <form onSubmit={handleConfirm} className="space-y-4">
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                SMS код отправлен на номер {phone}. Введите код для подтверждения.
+                SMS код отправлен на номер {phone}. Введите код для
+                подтверждения.
               </AlertDescription>
             </Alert>
 
@@ -235,11 +259,15 @@ export const TelegramClientManager: React.FC<TelegramClientManagerProps> = ({ cl
                     Подтверждение...
                   </>
                 ) : (
-                  'Подтвердить'
+                  "Подтвердить"
                 )}
               </Button>
 
-              <Button type="button" variant="outline" onClick={() => setStep('login')}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep("login")}
+              >
                 Назад
               </Button>
             </div>

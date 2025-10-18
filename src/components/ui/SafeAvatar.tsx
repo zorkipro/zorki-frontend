@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Instagram } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { loadAvatarWithCorsBypass, isInstagramAvatar } from '@/utils/avatarProxy';
+import React, { useState } from "react";
+import { Instagram } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  loadAvatarWithCorsBypass,
+  isInstagramAvatar,
+} from "@/utils/avatarProxy";
 
 interface SafeAvatarProps {
   src?: string | null;
@@ -20,7 +23,7 @@ interface SafeAvatarProps {
 export const SafeAvatar: React.FC<SafeAvatarProps> = ({
   src,
   alt,
-  className = 'w-10 h-10',
+  className = "w-10 h-10",
   fallbackIcon,
   fallbackText,
   username,
@@ -50,7 +53,9 @@ export const SafeAvatar: React.FC<SafeAvatarProps> = ({
       try {
         // Используем переданный username или извлекаем из alt
         const finalUsername =
-          username || alt.replace('Аватар ', '').replace('Avatar ', '') || 'User';
+          username ||
+          alt.replace("Аватар ", "").replace("Avatar ", "") ||
+          "User";
 
         // Пробуем разные прокси в зависимости от попытки
         let url: string | null = null;
@@ -60,18 +65,24 @@ export const SafeAvatar: React.FC<SafeAvatarProps> = ({
           url = await loadAvatarWithCorsBypass(src, finalUsername, gender);
         } else if (proxyAttempt === 1) {
           // Вторая попытка - альтернативный прокси
-          const { createAvatarProxyUrlAlternative } = await import('@/utils/avatarProxy');
+          const { createAvatarProxyUrlAlternative } = await import(
+            "@/utils/avatarProxy"
+          );
           url = createAvatarProxyUrlAlternative(src);
         } else if (proxyAttempt === 2) {
           // Третья попытка - третий прокси
-          const { createAvatarProxyUrlData } = await import('@/utils/avatarProxy');
+          const { createAvatarProxyUrlData } = await import(
+            "@/utils/avatarProxy"
+          );
           url = createAvatarProxyUrlData(src);
         } else if (proxyAttempt === 3) {
           // Четвертая попытка - резервный прокси
           url = `https://api.allorigins.win/raw?url=${encodeURIComponent(src)}`;
         } else {
           // Все попытки исчерпаны - используем placeholder
-          const { createPlaceholderAvatarUrl } = await import('@/utils/avatarProxy');
+          const { createPlaceholderAvatarUrl } = await import(
+            "@/utils/avatarProxy"
+          );
           url = createPlaceholderAvatarUrl(finalUsername, gender);
         }
 
@@ -141,8 +152,8 @@ export const SafeAvatar: React.FC<SafeAvatarProps> = ({
   return (
     <div
       className={cn(
-        'rounded-full bg-muted flex items-center justify-center overflow-hidden aspect-square',
-        className
+        "rounded-full bg-muted flex items-center justify-center overflow-hidden aspect-square",
+        className,
       )}
     >
       {!showFallback && avatarUrl && (
@@ -162,7 +173,9 @@ export const SafeAvatar: React.FC<SafeAvatarProps> = ({
             <div className="w-1/2 h-1/2 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
           ) : (
             <>
-              {fallbackIcon || <Instagram className="w-1/2 h-1/2 text-muted-foreground" />}
+              {fallbackIcon || (
+                <Instagram className="w-1/2 h-1/2 text-muted-foreground" />
+              )}
               {fallbackText && (
                 <span className="text-xs text-muted-foreground text-center px-1">
                   {fallbackText}

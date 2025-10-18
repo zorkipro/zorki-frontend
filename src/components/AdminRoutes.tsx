@@ -1,9 +1,9 @@
-import { Suspense, lazy } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { LoadingSpinner } from '@/ui-kit/components';
+import { Suspense, lazy } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { LoadingSpinner } from "@/ui-kit/components";
 
-const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
-const AdminBloggerEditor = lazy(() => import('@/pages/AdminBloggerEditor'));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AdminBloggerEditor = lazy(() => import("@/pages/AdminBloggerEditor"));
 
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..." />;
 
@@ -35,4 +35,3 @@ export const AdminRoutes = () => {
     </Routes>
   );
 };
-

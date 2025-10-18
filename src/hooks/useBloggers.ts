@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Blogger, FilterState } from '@/types/blogger';
-import { getAllBloggers } from '@/api/endpoints/blogger';
-import { mapApiListBloggerToLocal } from '@/utils/api/mappers';
-import { APIError } from '@/api/client';
-import { useErrorHandler } from '@/utils/errorHandler';
-import { logError } from '@/utils/logger';
-import { buildApiParams } from '@/utils/api/filterParams';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useTopics } from '@/hooks/useTopics';
-import { DEFAULT_FILTER_STATE } from '@/config/filters';
+import { useState, useEffect, useCallback } from "react";
+import { Blogger, FilterState } from "@/types/blogger";
+import { getAllBloggers } from "@/api/endpoints/blogger";
+import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
+import { APIError } from "@/api/client";
+import { useErrorHandler } from "@/utils/errorHandler";
+import { logError } from "@/utils/logger";
+import { buildApiParams } from "@/utils/api/filterParams";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useTopics } from "@/hooks/useTopics";
+import { DEFAULT_FILTER_STATE } from "@/config/filters";
 
 export const useBloggers = (externalFilters?: FilterState) => {
   const { handleError } = useErrorHandler({
@@ -18,14 +18,14 @@ export const useBloggers = (externalFilters?: FilterState) => {
   const [bloggers, setBloggers] = useState<Blogger[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false); // Отдельное состояние для поиска
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
-  const debouncedSearchTerm = useDebounce(filters.search || '', 500); // 500ms задержка
+  const debouncedSearchTerm = useDebounce(filters.search || "", 500); // 500ms задержка
 
   const fetchBloggers = useCallback(async () => {
     try {
@@ -35,14 +35,19 @@ export const useBloggers = (externalFilters?: FilterState) => {
       } else {
         setLoading(true); // Для обычной загрузки используем основное состояние
       }
-      setError('');
+      setError("");
 
       const topicsData = {
         categories,
         restrictedTopics,
       };
 
-      const apiParams = buildApiParams({ ...filters, search: debouncedSearchTerm }, 1, 50, topicsData);
+      const apiParams = buildApiParams(
+        { ...filters, search: debouncedSearchTerm },
+        1,
+        50,
+        topicsData,
+      );
       const response = await getAllBloggers(apiParams);
 
       // Трансформация данных
@@ -53,7 +58,7 @@ export const useBloggers = (externalFilters?: FilterState) => {
       setCurrentPage(1);
       setHasMore(response.pagesCount > 1);
     } catch (err: unknown) {
-      logError('Error fetching bloggers:', err);
+      logError("Error fetching bloggers:", err);
 
       // Используем универсальный обработчик ошибок
       const processedError = handleError(err, {
@@ -84,7 +89,7 @@ export const useBloggers = (externalFilters?: FilterState) => {
     (id: string): Blogger | undefined => {
       return bloggers.find((b) => b.id === id);
     },
-    [bloggers]
+    [bloggers],
   );
 
   const loadMoreBloggers = useCallback(async () => {
@@ -101,7 +106,12 @@ export const useBloggers = (externalFilters?: FilterState) => {
         restrictedTopics,
       };
 
-      const apiParams = buildApiParams({ ...filters, search: debouncedSearchTerm }, nextPage, 50, topicsData);
+      const apiParams = buildApiParams(
+        { ...filters, search: debouncedSearchTerm },
+        nextPage,
+        50,
+        topicsData,
+      );
       const response = await getAllBloggers(apiParams);
 
       // Проверяем, что страница существует и содержит данные
@@ -118,16 +128,24 @@ export const useBloggers = (externalFilters?: FilterState) => {
       setCurrentPage(nextPage);
       setHasMore(nextPage < response.pagesCount && response.items.length > 0);
     } catch (err: unknown) {
-      logError('Error loading more bloggers:', err);
+      logError("Error loading more bloggers:", err);
 
       // Если получили ошибку "Invalid page", останавливаем пагинацию
-      if (err instanceof Error && err.message.includes('Invalid page')) {
+      if (err instanceof Error && err.message.includes("Invalid page")) {
         setHasMore(false);
       }
     } finally {
       setIsLoadingMore(false);
     }
-  }, [currentPage, hasMore, isLoadingMore, debouncedSearchTerm, filters, categories, restrictedTopics]);
+  }, [
+    currentPage,
+    hasMore,
+    isLoadingMore,
+    debouncedSearchTerm,
+    filters,
+    categories,
+    restrictedTopics,
+  ]);
 
   useEffect(() => {
     fetchBloggers();

@@ -95,12 +95,6 @@ export const useAdminTopics = (): UseAdminTopicsReturn => {
       setError(null);
       
       await createTopic(data);
-      
-      logger.info('Topic created successfully', { 
-        component: 'useAdminTopics',
-        topicName: data.name,
-        isRestricted: data.isRestricted
-      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка создания топика';
       setError(errorMessage);
@@ -124,13 +118,6 @@ export const useAdminTopics = (): UseAdminTopicsReturn => {
       setError(null);
       
       await updateTopic(topicId, data);
-      
-      logger.info('Topic updated successfully', { 
-        component: 'useAdminTopics',
-        topicId,
-        topicName: data.name,
-        isRestricted: data.isRestricted
-      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка обновления топика';
       setError(errorMessage);
@@ -152,11 +139,6 @@ export const useAdminTopics = (): UseAdminTopicsReturn => {
       setError(null);
       
       await deleteTopic(topicId);
-      
-      logger.info('Topic deleted successfully', { 
-        component: 'useAdminTopics',
-        topicId
-      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Ошибка удаления топика';
       setError(errorMessage);
@@ -181,12 +163,6 @@ export const useAdminTopics = (): UseAdminTopicsReturn => {
       setError(null);
       
       const result = await getTopics(params);
-      
-      logger.info('Topics loaded successfully', { 
-        component: 'useAdminTopics',
-        params,
-        count: result.items.length
-      });
       
       return result;
     } catch (err) {
