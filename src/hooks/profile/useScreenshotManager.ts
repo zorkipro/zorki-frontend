@@ -28,7 +28,7 @@ export const useScreenshotManager = (
     error: uploadError,
     uploadScreenshot: upload,
     uploadMultipleScreenshots: uploadMultiple,
-  } = useScreenshotUploader(profileId, platform);
+  } = useScreenshotUploader(profileId, platform, screenshots);
 
   // Управление удалением файлов
   const { deleting, confirmDelete } = useStatsFileManagement();

@@ -81,7 +81,30 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
       prepareBloggerData(blogger);
 
     return (
-      <Card key={blogger.id} className="mb-4">
+      <Card 
+        key={blogger.id} 
+        className="mb-4 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => {
+          // Используем username из социальных аккаунтов для навигации
+          const mainSocial = blogger.social.find(
+            (s) => s.type === "INSTAGRAM",
+          );
+          const username = mainSocial?.username;
+
+          if (username) {
+            navigate(`/admin/blogger/${username}/edit`);
+          } else {
+            logger.error(
+              "Username not found for blogger",
+              undefined,
+              {
+                component: "BloggersTable",
+                bloggerId: blogger.id,
+              },
+            );
+          }
+        }}
+      >
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             {/* Avatar */}

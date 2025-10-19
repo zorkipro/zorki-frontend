@@ -128,11 +128,7 @@ export const ProfileEditor = () => {
         profile={profile}
         formData={formData}
         onBack={() => {
-          if (profile?.handle) {
-            navigate(`/${profile.handle}`);
-          } else {
-            navigate("/");
-          }
+          navigate("/");
         }}
         onFormDataChange={updateFormData}
         editingSection={editingSection}
@@ -174,6 +170,8 @@ export const ProfileEditor = () => {
               screenshotError={screenshotError}
               onScreenshotUpload={handleScreenshotUpload}
               onDeleteScreenshot={deleteScreenshot}
+              bloggerId={profile?.id ? parseInt(profile.id, 10) : undefined}
+              isVerified={profile?.verificationStatus === "APPROVED"}
             />
           </div>
 
@@ -187,6 +185,7 @@ export const ProfileEditor = () => {
               onEditingSectionChange={setEditingSection}
               onSave={handleSave}
               saving={saving}
+              setAvailablePlatforms={setAvailablePlatforms}
             />
 
             <BloggerInfo

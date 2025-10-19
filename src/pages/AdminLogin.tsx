@@ -24,6 +24,13 @@ const AdminLogin = () => {
         password,
       });
 
+      // Добавляем логирование для отладки
+      console.log("🔑 Admin Login Success:", {
+        accessTokenLength: accessToken.length,
+        accessTokenPrefix: accessToken.substring(0, 20) + "...",
+        username
+      });
+
       // Сохраняем временный токен для 2FA
       sessionStorage.setItem("adminTempToken", accessToken);
 

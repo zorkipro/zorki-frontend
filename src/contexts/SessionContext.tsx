@@ -14,6 +14,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
 import { saveAccessToken, removeAccessToken } from "@/utils/googleAuth";
+import { getClientMe } from "@/api/endpoints/client";
 
 export interface SessionContextType {
   /** Текущий пользователь Supabase */
@@ -28,6 +29,8 @@ export interface SessionContextType {
   signOut: () => Promise<void>;
   /** Обновить сессию вручную */
   refreshSession: () => Promise<void>;
+  /** Определить маршрут после авторизации */
+  determineRedirectPath: () => Promise<string>;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -58,6 +61,62 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   /**
+   * Определяет куда направить пользователя после авторизации
+   * на основе данных из /auth/client/me
+   */
+  const determineRedirectPath = useCallback(async (): Promise<string> => {
+    try {
+      if (import.meta.env.DEV) {
+        console.log('🔍 SessionContext: Determining redirect path after auth...');
+      }
+      
+      const clientData = await getClientMe();
+      
+      if (import.meta.env.DEV) {
+        console.log('✅ SessionContext: Client data received:', {
+          hasBlogger: !!clientData.blogger,
+          bloggerUsername: clientData.blogger?.username,
+          hasLinkRequest: !!clientData.lastLinkRequest,
+          fullClientData: clientData  // Добавляем полный ответ для отладки
+        });
+      }
+
+      // ПРОСТАЯ ЛОГИКА: Если есть username в blogger - идем на редактирование профиля
+      // Проверяем разные возможные места, где может быть username
+      const username = clientData.blogger?.username || 
+                      (clientData as any).username || 
+                      (clientData as any).user?.username;
+      
+      if (username) {
+        if (import.meta.env.DEV) {
+          console.log('✅ SessionContext: User has username, redirecting to profile edit', { username });
+        }
+        return '/profile/edit';
+      }
+
+      // Если нет username - идем на страницу настройки профиля
+      if (import.meta.env.DEV) {
+        console.log('❌ SessionContext: User has no username, redirecting to profile setup', {
+          bloggerUsername: clientData.blogger?.username,
+          directUsername: (clientData as any).username,
+          userUsername: (clientData as any).user?.username,
+          bloggerExists: !!clientData.blogger
+        });
+      }
+      return '/profile-setup';
+      
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.log('❌ SessionContext: Failed to get client data, redirecting to profile setup:', error);
+      }
+      
+      // Если не удалось получить данные - идем на настройку профиля
+      // Пользователь сможет ввести username
+      return '/profile-setup';
+    }
+  }, []);
+
+  /**
    * Обновляет состояние сессии и токена
    */
   const updateSession = useCallback((newSession: Session | null) => {
@@ -84,9 +143,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       if (error) throw error;
       updateSession(data.session);
     } catch (error) {
-      logger.error("Failed to refresh session", error, {
-        component: "SessionProvider",
-      });
+      logger.error("Failed to refresh session", error);
     }
   }, [updateSession]);
 
@@ -105,7 +162,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       setUser(null);
       setSession(null);
     } catch (error) {
-      logger.error("Sign out failed", error, { component: "SessionProvider" });
+      logger.error("Sign out failed", error);
       throw error;
     }
   }, []);
@@ -138,6 +195,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     accessToken,
     signOut,
     refreshSession,
+    determineRedirectPath,
   };
 
   return (

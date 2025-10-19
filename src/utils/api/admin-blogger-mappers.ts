@@ -99,6 +99,20 @@ export function mapPlatformPricesToUpdate(
   const prefix = platform.toLowerCase();
   const postPriceKey = `${prefix}_post_price` as keyof EditData;
   const storyPriceKey = `${prefix}_story_price` as keyof EditData;
+  const integrationPriceKey = `${prefix}_integration_price` as keyof EditData;
+
+  console.log('🔍 mapPlatformPricesToUpdate:', {
+    platform,
+    prefix,
+    postPriceKey,
+    storyPriceKey,
+    integrationPriceKey,
+    data: {
+      [postPriceKey]: data[postPriceKey],
+      [storyPriceKey]: data[storyPriceKey],
+      [integrationPriceKey]: data[integrationPriceKey]
+    }
+  });
 
   const dto: BloggerUpdateSocialPriceInputDto = {
     type: platform,
@@ -109,13 +123,22 @@ export function mapPlatformPricesToUpdate(
   if (data[postPriceKey] !== undefined) {
     dto.postPrice = parseFloat(String(data[postPriceKey])) || undefined;
     hasChanges = true;
+    console.log('✅ Added postPrice:', dto.postPrice);
   }
 
   if (data[storyPriceKey] !== undefined) {
     dto.storiesPrice = parseFloat(String(data[storyPriceKey])) || undefined;
     hasChanges = true;
+    console.log('✅ Added storiesPrice:', dto.storiesPrice);
   }
 
+  if (data[integrationPriceKey] !== undefined) {
+    dto.integrationPrice = parseFloat(String(data[integrationPriceKey])) || undefined;
+    hasChanges = true;
+    console.log('✅ Added integrationPrice:', dto.integrationPrice);
+  }
+
+  console.log('📤 Final DTO:', { dto, hasChanges });
   return hasChanges ? dto : null;
 }
 

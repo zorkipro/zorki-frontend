@@ -18,12 +18,14 @@ interface PlatformStatsRendererProps {
   onEditingChange: (section: string | null) => void;
   onSave: (data: Partial<EditData>) => void;
   formatNumber: (num: number) => string;
+  isPending?: boolean; // Флаг "на модерации"
+  isVerified?: boolean; // Статус верификации пользователя
 }
 
 export const PlatformStatsRenderer: React.FC<PlatformStatsRendererProps> = (
   props,
 ) => {
-  const { platform, stats } = props;
+  const { platform, stats, isPending } = props;
   // Debug: PlatformStatsRenderer rendering
 
   switch (platform) {

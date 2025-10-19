@@ -7,7 +7,6 @@ import {
 } from "@/utils/api/mappers";
 import { useErrorHandler } from "@/utils/errorHandler";
 import { logError } from "@/utils/logger";
-import { useBlogger } from "@/contexts/BloggerContext";
 import { normalizeUsername } from "@/utils/username";
 
 /**
@@ -18,7 +17,6 @@ export const useBloggerProfile = (username?: string) => {
   const { handleError } = useErrorHandler({
     showNotifications: true,
   });
-  const { bloggerInfo } = useBlogger();
 
   const [blogger, setBlogger] = useState<Blogger | null>(null);
   const [loading, setLoading] = useState(false);
@@ -75,13 +73,6 @@ export const useBloggerProfile = (username?: string) => {
   useEffect(() => {
     fetchBloggerProfile();
   }, [fetchBloggerProfile]);
-
-  // Автоматически обновляем профиль при изменении bloggerInfo (например, после редактирования)
-  useEffect(() => {
-    if (bloggerInfo && username && bloggerInfo.username === username) {
-      fetchBloggerProfile();
-    }
-  }, [bloggerInfo, username, fetchBloggerProfile]);
 
   return {
     blogger,

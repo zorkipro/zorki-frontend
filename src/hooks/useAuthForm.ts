@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { REDIRECT_URL } from "@/config/constants";
@@ -11,10 +11,14 @@ interface UseAuthFormProps {
 
 export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
   const navigate = useNavigate();
-  const { handleError } = useErrorHandler({
+  
+  // Мемоизируем опции для useErrorHandler
+  const errorHandlerOptions = useMemo(() => ({
     navigate,
     showNotifications: true,
-  });
+  }), [navigate]);
+  
+  const { handleError } = useErrorHandler(errorHandlerOptions);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +39,8 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
             setError(error.message);
           } else {
             onSuccess?.();
-            navigate("/");
+            // Редирект теперь происходит в SessionContext при событии SIGNED_IN
+            // Не нужно делать редирект здесь
           }
         } else {
           const { error } = await supabase.auth.signUp({

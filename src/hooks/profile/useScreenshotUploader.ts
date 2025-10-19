@@ -4,7 +4,9 @@ import { APIError } from "@/api/client";
 import { logError } from "@/utils/logger";
 import { uploadBloggerStats } from "@/api/endpoints/blogger";
 import { validateStatsFiles } from "@/api/types";
+import { FILE_VALIDATION } from "@/config/validation";
 import type { ApiSocialType } from "@/api/types";
+import type { Screenshot } from "@/types/profile";
 
 /**
  * Хук для загрузки скриншотов
@@ -12,10 +14,26 @@ import type { ApiSocialType } from "@/api/types";
 export const useScreenshotUploader = (
   profileId?: string,
   platform: string = "instagram",
+  existingScreenshots: Screenshot[] = [],
 ) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  // Функция для проверки общего количества файлов для социальной сети
+  const validateTotalFileCount = useCallback(
+    (newFilesCount: number): string | null => {
+      const currentFilesCount = existingScreenshots.length;
+      const totalFilesCount = currentFilesCount + newFilesCount;
+      
+      if (totalFilesCount > FILE_VALIDATION.MAX_STATS_FILES) {
+        return `Слишком много файлов для ${platform}. Максимум: ${FILE_VALIDATION.MAX_STATS_FILES} файлов. Текущих: ${currentFilesCount}, пытаетесь добавить: ${newFilesCount}`;
+      }
+      
+      return null;
+    },
+    [existingScreenshots.length, platform],
+  );
 
   const uploadScreenshot = useCallback(
     async (file: File, userId: string): Promise<any | null> => {
@@ -36,6 +54,12 @@ export const useScreenshotUploader = (
         const validationError = validateStatsFiles([file]);
         if (validationError) {
           throw new Error(validationError);
+        }
+
+        // Проверка общего количества файлов для социальной сети
+        const totalCountError = validateTotalFileCount(1);
+        if (totalCountError) {
+          throw new Error(totalCountError);
         }
 
         await uploadBloggerStats(bloggerId, {
@@ -76,6 +100,9 @@ export const useScreenshotUploader = (
           } else if (error.message.includes("invalid file type")) {
             errorMessage = "Неподдерживаемый формат файла. Разрешены: JPEG, PNG, GIF, WebP, PDF";
             errorTitle = "Неподдерживаемый формат";
+          } else if (error.message.includes("Too many files for") || error.message.includes("too many files")) {
+            errorMessage = `Слишком много файлов для ${platform}. Максимум: ${FILE_VALIDATION.MAX_STATS_FILES} файлов для одной социальной сети. Удалите некоторые существующие файлы перед загрузкой новых.`;
+            errorTitle = "Слишком много файлов";
           } else {
             errorMessage = error.message;
             errorTitle = "Ошибка API";
@@ -95,7 +122,7 @@ export const useScreenshotUploader = (
         setUploading(false);
       }
     },
-    [profileId, platform, toast],
+    [profileId, platform, toast, validateTotalFileCount],
   );
 
   const uploadMultipleScreenshots = useCallback(
@@ -114,6 +141,12 @@ export const useScreenshotUploader = (
         const validationError = validateStatsFiles(files);
         if (validationError) {
           throw new Error(validationError);
+        }
+
+        // Проверка общего количества файлов для социальной сети
+        const totalCountError = validateTotalFileCount(files.length);
+        if (totalCountError) {
+          throw new Error(totalCountError);
         }
 
         await uploadBloggerStats(bloggerId, {
@@ -154,8 +187,8 @@ export const useScreenshotUploader = (
           } else if (error.message.includes("invalid file type")) {
             errorMessage = "Неподдерживаемый формат файла. Разрешены: JPEG, PNG, GIF, WebP, PDF";
             errorTitle = "Неподдерживаемый формат";
-          } else if (error.message.includes("too many files")) {
-            errorMessage = "Слишком много файлов. Максимум: 25 файлов за раз";
+          } else if (error.message.includes("Too many files for") || error.message.includes("too many files")) {
+            errorMessage = `Слишком много файлов для ${platform}. Максимум: ${FILE_VALIDATION.MAX_STATS_FILES} файлов для одной социальной сети. Удалите некоторые существующие файлы перед загрузкой новых.`;
             errorTitle = "Слишком много файлов";
           } else {
             errorMessage = error.message;
@@ -176,7 +209,7 @@ export const useScreenshotUploader = (
         setUploading(false);
       }
     },
-    [profileId, platform, toast],
+    [profileId, platform, toast, validateTotalFileCount],
   );
 
   return {

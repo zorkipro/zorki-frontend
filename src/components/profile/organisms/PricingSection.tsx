@@ -25,6 +25,7 @@ interface PricingSectionProps {
   onEditingSectionChange: (section: string | null) => void;
   onSave: (data: Partial<EditData>) => void;
   saving: boolean;
+  setAvailablePlatforms?: (fn: (prev: Record<string, PlatformData>) => Record<string, PlatformData>) => void;
 }
 
 const PricingSectionComponent = ({
@@ -34,6 +35,7 @@ const PricingSectionComponent = ({
   onEditingSectionChange,
   onSave,
   saving,
+  setAvailablePlatforms,
 }: PricingSectionProps) => {
   // Состояние для полей редактирования цен
   const [priceStates, setPriceStates] = useState<
@@ -45,32 +47,82 @@ const PricingSectionComponent = ({
     const newStates: Record<string, { postPrice: string; storyPrice: string }> =
       {};
     Object.keys(availablePlatforms).forEach((platform) => {
-      const postPriceField = `${platform}_post_price` as keyof EditData;
-      const storyPriceField = `${platform}_story_price` as keyof EditData;
-      newStates[platform] = {
-        postPrice: (formData[postPriceField] as string) || "",
-        storyPrice: (formData[storyPriceField] as string) || "",
-      };
+      if (platform === 'youtube') {
+        const integrationPriceField = `${platform}_integration_price` as keyof EditData;
+        newStates[platform] = {
+          postPrice: (formData[integrationPriceField] as string) || "",
+          storyPrice: "", // Для YouTube stories не используется
+        };
+      } else {
+        const postPriceField = `${platform}_post_price` as keyof EditData;
+        const storyPriceField = `${platform}_story_price` as keyof EditData;
+        newStates[platform] = {
+          postPrice: (formData[postPriceField] as string) || "",
+          storyPrice: (formData[storyPriceField] as string) || "",
+        };
+      }
     });
     setPriceStates(newStates);
   }, [formData, availablePlatforms]);
 
   const handlePriceEdit = useCallback(
     async (platform: string) => {
-      const postPriceField = `${platform}_post_price` as keyof EditData;
-      const storyPriceField = `${platform}_story_price` as keyof EditData;
+      if (platform === 'youtube') {
+        const integrationPriceField = `${platform}_integration_price` as keyof EditData;
+        const newPrice = priceStates[platform]?.postPrice || "";
+        
+        try {
+          await onSave({
+            [integrationPriceField]: newPrice,
+          });
+          
+          // Обновляем локальное состояние availablePlatforms
+          if (setAvailablePlatforms) {
+            setAvailablePlatforms((prev) => ({
+              ...prev,
+              [platform]: {
+                ...prev[platform],
+                integrationPrice: parseFloat(newPrice) || 0,
+                price: parseFloat(newPrice) || 0, // Для YouTube price и integrationPrice одинаковые
+              },
+            }));
+          }
+          
+          onEditingSectionChange(null);
+        } catch (error) {
+          // Error already handled by onSave
+        }
+      } else {
+        const postPriceField = `${platform}_post_price` as keyof EditData;
+        const storyPriceField = `${platform}_story_price` as keyof EditData;
+        const newPostPrice = priceStates[platform]?.postPrice || "";
+        const newStoryPrice = priceStates[platform]?.storyPrice || "";
 
-      try {
-        await onSave({
-          [postPriceField]: priceStates[platform]?.postPrice || "",
-          [storyPriceField]: priceStates[platform]?.storyPrice || "",
-        });
-        onEditingSectionChange(null);
-      } catch (error) {
-        // Error already handled by onSave
+        try {
+          await onSave({
+            [postPriceField]: newPostPrice,
+            [storyPriceField]: newStoryPrice,
+          });
+          
+          // Обновляем локальное состояние availablePlatforms
+          if (setAvailablePlatforms) {
+            setAvailablePlatforms((prev) => ({
+              ...prev,
+              [platform]: {
+                ...prev[platform],
+                price: parseFloat(newPostPrice) || 0,
+                storyPrice: parseFloat(newStoryPrice) || 0,
+              },
+            }));
+          }
+          
+          onEditingSectionChange(null);
+        } catch (error) {
+          // Error already handled by onSave
+        }
       }
     },
-    [onSave, onEditingSectionChange, priceStates],
+    [onSave, onEditingSectionChange, priceStates, setAvailablePlatforms],
   );
 
   return (
@@ -118,46 +170,71 @@ const PricingSectionComponent = ({
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <div>
-                        <Label htmlFor={`${platform}_post_price`}>
-                          Цена за пост (BYN)
-                        </Label>
-                        <Input
-                          id={`${platform}_post_price`}
-                          type="number"
-                          value={priceStates[platform]?.postPrice || ""}
-                          onChange={(e) =>
-                            setPriceStates((prev) => ({
-                              ...prev,
-                              [platform]: {
-                                ...prev[platform],
-                                postPrice: e.target.value,
-                              },
-                            }))
-                          }
-                          placeholder="Введите цену"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor={`${platform}_story_price`}>
-                          Цена за stories (BYN)
-                        </Label>
-                        <Input
-                          id={`${platform}_story_price`}
-                          type="number"
-                          value={priceStates[platform]?.storyPrice || ""}
-                          onChange={(e) =>
-                            setPriceStates((prev) => ({
-                              ...prev,
-                              [platform]: {
-                                ...prev[platform],
-                                storyPrice: e.target.value,
-                              },
-                            }))
-                          }
-                          placeholder="Введите цену"
-                        />
-                      </div>
+                      {platform === 'youtube' ? (
+                        <div>
+                          <Label htmlFor={`${platform}_integration_price`}>
+                            Цена за интеграцию (BYN)
+                          </Label>
+                          <Input
+                            id={`${platform}_integration_price`}
+                            type="number"
+                            value={priceStates[platform]?.postPrice || ""}
+                            onChange={(e) =>
+                              setPriceStates((prev) => ({
+                                ...prev,
+                                [platform]: {
+                                  ...prev[platform],
+                                  postPrice: e.target.value,
+                                },
+                              }))
+                            }
+                            placeholder="Введите цену"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <Label htmlFor={`${platform}_post_price`}>
+                              Цена за пост (BYN)
+                            </Label>
+                            <Input
+                              id={`${platform}_post_price`}
+                              type="number"
+                              value={priceStates[platform]?.postPrice || ""}
+                              onChange={(e) =>
+                                setPriceStates((prev) => ({
+                                  ...prev,
+                                  [platform]: {
+                                    ...prev[platform],
+                                    postPrice: e.target.value,
+                                  },
+                                }))
+                              }
+                              placeholder="Введите цену"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`${platform}_story_price`}>
+                              Цена за stories (BYN)
+                            </Label>
+                            <Input
+                              id={`${platform}_story_price`}
+                              type="number"
+                              value={priceStates[platform]?.storyPrice || ""}
+                              onChange={(e) =>
+                                setPriceStates((prev) => ({
+                                  ...prev,
+                                  [platform]: {
+                                    ...prev[platform],
+                                    storyPrice: e.target.value,
+                                  },
+                                }))
+                              }
+                              placeholder="Введите цену"
+                            />
+                          </div>
+                        </>
+                      )}
                       <div className="flex justify-end space-x-2">
                         <Button
                           variant="outline"

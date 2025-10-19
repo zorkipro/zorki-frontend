@@ -52,6 +52,8 @@ export interface IPlatformData {
   storyReach: number;
   /** Цена за сторис */
   storyPrice: number;
+  /** Цена за интеграцию */
+  integrationPrice?: number;
   /** Количество просмотров (опционально, для YouTube) */
   views?: number;
 }

@@ -2,6 +2,7 @@ import { useState, useCallback, memo } from "react";
 import { Button } from "@/ui-kit";
 import { Input } from "@/ui-kit";
 import { Label } from "@/ui-kit";
+import { Badge } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -19,11 +20,20 @@ import {
   Youtube,
   MessageCircle,
   Lock,
+  Clock,
 } from "lucide-react";
 import {
   getPlatformIcon,
   getPlatformName,
 } from "@/components/icons/PlatformIcons";
+import { useSocialLinking } from "@/hooks/useSocialLinking";
+import { 
+  extractTelegramUsername, 
+  extractYoutubeChannel,
+  validatePlatformUrl,
+  getPlatformUrlExamples,
+  getPlatformHints 
+} from "@/utils/platformUrlParsers";
 
 interface Platform {
   id: string;
@@ -35,12 +45,14 @@ interface PlatformManagementProps {
   platforms: Record<string, PlatformData>;
   onPlatformsChange: (platforms: Record<string, PlatformData>) => void;
   hasMaxPlatforms?: boolean;
+  bloggerId?: number; // ID блогера для API запросов
 }
 
 const PlatformManagementComponent = ({
   platforms,
   onPlatformsChange,
   hasMaxPlatforms = false,
+  bloggerId,
 }: PlatformManagementProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -48,6 +60,10 @@ const PlatformManagementComponent = ({
     name: "",
     url: "",
   });
+  const [urlError, setUrlError] = useState<string | null>(null);
+
+  // Хук для работы с API связывания платформ
+  const { requestTgLink, requestYtLink, loading: apiLoading } = useSocialLinking();
 
   const availablePlatforms = [
     { id: "instagram", name: "Instagram", icon: Instagram },
@@ -56,20 +72,79 @@ const PlatformManagementComponent = ({
     { id: "telegram", name: "Telegram", icon: MessageCircle },
   ];
 
-  const handleAddPlatform = useCallback(() => {
-    if (newPlatform.name && newPlatform.url) {
+  const handleAddPlatform = useCallback(async () => {
+    if (!newPlatform.name || !newPlatform.url) {
+      setUrlError("Заполните все поля");
+      return;
+    }
+
+    if (!bloggerId) {
+      setUrlError("ID блогера не найден");
+      return;
+    }
+
+    const numericBloggerId = Number(bloggerId);
+    if (isNaN(numericBloggerId) || numericBloggerId <= 0) {
+      setUrlError("Неверный ID блогера");
+      return;
+    }
+
+    // Валидация URL
+    const platformType = newPlatform.name.toLowerCase();
+    if (!validatePlatformUrl(newPlatform.url, platformType as 'telegram' | 'youtube')) {
+      setUrlError(`Неверный формат URL для ${getPlatformName(platformType)}`);
+      return;
+    }
+
+    setUrlError(null);
+
+    try {
       const platformId = newPlatform.name.toLowerCase();
+      
+      // Оптимистичное добавление платформы
+      const optimisticPlatform: PlatformData = {
+        username: platformType === 'telegram' 
+          ? extractTelegramUsername(newPlatform.url)
+          : newPlatform.url,
+        profile_url: newPlatform.url,
+        subscribers: 0,
+        er: 0,
+        reach: 0,
+        price: 0,
+        storyReach: 0,
+        storyPrice: 0,
+        isPending: true, // Флаг "на модерации"
+      };
+
       onPlatformsChange({
         ...platforms,
-        [platformId]: {
-          ...platforms[platformId],
-          profile_url: newPlatform.url,
-        },
+        [platformId]: optimisticPlatform,
       });
+
+      // Отправка API запроса
+      if (platformType === 'telegram') {
+        const username = extractTelegramUsername(newPlatform.url);
+        console.log('🔍 Telegram request data:', { bloggerId: numericBloggerId, username, url: newPlatform.url });
+        await requestTgLink(numericBloggerId, { username });
+      } else if (platformType === 'youtube') {
+        const channel = extractYoutubeChannel(newPlatform.url);
+        console.log('🔍 YouTube request data:', { bloggerId: numericBloggerId, channel, url: newPlatform.url });
+        await requestYtLink(numericBloggerId, { channel });
+      }
+
+      // Очистка формы и закрытие диалога
       setNewPlatform({ name: "", url: "" });
       setIsDialogOpen(false);
+    } catch (error) {
+      // Откат изменений при ошибке
+      const platformId = newPlatform.name.toLowerCase();
+      const revertedPlatforms = { ...platforms };
+      delete revertedPlatforms[platformId];
+      onPlatformsChange(revertedPlatforms);
+      
+      setUrlError(error instanceof Error ? error.message : "Ошибка добавления платформы");
     }
-  }, [newPlatform, platforms, onPlatformsChange]);
+  }, [newPlatform, platforms, onPlatformsChange, bloggerId, requestTgLink, requestYtLink]);
 
   const handleEditPlatform = useCallback(
     (platformId: string) => {
@@ -182,16 +257,46 @@ const PlatformManagementComponent = ({
                 <Input
                   id="url"
                   value={newPlatform.url}
-                  onChange={(e) =>
-                    setNewPlatform({ ...newPlatform, url: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setNewPlatform({ ...newPlatform, url: e.target.value });
+                    setUrlError(null); // Очищаем ошибку при изменении
+                  }}
                   placeholder="https://..."
+                  className={urlError ? "border-red-500" : ""}
                 />
+                {urlError && (
+                  <p className="text-sm text-red-500 mt-1">{urlError}</p>
+                )}
+                {newPlatform.name && (
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Примеры:</p>
+                      <div className="text-xs text-gray-400 space-y-1">
+                        {getPlatformUrlExamples(newPlatform.name.toLowerCase()).map((example, index) => (
+                          <div key={index}>• {example}</div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-600 mb-1">Важно:</p>
+                      <div className="text-xs text-blue-500 space-y-1">
+                        {getPlatformHints(newPlatform.name.toLowerCase()).map((hint, index) => (
+                          <div key={index}>• {hint}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end space-x-2">
                 <Button
                   variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    setUrlError(null);
+                    setNewPlatform({ name: "", url: "" });
+                  }}
+                  disabled={apiLoading}
                 >
                   Отмена
                 </Button>
@@ -200,10 +305,18 @@ const PlatformManagementComponent = ({
                     editingPlatform ? handleUpdatePlatform : handleAddPlatform
                   }
                   disabled={
-                    !newPlatform.url || (!editingPlatform && !newPlatform.name)
+                    apiLoading ||
+                    !newPlatform.url || 
+                    (!editingPlatform && !newPlatform.name) ||
+                    !!urlError
                   }
                 >
-                  {editingPlatform ? "Сохранить" : "Добавить"}
+                  {apiLoading 
+                    ? "Добавление..." 
+                    : editingPlatform 
+                      ? "Сохранить" 
+                      : "Добавить"
+                  }
                 </Button>
               </div>
             </div>
@@ -223,7 +336,9 @@ const PlatformManagementComponent = ({
           .map((platformId) => (
             <div
               key={platformId}
-              className="flex items-center justify-between p-2 border rounded"
+              className={`flex items-center justify-between p-2 border rounded ${
+                platforms[platformId]?.isPending ? 'opacity-60' : ''
+              }`}
             >
               <div className="flex items-center space-x-2">
                 {getPlatformIcon(platformId)}
@@ -231,13 +346,19 @@ const PlatformManagementComponent = ({
                 {platformId === "instagram" && (
                   <Lock className="w-3 h-3 text-muted-foreground" />
                 )}
+                {platforms[platformId]?.isPending && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Clock className="w-3 h-3 mr-1" />
+                    На модерации
+                  </Badge>
+                )}
               </div>
               <div className="flex space-x-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEditPlatform(platformId)}
-                  disabled={platformId === "instagram"} // Запрещаем редактирование Instagram
+                  disabled={platformId === "instagram" || platforms[platformId]?.isPending}
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -245,7 +366,7 @@ const PlatformManagementComponent = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDeletePlatform(platformId)}
-                  disabled={platformId === "instagram"} // Prevent deleting the primary platform
+                  disabled={platformId === "instagram" || platforms[platformId]?.isPending}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

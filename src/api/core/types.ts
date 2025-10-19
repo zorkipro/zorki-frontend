@@ -35,4 +35,6 @@ export interface ApiRequestOptions extends RequestInit {
   skipAuth?: boolean;
   /** Кастомный базовый URL */
   baseUrl?: string;
+  /** Пропустить автоматическую обработку 401 ошибок */
+  skipAuthErrorHandling?: boolean;
 }

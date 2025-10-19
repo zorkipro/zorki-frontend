@@ -18,6 +18,7 @@ import type { EditData } from "@/types/profile";
 import type { PlatformType } from "@/types/platform";
 import { ALL_PLATFORMS, platformToApi } from "@/types/platform";
 
+
 /**
  * Hook for saving profile changes
  */
@@ -37,6 +38,8 @@ export const useProfileSaver = (
 
   const handleSave = useCallback(
     async (data: Partial<EditData>) => {
+      console.log('🚀 handleSave called with data:', data);
+      
       if (!user || !profile) return;
 
       try {
@@ -56,31 +59,85 @@ export const useProfileSaver = (
 
         await updateBloggerProfile(Number(profile.id), profileUpdateData);
 
-        // Сохранение цен платформ параллельно (вместо последовательного await)
-        const platformPriceUpdates = ALL_PLATFORMS.map((platform) => {
+        // Сохранение цен платформ последовательно (чтобы избежать deadlock)
+        console.log('🔄 Processing platforms:', ALL_PLATFORMS);
+        console.log('📊 Current data:', data);
+        console.log('📊 Current formData:', formData);
+        
+        // Фильтруем только платформы с изменениями (как в админке)
+        const platformsWithChanges = ALL_PLATFORMS.filter((platform) => {
+          const postPriceKey = `${platform}_post_price` as keyof EditData;
+          const storyPriceKey = `${platform}_story_price` as keyof EditData;
+          const integrationPriceKey = `${platform}_integration_price` as keyof EditData;
+
+          // Проверяем ТОЛЬКО data (новые изменения), не formData
+          return data[postPriceKey] !== undefined || 
+                 data[storyPriceKey] !== undefined || 
+                 data[integrationPriceKey] !== undefined;
+        });
+
+        console.log('🎯 Platforms with changes:', platformsWithChanges);
+        
+        const platformPriceUpdates = platformsWithChanges.map((platform) => {
+          console.log(`🔍 Processing platform: ${platform}`);
+          
           const postPriceKey = `${platform}_post_price` as keyof EditData;
           const storyPriceKey = `${platform}_story_price` as keyof EditData;
           const integrationPriceKey =
             `${platform}_integration_price` as keyof EditData;
 
-          const postPrice = data[postPriceKey] || formData[postPriceKey];
-          const storyPrice = data[storyPriceKey] || formData[storyPriceKey];
-          const integrationPrice =
-            data[integrationPriceKey] || formData[integrationPriceKey];
+          // Берем значения ТОЛЬКО из data (новые изменения), как в админке
+          const postPrice = data[postPriceKey];
+          const storyPrice = data[storyPriceKey];
+          const integrationPrice = data[integrationPriceKey];
+
+          console.log(`🔍 Platform ${platform} prices:`, {
+            postPrice,
+            storyPrice,
+            integrationPrice,
+            postPriceKey,
+            storyPriceKey,
+            integrationPriceKey,
+            dataHasPostPrice: data[postPriceKey],
+            dataHasStoryPrice: data[storyPriceKey],
+            dataHasIntegrationPrice: data[integrationPriceKey],
+            formDataHasPostPrice: formData[postPriceKey],
+            formDataHasStoryPrice: formData[storyPriceKey],
+            formDataHasIntegrationPrice: formData[integrationPriceKey]
+          });
 
           if (postPrice || storyPrice || integrationPrice) {
-            const priceUpdateData = {
+            const priceUpdateData: any = {
               type: platformToApi(platform),
-              postPrice: postPrice
-                ? parseFloat(postPrice as string)
-                : undefined,
-              storiesPrice: storyPrice
-                ? parseFloat(storyPrice as string)
-                : undefined,
-              integrationPrice: integrationPrice
-                ? parseFloat(integrationPrice as string)
-                : undefined,
             };
+
+            // Используем логику как в админке: проверяем !== undefined
+            if (postPrice !== undefined) {
+              priceUpdateData.postPrice = parseFloat(String(postPrice)) || undefined;
+            }
+            // Для YouTube не передаем storiesPrice, так как YouTube не имеет сторис
+            if (storyPrice !== undefined && platform !== 'youtube') {
+              priceUpdateData.storiesPrice = parseFloat(String(storyPrice)) || undefined;
+            }
+            if (integrationPrice !== undefined) {
+              priceUpdateData.integrationPrice = parseFloat(String(integrationPrice)) || undefined;
+            }
+
+            // Проверяем, что есть хотя бы одно валидное значение для отправки
+            const hasValidData = priceUpdateData.postPrice !== undefined || 
+                               priceUpdateData.storiesPrice !== undefined || 
+                               priceUpdateData.integrationPrice !== undefined;
+
+            if (!hasValidData) {
+              console.log(`⚠️ No valid price data for ${platform}, skipping update`);
+              return Promise.resolve();
+            }
+
+            console.log('💰 Updating social price:', {
+              bloggerId: Number(profile.id),
+              platform: platform,
+              priceUpdateData
+            });
 
             return updateBloggerSocialPrice(
               Number(profile.id),
@@ -91,8 +148,12 @@ export const useProfileSaver = (
           return Promise.resolve();
         });
 
-        // Выполняем все обновления параллельно
-        await Promise.all(platformPriceUpdates);
+        // Выполняем обновления последовательно (как в админке)
+        console.log('⏳ Executing platform price updates sequentially...');
+        for (const updatePromise of platformPriceUpdates) {
+          await updatePromise;
+        }
+        console.log('✅ Platform price updates completed');
 
         setAvailablePlatforms((prev) => {
           const updated = { ...prev };
@@ -104,12 +165,12 @@ export const useProfileSaver = (
             const postReachKey = `${platform}_post_reach` as keyof EditData;
             const storyReachKey = `${platform}_story_reach` as keyof EditData;
 
-            const postPrice = data[postPriceKey] || formData[postPriceKey];
-            const storyPrice = data[storyPriceKey] || formData[storyPriceKey];
-            const integrationPrice =
-              data[integrationPriceKey] || formData[integrationPriceKey];
-            const postReach = data[postReachKey] || formData[postReachKey];
-            const storyReach = data[storyReachKey] || formData[storyReachKey];
+            // Для обновления состояния используем новые значения из data, если есть, иначе старые из formData
+            const postPrice = data[postPriceKey] !== undefined ? data[postPriceKey] : formData[postPriceKey];
+            const storyPrice = data[storyPriceKey] !== undefined ? data[storyPriceKey] : formData[storyPriceKey];
+            const integrationPrice = data[integrationPriceKey] !== undefined ? data[integrationPriceKey] : formData[integrationPriceKey];
+            const postReach = data[postReachKey] !== undefined ? data[postReachKey] : formData[postReachKey];
+            const storyReach = data[storyReachKey] !== undefined ? data[storyReachKey] : formData[storyReachKey];
 
             if (
               updated[platform] &&
@@ -127,14 +188,15 @@ export const useProfileSaver = (
                 storyPrice: storyPrice
                   ? parseFloat(storyPrice as string)
                   : updated[platform].storyPrice,
+                integrationPrice: integrationPrice
+                  ? parseFloat(integrationPrice as string)
+                  : updated[platform].integrationPrice,
                 reach: postReach
                   ? parseFloat(postReach as string)
                   : updated[platform].reach,
                 storyReach: storyReach
                   ? parseFloat(storyReach as string)
                   : updated[platform].storyReach,
-                // Добавляем integrationPrice в PlatformData если нужно
-                // Пока оставляем как есть, так как PlatformData может не иметь этого поля
               };
             }
           });

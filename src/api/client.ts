@@ -43,7 +43,7 @@ export async function apiRequest<T = unknown>(
   endpoint: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { skipAuth = false, baseUrl, ...fetchOptions } = options;
+  const { skipAuth = false, skipAuthErrorHandling = false, baseUrl, ...fetchOptions } = options;
 
   // Получаем токен если не пропущена аутентификация
   const token = skipAuth ? null : await tokenManager.getAuthToken();
@@ -53,17 +53,33 @@ export async function apiRequest<T = unknown>(
     ...((fetchOptions.headers as Record<string, string>) || {}),
   };
 
-  // Устанавливаем Content-Type только если это не FormData
-  if (!(fetchOptions.body instanceof FormData)) {
+  // Устанавливаем Content-Type только если это не FormData и не передан в headers
+  if (!(fetchOptions.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
-  // Добавляем токен если есть
-  if (token) {
+  // Добавляем токен если есть и не передан Authorization в headers
+  if (token && !headers["Authorization"]) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
   const url = `${baseUrl || API_BASE_URL}${endpoint}`;
+
+  // Добавляем логирование для отладки
+  if (endpoint.includes('/auth/admin/') || endpoint.includes('/admin/') || endpoint.includes('/auth/client/')) {
+    console.log("🌐 API Request Debug:", {
+      url,
+      method: fetchOptions.method,
+      headers,
+      body: fetchOptions.body,
+      skipAuth,
+      tokenType: token ? 'present' : 'missing',
+      tokenValue: token ? `${token.substring(0, 20)}...` : 'none',
+      tokenLength: token ? token.length : 0,
+      tokenStartsWith: token ? token.substring(0, 10) : 'none',
+      apiBaseUrl: API_BASE_URL
+    });
+  }
 
   try {
     // Выполняем запрос
@@ -79,7 +95,11 @@ export async function apiRequest<T = unknown>(
     // Если есть ошибка - обрабатываем
     if (hasError && errorData) {
       // Для 401 ошибок очищаем токены и перенаправляем
-      if (apiErrorHandler.shouldRedirect(errorData.statusCode)) {
+      // НО пропускаем, если skipAuthErrorHandling = true
+      if (
+        apiErrorHandler.shouldRedirect(errorData.statusCode) &&
+        !skipAuthErrorHandling
+      ) {
         apiErrorHandler.handleAuthError(errorData);
       }
 

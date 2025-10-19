@@ -475,8 +475,8 @@ export interface JwtAppMetadata {
 
 export interface JwtUserMetadata {
   email: string;
-  email_verified: boolean;
-  phone_verified: boolean;
+  email_verified?: boolean; // Сделаем опциональным
+  phone_verified?: boolean; // Сделаем опциональным
   sub: string;
 }
 

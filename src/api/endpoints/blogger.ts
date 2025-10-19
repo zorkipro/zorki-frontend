@@ -177,8 +177,18 @@ export async function updateBloggerSocialPrice(
   bloggerId: number,
   data: BloggerUpdateSocialPriceInputDto,
 ): Promise<void> {
+  console.log('📡 updateBloggerSocialPrice request:', {
+    url: `/blogger/social-price/${bloggerId}`,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  
   return apiRequest<void>(`/blogger/social-price/${bloggerId}`, {
     method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(data),
   });
 }

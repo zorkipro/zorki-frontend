@@ -2,9 +2,9 @@ import React from "react";
 import { Card, CardContent } from "@/ui-kit";
 import { Button } from "@/ui-kit";
 import { Input } from "@/ui-kit";
-import { Label } from "@/ui-kit";
+import { Label, Badge } from "@/ui-kit";
 import { EditableCard } from "@/ui-kit";
-import { Users, TrendingUp, Eye, Wallet } from "lucide-react";
+import { Users, TrendingUp, Eye, Wallet, Clock } from "lucide-react";
 import { PlatformStats, EditData } from "@/types/profile";
 
 interface PlatformStatsProps {
@@ -15,6 +15,8 @@ interface PlatformStatsProps {
   onEditingChange: (section: string | null) => void;
   onSave: (data: Partial<EditData>) => void;
   formatNumber: (num: number) => string;
+  isPending?: boolean; // Флаг "на модерации"
+  isVerified?: boolean; // Статус верификации пользователя
 }
 
 export const InstagramStats: React.FC<PlatformStatsProps> = ({
@@ -408,6 +410,8 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
   onEditingChange,
   onSave,
   formatNumber,
+  isPending = false,
+  isVerified = false,
 }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -437,52 +441,78 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
       <EditableCard
         title="Цена интеграции"
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
-        value={stats.price}
-        editKey="youtube_post_price"
-        isEditing={editingSection === "youtube_post_price"}
+        value={stats.integrationPrice || stats.price}
+        editKey="youtube_integration_price"
+        isEditing={editingSection === "youtube_integration_price"}
         onEditChange={onEditingChange}
         renderContent={() => (
           <>
             <div className="text-2xl font-bold text-primary">
-              {stats.price || 0} BYN
+              {stats.integrationPrice || stats.price || 0} BYN
             </div>
             <div className="text-sm text-muted-foreground">Цена интеграции</div>
+            {isPending && !isVerified && (
+              <Badge variant="secondary" className="text-xs mt-2">
+                <Clock className="w-3 h-3 mr-1" />
+                На модерации
+              </Badge>
+            )}
           </>
         )}
         renderEditForm={() => (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="youtube_post_price">
-                Цена за интеграцию (BYN)
-              </Label>
-              <Input
-                id="youtube_post_price"
-                type="number"
-                defaultValue={formData.youtube_post_price || stats.price || ""}
-                placeholder="0"
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => onEditingChange(null)}>
-                Отмена
-              </Button>
-              <Button
-                onClick={async () => {
-                  const input = document.getElementById(
-                    "youtube_post_price",
-                  ) as HTMLInputElement;
-                  try {
-                    await onSave({ youtube_post_price: input.value });
-                    onEditingChange(null);
-                  } catch (error) {
-                    // Ошибка при сохранении
-                  }
-                }}
-                disabled={saving}
-              >
-                Сохранить
-              </Button>
-            </div>
+            {isPending && !isVerified ? (
+              <div className="text-center py-4">
+                <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Платформа находится на модерации. Редактирование цен будет доступно после одобрения.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => onEditingChange(null)}
+                  className="mt-4"
+                >
+                  Закрыть
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="youtube_integration_price">
+                    Цена за интеграцию (BYN)
+                  </Label>
+                  <Input
+                    id="youtube_integration_price"
+                    type="number"
+                    defaultValue={formData.youtube_integration_price || stats.price || ""}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => onEditingChange(null)}>
+                    Отмена
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      const input = document.getElementById(
+                        "youtube_integration_price",
+                      ) as HTMLInputElement;
+                      console.log('💾 YouTube price save clicked, value:', input.value);
+                      try {
+                        await onSave({ youtube_integration_price: input.value });
+                        onEditingChange(null);
+                      } catch (error) {
+                        console.error('❌ YouTube price save error:', error);
+                        // Ошибка при сохранении
+                      }
+                    }}
+                    disabled={saving}
+                  >
+                    Сохранить
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         )}
       />

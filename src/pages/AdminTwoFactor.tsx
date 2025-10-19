@@ -17,7 +17,14 @@ const AdminTwoFactor = () => {
   // Проверяем наличие временного токена для 2FA
   useEffect(() => {
     const tempToken = sessionStorage.getItem("adminTempToken");
+    console.log("🔍 AdminTwoFactor Check:", {
+      tempTokenExists: !!tempToken,
+      tempTokenLength: tempToken?.length,
+      tempTokenPrefix: tempToken ? tempToken.substring(0, 20) + "..." : "none"
+    });
+    
     if (!tempToken) {
+      console.log("❌ No temp token found, redirecting to login");
       navigate("/admin/login");
     }
   }, [navigate]);
@@ -120,10 +127,10 @@ const AdminTwoFactor = () => {
       // Обработка ошибок API
       if (err instanceof APIError) {
         if (err.statusCode === 400) {
-          setError("Неверный код подтверждения");
+          setError("Неверный код подтверждения. Попробуйте ещё раз.");
         } else if (err.statusCode === 401) {
-          setError("Время действия кода истекло. Попробуйте войти заново.");
-          // Перенаправляем на страницу логина
+          setError("Время действия сессии истекло. Войдите заново.");
+          sessionStorage.removeItem("adminTempToken"); // Очищаем только temp токен
           setTimeout(() => {
             navigate("/admin/login");
           }, 2000);
@@ -138,9 +145,11 @@ const AdminTwoFactor = () => {
         );
       }
 
-      // Очищаем поля и фокусируемся на первом
-      setCode(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      // Очищаем поля только при 400 (неверный код)
+      if (err instanceof APIError && err.statusCode === 400) {
+        setCode(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      }
     } finally {
       setLoading(false);
     }

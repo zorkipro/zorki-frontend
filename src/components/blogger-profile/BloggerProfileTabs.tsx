@@ -81,15 +81,15 @@ export const BloggerProfileTabs = ({
                           url = `https://www.instagram.com/${username}/`;
                         } else if (platform === "tiktok") {
                           const username =
-                            stats.username || normalizeUsername(blogger.handle);
+                            normalizeUsername(stats.username) || normalizeUsername(blogger.handle);
                           url = `https://www.tiktok.com/@${username}`;
                         } else if (platform === "youtube") {
                           const username =
-                            stats.username || normalizeUsername(blogger.handle);
+                            normalizeUsername(stats.username) || normalizeUsername(blogger.handle);
                           url = `https://www.youtube.com/@${username}`;
                         } else if (platform === "telegram") {
                           const username =
-                            stats.username || normalizeUsername(blogger.handle);
+                            normalizeUsername(stats.username) || normalizeUsername(blogger.handle);
                           url = `https://t.me/${username}`;
                         }
 

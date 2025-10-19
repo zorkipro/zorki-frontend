@@ -53,21 +53,29 @@ export async function linkClientToBlogger(username: string): Promise<void> {
  * Получение информации о текущем авторизованном клиенте
  *
  * @returns Promise с информацией о клиенте и связанном блогере
- * @throws APIError 401 - Unauthorized
+ * @throws APIError 401 - Unauthorized (тихо игнорируется в BloggerContext)
  *
  * @note Требует Authorization header с client token (Supabase JWT)
  * @note Возвращает JWT payload и информацию о связанном блогере (если есть)
+ * @note 401 ошибки обрабатываются тихо - пользователь может быть не связан с блогером
  *
  * @example
  * ```typescript
- * const clientInfo = await getClientMe();
- * if (clientInfo.blogger) {
- * } else {
+ * try {
+ *   const clientInfo = await getClientMe();
+ *   if (clientInfo.blogger) {
+ *     // Пользователь связан с блогером
+ *   } else {
+ *     // Пользователь не связан с блогером
+ *   }
+ * } catch (error) {
+ *   // 401 ошибки обрабатываются тихо в BloggerContext
  * }
  * ```
  */
 export async function getClientMe(): Promise<ClientAuthMeOutputDto> {
   return apiRequest<ClientAuthMeOutputDto>("/auth/client/me", {
     method: "GET",
+    skipAuthErrorHandling: true, // Тихо игнорируем 401 ошибки - пользователь может быть не связан с блогером
   });
 }

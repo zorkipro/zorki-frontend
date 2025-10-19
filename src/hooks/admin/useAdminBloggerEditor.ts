@@ -45,6 +45,7 @@ export const useAdminBloggerEditor = (username?: string) => {
     instagram_story_reach: '0',
     instagram_post_price: '0',
     instagram_story_price: '0',
+    instagram_integration_price: '0',
     tiktok_username: '',
     tiktok_profile_url: '',
     tiktok_followers: '0',
@@ -53,6 +54,7 @@ export const useAdminBloggerEditor = (username?: string) => {
     tiktok_story_reach: '0',
     tiktok_post_price: '0',
     tiktok_story_price: '0',
+    tiktok_integration_price: '0',
     youtube_username: '',
     youtube_profile_url: '',
     youtube_followers: '0',
@@ -61,6 +63,7 @@ export const useAdminBloggerEditor = (username?: string) => {
     youtube_story_reach: '0',
     youtube_post_price: '0',
     youtube_story_price: '0',
+    youtube_integration_price: '0',
     telegram_username: '',
     telegram_profile_url: '',
     telegram_followers: '0',
@@ -69,6 +72,7 @@ export const useAdminBloggerEditor = (username?: string) => {
     telegram_story_reach: '0',
     telegram_post_price: '0',
     telegram_story_price: '0',
+    telegram_integration_price: '0',
     topics: [],
     banned_topics: [],
   });
@@ -104,6 +108,11 @@ export const useAdminBloggerEditor = (username?: string) => {
         const bloggerDetails = await getBloggerById(bloggerSummary.id);
 
         setProfile(bloggerDetails);
+        console.log('📊 Loaded blogger details:', {
+          id: bloggerDetails.id,
+          youtubePrices: bloggerDetails.price?.find(p => p.type === 'YOUTUBE'),
+          priceDraft: bloggerDetails.priceDraft?.find(p => p.type === 'YOUTUBE')
+        });
 
         // Инициализируем formData полными данными блогера
         // Приоритет: черновики > основные данные
@@ -131,9 +140,27 @@ export const useAdminBloggerEditor = (username?: string) => {
           instagram_engagement_rate: bloggerDetails.social?.[0]?.er?.toString() || '0',
           instagram_post_reach: bloggerDetails.social?.[0]?.postCoverage || '0',
           instagram_story_reach: bloggerDetails.social?.[0]?.coverage || '0',
-          instagram_post_price: bloggerDetails.price?.[0]?.postPrice || '0',
-          instagram_story_price: bloggerDetails.price?.[0]?.storiesPrice || '0',
+          instagram_post_price: bloggerDetails.price?.find(p => p.type === 'INSTAGRAM')?.postPrice?.toString() || '0',
+          instagram_story_price: bloggerDetails.price?.find(p => p.type === 'INSTAGRAM')?.storiesPrice?.toString() || '0',
+          instagram_integration_price: bloggerDetails.price?.find(p => p.type === 'INSTAGRAM')?.integrationPrice?.toString() || '0',
+          // YouTube цены
+          youtube_post_price: bloggerDetails.price?.find(p => p.type === 'YOUTUBE')?.postPrice?.toString() || '0',
+          youtube_story_price: bloggerDetails.price?.find(p => p.type === 'YOUTUBE')?.storiesPrice?.toString() || '0',
+          youtube_integration_price: bloggerDetails.price?.find(p => p.type === 'YOUTUBE')?.integrationPrice?.toString() || '0',
+          // TikTok цены
+          tiktok_post_price: bloggerDetails.price?.find(p => p.type === 'TIKTOK')?.postPrice?.toString() || '0',
+          tiktok_story_price: bloggerDetails.price?.find(p => p.type === 'TIKTOK')?.storiesPrice?.toString() || '0',
+          tiktok_integration_price: bloggerDetails.price?.find(p => p.type === 'TIKTOK')?.integrationPrice?.toString() || '0',
+          // Telegram цены
+          telegram_post_price: bloggerDetails.price?.find(p => p.type === 'TELEGRAM')?.postPrice?.toString() || '0',
+          telegram_story_price: bloggerDetails.price?.find(p => p.type === 'TELEGRAM')?.storiesPrice?.toString() || '0',
+          telegram_integration_price: bloggerDetails.price?.find(p => p.type === 'TELEGRAM')?.integrationPrice?.toString() || '0',
         }));
+
+        console.log('📝 Initialized formData with YouTube prices:', {
+          youtube_integration_price: bloggerDetails.price?.find(p => p.type === 'YOUTUBE')?.integrationPrice?.toString() || '0',
+          allPrices: bloggerDetails.price
+        });
 
         // Устанавливаем данные в formData
 
@@ -155,8 +182,14 @@ export const useAdminBloggerEditor = (username?: string) => {
           const priceData = bloggerDetails.priceDraft || bloggerDetails.price;
           const priceForPlatform = priceData?.find(p => p.type === social.type);
           if (priceForPlatform) {
-            platformData.price = parseFloat(priceForPlatform.postPrice || '0');
+            // Для YouTube используем integrationPrice, для остальных - postPrice
+            if (social.type === 'YOUTUBE') {
+              platformData.price = parseFloat(priceForPlatform.integrationPrice || '0');
+            } else {
+              platformData.price = parseFloat(priceForPlatform.postPrice || '0');
+            }
             platformData.storyPrice = parseFloat(priceForPlatform.storiesPrice || '0');
+            platformData.integrationPrice = parseFloat(priceForPlatform.integrationPrice || '0');
           }
 
           platforms[social.type.toLowerCase()] = platformData;
@@ -213,7 +246,7 @@ export const useAdminBloggerEditor = (username?: string) => {
           profileFields.includes(key) || storyReachFields.some(field => key.includes(field))
         );
 
-        const priceFields = ['post_price', 'story_price'];
+        const priceFields = ['post_price', 'story_price', 'integration_price'];
         const hasPriceChanges = Object.keys(data).some(key =>
           priceFields.some(field => key.includes(field))
         );
@@ -226,12 +259,15 @@ export const useAdminBloggerEditor = (username?: string) => {
 
         // Сохраняем изменения цен для каждой платформы
         if (hasPriceChanges) {
+          console.log('💰 Processing price changes:', data);
           const platforms: ApiSocialType[] = ['INSTAGRAM', 'YOUTUBE', 'TELEGRAM', 'TIKTOK'];
           
           for (const platform of platforms) {
             const priceDto = mapPlatformPricesToUpdate(platform, data);
             if (priceDto) {
+              console.log(`🚀 Updating ${platform} prices:`, priceDto);
               await adminUpdateBloggerSocialPrice(profile.id, priceDto);
+              console.log(`✅ ${platform} prices updated successfully`);
             }
           }
         }
@@ -246,7 +282,9 @@ export const useAdminBloggerEditor = (username?: string) => {
         });
 
         // Перезагружаем данные блогера
+        console.log('🔄 Refreshing blogger data after save...');
         await fetchBloggerData();
+        console.log('✅ Blogger data refreshed');
 
       } catch (err: unknown) {
         logger.error('Error saving blogger changes', err);

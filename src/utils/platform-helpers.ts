@@ -132,6 +132,7 @@ export function mapPlatformToApiPriceUpdate(
     type: platformToApi(platform),
     postPrice: data.price,
     storiesPrice: data.storyPrice,
+    integrationPrice: data.integrationPrice,
   };
 }
 

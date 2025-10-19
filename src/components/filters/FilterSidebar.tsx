@@ -53,7 +53,7 @@ const FilterSidebarComponent = ({
         const restrictedTopicsData = await getAllRestrictedTopics();
         setRestrictedTopicsOptions(restrictedTopicsData);
 
-        logError("Filter data loaded successfully:", {
+        console.log("✅ Filter data loaded successfully:", {
           categoriesCount: categoriesData.length,
           restrictedCount: restrictedTopicsData.length,
         });

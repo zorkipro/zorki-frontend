@@ -160,8 +160,10 @@ export interface PlatformData {
   price: number;
   storyReach: number;
   storyPrice: number;
+  integrationPrice?: number; // Цена за интеграцию
   views?: number;
   screenshots?: Screenshot[]; // Добавляем скриншоты
+  isPending?: boolean; // Флаг "на модерации" для новых платформ
 }
 
 // Form validation errors

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui-kit";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, AlertCircle } from "lucide-react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import type { Screenshot } from "@/types/profile";
@@ -8,6 +8,7 @@ import {
   getPlatformIcon,
   getPlatformName,
 } from "@/components/icons/PlatformIcons";
+import { FILE_VALIDATION } from "@/config/validation";
 
 interface ScreenshotDisplayProps {
   platform: string;
@@ -78,12 +79,20 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 {platformIcon}
               </div>
               <span>Скриншоты статистики {platformName}</span>
-              {screenshots.length > 0 && (
-                <span className="text-sm font-normal text-muted-foreground ml-auto">
-                  {screenshots.length}{" "}
-                  {screenshots.length === 1 ? "скриншот" : "скриншотов"}
-                </span>
-              )}
+              <div className="ml-auto flex items-center space-x-2">
+                {screenshots.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {screenshots.length}{" "}
+                    {screenshots.length === 1 ? "скриншот" : "скриншотов"}
+                  </span>
+                )}
+                {screenshots.length >= FILE_VALIDATION.MAX_STATS_FILES && (
+                  <div className="flex items-center space-x-1 text-amber-600">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-xs">Лимит достигнут</span>
+                  </div>
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -134,7 +143,12 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 </label>
                 {/* File format and size info */}
                 <div className="mt-2 text-xs text-muted-foreground text-center">
-                  Поддерживаемые форматы: JPEG, PNG, GIF, WebP, PDF • Максимальный размер: 10MB • До 25 файлов за раз
+                  Поддерживаемые форматы: JPEG, PNG, GIF, WebP, PDF • Максимальный размер: 10MB • До {FILE_VALIDATION.MAX_STATS_FILES} файлов для {platformName}
+                  {screenshots.length > 0 && (
+                    <span className="block mt-1">
+                      Загружено: {screenshots.length} из {FILE_VALIDATION.MAX_STATS_FILES}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -228,8 +242,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 </p>
                 {showUploadButton && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Поддерживаемые форматы: JPG, PNG, WebP (макс. 5MB). Можно
-                    выбрать несколько файлов одновременно.
+                    Поддерживаемые форматы: JPG, PNG, WebP, PDF (макс. 10MB). 
+                    Максимум {FILE_VALIDATION.MAX_STATS_FILES} файлов для {platformName}.
                   </p>
                 )}
               </div>

@@ -40,6 +40,9 @@ export async function linkTgChannelRequest(
 ): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/tg/${bloggerId}`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(data),
   });
 }
@@ -70,6 +73,9 @@ export async function linkYtChannelRequest(
 ): Promise<void> {
   return apiRequest<void>(`/blogger/link/social/yt/${bloggerId}`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(data),
   });
 }

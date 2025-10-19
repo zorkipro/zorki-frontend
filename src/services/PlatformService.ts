@@ -71,6 +71,10 @@ export class PlatformService {
         this.extractNumber(data, "storyPrice") ||
         this.extractNumber(data, "story_price") ||
         0,
+      integrationPrice:
+        this.extractNumber(data, "integrationPrice") ||
+        this.extractNumber(data, "integration_price") ||
+        undefined,
       views: this.extractNumber(data, "views"),
     };
   }

@@ -53,6 +53,7 @@ export async function adminLogin(
   return apiRequest<AdminLoginOutputDto>("/auth/admin/login", {
     method: "POST",
     body: JSON.stringify(data),
+    // Используем прокси (убираем baseUrl)
   });
 }
 
@@ -131,9 +132,30 @@ export async function adminConfirm2FA(
 ): Promise<AdminLoginOutputDto> {
   const data: AdminLogin2faFakeInputDto = { code };
 
+  // Получаем временный токен для 2FA подтверждения
+  const tempToken = sessionStorage.getItem("adminTempToken");
+  if (!tempToken) {
+    throw new Error("Временный токен для 2FA не найден. Пожалуйста, войдите заново.");
+  }
+
+  // Добавляем логирование для отладки
+  console.log("🔐 AdminConfirm2FA Debug:", {
+    code,
+    tempTokenLength: tempToken.length,
+    tempTokenPrefix: tempToken.substring(0, 20) + "...",
+    endpoint: "/auth/admin/2fa/confirm"
+  });
+
   return apiRequest<AdminLoginOutputDto>("/auth/admin/2fa/confirm", {
     method: "POST",
     body: JSON.stringify(data),
+    skipAuthErrorHandling: true, // НЕ очищать токены автоматически
+    // Используем прокси (убираем baseUrl)
+    // Используем временный токен напрямую для этого запроса
+    headers: {
+      "Authorization": `Bearer ${tempToken}`,
+      "Content-Type": "application/json"
+    }
   });
 }
 
@@ -626,10 +648,23 @@ export async function adminUpdateBloggerSocialPrice(
   bloggerId: number,
   data: BloggerUpdateSocialPriceInputDto,
 ): Promise<void> {
-  return apiRequest<void>(`/admin/blogger/social-price/${bloggerId}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
+  console.log('🌐 adminUpdateBloggerSocialPrice API call:', {
+    url: `/admin/blogger/social-price/${bloggerId}`,
+    method: 'PUT',
+    data
   });
+  
+  try {
+    const result = await apiRequest<void>(`/admin/blogger/social-price/${bloggerId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    console.log('✅ adminUpdateBloggerSocialPrice API response:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ adminUpdateBloggerSocialPrice API error:', error);
+    throw error;
+  }
 }
 
 /**

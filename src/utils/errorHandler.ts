@@ -1,6 +1,7 @@
 // Универсальный обработчик ошибок с переводами на русский язык
 
 import { APIError } from "@/api/client";
+import { logger } from "@/utils/logger";
 import {
   translateError,
   getMainErrorMessage,
@@ -247,7 +248,7 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}) {
       navigate,
       ...options,
     });
-  }, [navigate, options]);
+  }, [navigate]); // Убираем options из зависимостей чтобы избежать перерендеров
 
   const handleError = useCallback(
     (error: unknown, customOptions?: ErrorHandlerOptions) => {

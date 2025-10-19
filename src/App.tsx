@@ -7,6 +7,7 @@ import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ProfileChecker } from "./components/ProfileChecker";
+import { AuthRedirectHandler } from "./components/AuthRedirectHandler";
 import { AdminRoutes } from "./components/AdminRoutes";
 
 // Lazy load all page components
@@ -72,6 +73,7 @@ const App = () => (
             v7_relativeSplatPath: true,
           }}
         >
+          <AuthRedirectHandler />
           <ProfileChecker>
             <Suspense fallback={<PageLoader />}>
               <Routes>

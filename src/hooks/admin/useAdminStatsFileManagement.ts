@@ -11,6 +11,8 @@ import {
   adminUploadBloggerStats, 
   adminDeleteBloggerStatsFile 
 } from '@/api/endpoints/admin';
+import { validateStatsFiles } from '@/api/types';
+import { FILE_VALIDATION } from '@/config/validation';
 import type { ApiSocialType } from '@/api/types';
 import type { Screenshot } from '@/types/profile';
 
@@ -61,6 +63,20 @@ export const useAdminStatsFileManagement = (
         throw new Error('Blogger ID is required');
       }
 
+      // Валидация файлов
+      const validationError = validateStatsFiles(filesToUpload);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+
+      // Проверка общего количества файлов для социальной сети
+      const currentFilesCount = existingFiles.length;
+      const totalFilesCount = currentFilesCount + filesToUpload.length;
+      
+      if (totalFilesCount > FILE_VALIDATION.MAX_STATS_FILES) {
+        throw new Error(`Слишком много файлов для ${platform}. Максимум: ${FILE_VALIDATION.MAX_STATS_FILES} файлов. Текущих: ${currentFilesCount}, пытаетесь добавить: ${filesToUpload.length}`);
+      }
+
       setUploading(true);
       try {
         await adminUploadBloggerStats(parseInt(bloggerId), platform, filesToUpload);
@@ -77,9 +93,31 @@ export const useAdminStatsFileManagement = (
         }
       } catch (error) {
         logger.error('Error uploading stats files', error);
+        
+        let errorMessage = 'Не удалось загрузить файлы';
+        let errorTitle = 'Ошибка';
+        
+        if (error instanceof Error) {
+          if (error.message.includes('Слишком много файлов для')) {
+            errorMessage = error.message;
+            errorTitle = 'Слишком много файлов';
+          } else if (error.message.includes('Максимум') && error.message.includes('файлов')) {
+            errorMessage = error.message;
+            errorTitle = 'Слишком много файлов';
+          } else if (error.message.includes('Неподдерживаемый формат')) {
+            errorMessage = error.message;
+            errorTitle = 'Неподдерживаемый формат';
+          } else if (error.message.includes('слишком большой')) {
+            errorMessage = error.message;
+            errorTitle = 'Файл слишком большой';
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        
         toast({
-          title: 'Ошибка',
-          description: 'Не удалось загрузить файлы',
+          title: errorTitle,
+          description: errorMessage,
           variant: 'destructive',
         });
         throw error;
@@ -87,7 +125,7 @@ export const useAdminStatsFileManagement = (
         setUploading(false);
       }
     },
-    [bloggerId, platform, toast, onUploadSuccess]
+    [bloggerId, platform, toast, onUploadSuccess, existingFiles.length]
   );
 
   /**

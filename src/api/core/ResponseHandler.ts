@@ -55,8 +55,20 @@ export class ResponseHandler {
     response: Response,
     endpoint: string,
   ): Promise<ParsedResponse<T>> {
+    // Логируем ответ для админских эндпоинтов
+    if (endpoint.includes('/admin/')) {
+      console.log('📥 API Response Debug:', {
+        endpoint,
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        ok: response.ok
+      });
+    }
+
     // Handle 204 No Content
     if (response.status === 204) {
+      console.log('✅ 204 No Content response for:', endpoint);
       return {
         data: undefined,
         hasError: false,

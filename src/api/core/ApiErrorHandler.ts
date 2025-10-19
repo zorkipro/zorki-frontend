@@ -144,7 +144,18 @@ export class ApiErrorHandler {
       navigate: (path: string) => {
         // Очищаем все токены при 401
         tokenManager.clearAllTokens();
-        window.location.href = path || redirectPath;
+        
+        // Используем более мягкий редирект вместо полной перезагрузки
+        // Проверяем, не находимся ли мы уже на странице авторизации
+        const currentPath = window.location.pathname;
+        const targetPath = path || redirectPath;
+        
+        if (currentPath !== targetPath) {
+          // Используем replaceState для избежания петли в истории
+          window.history.replaceState(null, '', targetPath);
+          // Перезагружаем страницу только если это необходимо
+          window.location.reload();
+        }
       },
     });
   }

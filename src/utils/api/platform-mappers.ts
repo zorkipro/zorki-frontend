@@ -13,6 +13,48 @@ import type {
 import { parseBigInt, parseDecimal } from "./common-mappers";
 
 /**
+ * Преобразует YouTube ID канала в полный URL
+ * 
+ * @param externalId - ID канала YouTube (например, UCtGJ_XI0ZGwEmKZaj3VQITw)
+ * @param username - username канала (например, Ivleeva)
+ * @returns полный URL канала
+ */
+function convertYouTubeIdToUrl(externalId: string, username?: string): string {
+  // Если externalId null или undefined, обрабатываем как пустую строку
+  const safeExternalId = externalId || "";
+  
+  // Если это уже URL, возвращаем как есть
+  if (safeExternalId.startsWith('http')) {
+    return safeExternalId;
+  }
+  
+  // Если есть username, используем его для создания URL с @handle
+  if (username && username.trim()) {
+    // Убираем @ если он есть в начале
+    const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
+    return `https://www.youtube.com/@${cleanUsername}`;
+  }
+  
+  // Если externalId пустой, возвращаем пустую строку
+  if (!safeExternalId || !safeExternalId.trim()) {
+    return "";
+  }
+  
+  // Если это ID канала (начинается с UC), создаем URL с ID
+  if (safeExternalId.startsWith('UC')) {
+    return `https://www.youtube.com/channel/${safeExternalId}`;
+  }
+  
+  // Если это handle без @, добавляем @
+  if (!safeExternalId.startsWith('@')) {
+    return `https://www.youtube.com/@${safeExternalId}`;
+  }
+  
+  // Если это handle с @, создаем URL
+  return `https://www.youtube.com/${safeExternalId}`;
+}
+
+/**
  * Маппит одну социальную платформу из API list response
  *
  * @param social - данные социального аккаунта
@@ -23,13 +65,20 @@ export function mapSinglePlatform(
   social: PublicGetAllBloggersSocialAccOutputDto,
   price: PublicGetAllBloggersSocialPriceOutputDto,
 ): PlatformData {
+  // Для YouTube преобразуем ID в URL
+  const profileUrl = social.type === 'YOUTUBE' 
+    ? convertYouTubeIdToUrl(social.externalId || "", social.username)
+    : social.externalId || "";
+
   return {
     username: social.username || "",
-    profile_url: social.externalId || "",
+    profile_url: profileUrl,
     subscribers: parseBigInt(social.subscribers),
     er: social.er || 0,
     reach: parseBigInt(social.postCoverage),
-    price: parseDecimal(price.postPrice),
+    price: social.type === 'YOUTUBE' 
+      ? parseDecimal(price.integrationPrice) 
+      : parseDecimal(price.postPrice),
     storyReach: parseBigInt(social.coverage), // Охват сторис
     storyPrice: parseDecimal(price.storiesPrice),
     screenshots: [], // В list response нет скриншотов
@@ -70,13 +119,20 @@ export function mapMultiplePlatforms(
         is_draft: false,
       })) || [];
 
+      // Для YouTube преобразуем ID в URL
+      const profileUrl = social.type === 'YOUTUBE' 
+        ? convertYouTubeIdToUrl(social.externalId || "", social.username)
+        : social.externalId || "";
+
       platforms[social.type.toLowerCase()] = {
         username: social.username || "",
-        profile_url: social.externalId || "",
+        profile_url: profileUrl,
         subscribers: parseBigInt(social.subscribers),
         er: social.er || 0,
         reach: parseBigInt(social.postCoverage), // ✅ Исправлено: охват постов
-        price: parseDecimal(priceData.postPrice),
+        price: social.type === 'YOUTUBE' 
+          ? parseDecimal(priceData.integrationPrice) 
+          : parseDecimal(priceData.postPrice),
         storyReach: parseBigInt(social.coverage), // ✅ Исправлено: охват сториз
         storyPrice: parseDecimal(priceData.storiesPrice),
         screenshots, // Добавляем скриншоты

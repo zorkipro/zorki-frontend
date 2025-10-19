@@ -98,6 +98,13 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(true);
         setError(null);
 
+        console.log('🚀 Sending Telegram link request:', { bloggerId, data });
+        console.log('📡 Request details:', {
+          url: `/blogger/link/social/tg/${bloggerId}`,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
         await linkTgChannelRequest(bloggerId, data);
 
         toast({
@@ -106,12 +113,30 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
             "Запрос на связывание Telegram канала отправлен на модерацию",
         });
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Ошибка отправки запроса";
+        console.error('❌ Telegram link request failed:', err);
+        
+        // Обработка специфичных ошибок Telegram
+        let errorMessage = "Ошибка отправки запроса";
+        if (err instanceof Error) {
+          if (err.message.includes("not a channel")) {
+            errorMessage = "Не удалось найти канал Telegram. Возможные причины:\n• Канал не существует или удален\n• Канал является приватным\n• Проблемы с доступом к Telegram API\n• Неверный формат username\n\nПопробуйте:\n• Проверить правильность написания\n• Использовать другой публичный канал\n• Попробовать позже";
+          } else if (err.message.includes("already linked")) {
+            errorMessage = "Этот канал уже привязан к другому блогеру";
+          } else if (err.message.includes("request has been sent")) {
+            errorMessage = "Запрос на привязку этого канала уже отправлен и ожидает модерации";
+          } else if (err.message.includes("blogger not found")) {
+            errorMessage = "Профиль блогера не найден";
+          } else if (err.message.includes("something went wrong")) {
+            errorMessage = "Временная проблема с Telegram API. Попробуйте:\n• Проверить правильность username\n• Использовать другой канал\n• Повторить попытку через несколько минут";
+          } else {
+            errorMessage = err.message;
+          }
+        }
+        
         setError(errorMessage);
 
         toast({
-          title: "Ошибка",
+          title: "Ошибка добавления платформы",
           description: errorMessage,
           variant: "destructive",
         });
@@ -134,6 +159,13 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(true);
         setError(null);
 
+        console.log('🚀 Sending YouTube link request:', { bloggerId, data });
+        console.log('📡 YouTube request details:', {
+          url: `/blogger/link/social/yt/${bloggerId}`,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
         await linkYtChannelRequest(bloggerId, data);
 
         toast({
@@ -142,12 +174,28 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
             "Запрос на связывание YouTube канала отправлен на модерацию",
         });
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Ошибка отправки запроса";
+        console.error('❌ YouTube link request failed:', err);
+        
+        // Обработка специфичных ошибок YouTube
+        let errorMessage = "Ошибка отправки запроса";
+        if (err instanceof Error) {
+          if (err.message.includes("not found") || err.message.includes("channel not found")) {
+            errorMessage = "Канал YouTube не найден. Возможные причины:\n• Канал не существует или удален\n• Канал является приватным\n• Неверный формат URL или handle\n• Проблемы с доступом к YouTube API\n\nПопробуйте:\n• Проверить правильность написания\n• Использовать другой публичный канал\n• Проверить канал в YouTube";
+          } else if (err.message.includes("already linked")) {
+            errorMessage = "Этот канал уже привязан к другому блогеру";
+          } else if (err.message.includes("request has been sent")) {
+            errorMessage = "Запрос на привязку этого канала уже отправлен и ожидает модерации";
+          } else if (err.message.includes("blogger not found")) {
+            errorMessage = "Профиль блогера не найден";
+          } else {
+            errorMessage = err.message;
+          }
+        }
+        
         setError(errorMessage);
 
         toast({
-          title: "Ошибка",
+          title: "Ошибка добавления платформы",
           description: errorMessage,
           variant: "destructive",
         });

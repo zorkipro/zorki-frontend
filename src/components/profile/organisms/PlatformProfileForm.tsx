@@ -38,6 +38,10 @@ interface PlatformProfileFormProps {
   screenshotError: string | null;
   onScreenshotUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onDeleteScreenshot: (screenshot: Screenshot) => void;
+
+  // Blogger ID for API requests
+  bloggerId?: number;
+  isVerified?: boolean; // Статус верификации пользователя
 }
 
 const PlatformProfileFormComponent = ({
@@ -59,6 +63,8 @@ const PlatformProfileFormComponent = ({
   screenshotError,
   onScreenshotUpload,
   onDeleteScreenshot,
+  bloggerId,
+  isVerified = false,
 }: PlatformProfileFormProps) => {
   // Check if we have reached the maximum number of platforms
   const hasMaxPlatforms = availablePlatforms
@@ -124,6 +130,8 @@ const PlatformProfileFormComponent = ({
                   onSave={onSave}
                   saving={saving}
                   formatNumber={formatNumber}
+                  isPending={stats.isPending}
+                  isVerified={isVerified}
                 />
 
                 {/* Screenshots Section - только для платформ */}
@@ -150,6 +158,7 @@ const PlatformProfileFormComponent = ({
                 platforms={availablePlatforms}
                 onPlatformsChange={onAvailablePlatformsChange}
                 hasMaxPlatforms={hasMaxPlatforms}
+                bloggerId={bloggerId}
               />
             )}
           </div>
