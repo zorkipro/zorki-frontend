@@ -95,7 +95,7 @@ const Index = () => {
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                  Рейтинг блогеров
+                  Рейтинг блогеров Беларуси
                 </h1>
                 <p
                   className="text-sm text-muted-foreground mt-1"
