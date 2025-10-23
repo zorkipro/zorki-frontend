@@ -243,7 +243,9 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
             <div>
               <span className="text-sm text-muted-foreground">Пол:</span>
               <Badge variant="secondary" className="ml-2">
-                {formData.gender_type || 'Не указано'}
+                {formData.gender_type 
+                  ? formData.gender_type.charAt(0).toUpperCase() + formData.gender_type.slice(1)
+                  : 'Не указано'}
               </Badge>
             </div>
 

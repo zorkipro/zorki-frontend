@@ -48,6 +48,38 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const mobileLoadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Функция для получения URL блогера
+  const getBloggerUrl = (blogger: AdminGetBloggerOutputDto): string | null => {
+    const mainSocial = blogger.social.find((s) => s.type === "INSTAGRAM");
+    const username = mainSocial?.username;
+    return username ? `/admin/blogger/${username}/edit` : null;
+  };
+
+  // Функция для обработки кликов
+  const handleBloggerClick = (blogger: AdminGetBloggerOutputDto, event: React.MouseEvent) => {
+    const url = getBloggerUrl(blogger);
+    if (!url) {
+      logger.error("Username not found for blogger", {
+        component: "BloggersTable",
+        bloggerId: blogger.id,
+      });
+      return;
+    }
+
+    // Проверяем, был ли это правый клик или клик с модификаторами
+    const isRightClick = event.button === 2;
+    const isModifierClick = event.ctrlKey || event.metaKey || event.shiftKey;
+    
+    if (isRightClick || isModifierClick) {
+      // Открываем в новой вкладке
+      window.open(url, '_blank');
+    } else {
+      // Обычная навигация в той же вкладке
+      navigate(url);
+    }
+  };
 
   // Intersection Observer для автоматической подгрузки
   useEffect(() => {
@@ -64,14 +96,16 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
       },
     );
 
+    // Наблюдаем за обоими элементами (десктоп и мобильная версия)
     if (loadMoreRef.current) {
       observer.observe(loadMoreRef.current);
     }
+    if (mobileLoadMoreRef.current) {
+      observer.observe(mobileLoadMoreRef.current);
+    }
 
     return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
-      }
+      observer.disconnect();
     };
   }, [hasMore, isLoadingMore, onLoadMore]);
 
@@ -84,25 +118,17 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
       <Card 
         key={blogger.id} 
         className="mb-4 cursor-pointer hover:bg-muted/50 transition-colors"
-        onClick={() => {
-          // Используем username из социальных аккаунтов для навигации
-          const mainSocial = blogger.social.find(
-            (s) => s.type === "INSTAGRAM",
-          );
-          const username = mainSocial?.username;
-
-          if (username) {
-            navigate(`/admin/blogger/${username}/edit`);
-          } else {
-            logger.error(
-              "Username not found for blogger",
-              undefined,
-              {
-                component: "BloggersTable",
-                bloggerId: blogger.id,
-              },
-            );
+        onClick={(event) => handleBloggerClick(blogger, event)}
+        onMouseDown={(event) => {
+          // Предотвращаем стандартное поведение правого клика
+          if (event.button === 2) {
+            event.preventDefault();
           }
+        }}
+        onContextMenu={(event) => {
+          // Предотвращаем стандартное контекстное меню
+          event.preventDefault();
+          handleBloggerClick(blogger, event);
         }}
       >
         <CardContent className="p-4">
@@ -222,25 +248,17 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                     <TableRow
                       key={blogger.id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => {
-                        // Используем username из социальных аккаунтов для навигации
-                        const mainSocial = blogger.social.find(
-                          (s) => s.type === "INSTAGRAM",
-                        );
-                        const username = mainSocial?.username;
-
-                        if (username) {
-                          navigate(`/admin/blogger/${username}/edit`);
-                        } else {
-                          logger.error(
-                            "Username not found for blogger",
-                            undefined,
-                            {
-                              component: "BloggersTable",
-                              bloggerId: blogger.id,
-                            },
-                          );
+                      onClick={(event) => handleBloggerClick(blogger, event)}
+                      onMouseDown={(event) => {
+                        // Предотвращаем стандартное поведение правого клика
+                        if (event.button === 2) {
+                          event.preventDefault();
                         }
+                      }}
+                      onContextMenu={(event) => {
+                        // Предотвращаем стандартное контекстное меню
+                        event.preventDefault();
+                        handleBloggerClick(blogger, event);
                       }}
                     >
                       <TableCell className="font-medium">
@@ -345,7 +363,7 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
 
           {/* Load More Indicator for Mobile */}
           {hasMore && (
-            <div ref={loadMoreRef} className="flex justify-center mt-4 py-4">
+            <div ref={mobileLoadMoreRef} className="flex justify-center mt-4 py-4">
               {isLoadingMore ? (
                 <div className="flex items-center space-x-2 text-muted-foreground">
                   <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />

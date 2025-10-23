@@ -23,6 +23,18 @@ import type {
   BloggerUpdateProfileInputDto,
   BloggerUpdateSocialPriceInputDto,
   ApiSocialType,
+  AdminBloggerWithGender,
+  PublicGetBloggerByIdOutputDto,
+  // Parser Accounts types
+  IgClientSessionsOutputDto,
+  IgClientLoginInputDto,
+  IgClientLoginOutputDto,
+  TgClientLoginInputDto,
+  TgClientLoginOutputDto,
+  TgClientConfirmInputDto,
+  TgClientConfirmOutputDto,
+  GetIgSessionsParams,
+  IgSessionsResponse,
 } from "../types";
 
 // ====== POST /auth/admin/login - Логин админа ======
@@ -702,5 +714,344 @@ export async function adminUploadBloggerStats(
     method: "PUT",
     body: formData,
     headers: {}, // Убираем Content-Type, браузер сам установит для FormData
+  });
+}
+
+/**
+ * Получение информации о поле блогера через публичный API
+ * GET /blogger/public/{bloggerId}
+ *
+ * @param bloggerId - ID блогера
+ * @returns Promise с информацией о поле блогера
+ *
+ * @throws APIError 404 - Blogger not found
+ *
+ * @note Использует публичный API для получения информации о поле
+ * @note Требует Authorization header с admin token для скрытых блогеров
+ *
+ * @example
+ * ```typescript
+ * const bloggerInfo = await adminGetBloggerGenderInfo(123);
+ * console.log(bloggerInfo.genderType); // "MALE" | "FEMALE" | "COUPLE" | "PUBLIC_PAGE" | null
+ * ```
+ */
+export async function adminGetBloggerGenderInfo(
+  bloggerId: number,
+): Promise<Pick<PublicGetBloggerByIdOutputDto, 'id' | 'genderType'>> {
+  return apiRequest<Pick<PublicGetBloggerByIdOutputDto, 'id' | 'genderType'>>(
+    `/blogger/public/${bloggerId}`,
+    {
+      method: "GET",
+    },
+  );
+}
+
+/**
+ * Обогащение списка блогеров информацией о поле
+ * 
+ * @param bloggers - Список блогеров из админского API
+ * @returns Promise с обогащенным списком блогеров
+ *
+ * @example
+ * ```typescript
+ * const enrichedBloggers = await adminEnrichBloggersWithGender(bloggers);
+ * ```
+ */
+export async function adminEnrichBloggersWithGender(
+  bloggers: AdminGetBloggersResponse['items']
+): Promise<AdminBloggerWithGender[]> {
+  const enrichedBloggers: AdminBloggerWithGender[] = [];
+  
+  // Обрабатываем блогеров параллельно, но с ограничением
+  const batchSize = 5; // Обрабатываем по 5 блогеров одновременно
+  for (let i = 0; i < bloggers.length; i += batchSize) {
+    const batch = bloggers.slice(i, i + batchSize);
+    
+    const batchPromises = batch.map(async (blogger) => {
+      try {
+        const genderInfo = await adminGetBloggerGenderInfo(blogger.id);
+        return {
+          ...blogger,
+          genderType: genderInfo.genderType,
+        } as AdminBloggerWithGender;
+      } catch (error) {
+        // Если не удалось получить информацию о поле, используем null
+        console.warn(`Failed to get gender info for blogger ${blogger.id}:`, error);
+        return {
+          ...blogger,
+          genderType: null,
+        } as AdminBloggerWithGender;
+      }
+    });
+    
+    const batchResults = await Promise.all(batchPromises);
+    enrichedBloggers.push(...batchResults);
+  }
+  
+  return enrichedBloggers;
+}
+
+/**
+ * Загрузка блогеров без пола с пагинацией и кэшированием
+ * 
+ * @param page - Номер страницы для загрузки
+ * @param size - Размер страницы
+ * @param cachedPages - Кэш уже обработанных страниц
+ * @returns Promise с блогерами без пола
+ *
+ * @example
+ * ```typescript
+ * const bloggersWithoutGender = await adminGetBloggersWithoutGender(1, 50, new Map());
+ * ```
+ */
+export async function adminGetBloggersWithoutGender(
+  page: number = 1,
+  size: number = 50,
+  cachedPages: Map<number, AdminBloggerWithGender[]> = new Map()
+): Promise<{
+  bloggers: AdminBloggerWithGender[];
+  hasMore: boolean;
+  totalCount: number;
+  cachedPages: Map<number, AdminBloggerWithGender[]>;
+}> {
+  const bloggersWithoutGender: AdminBloggerWithGender[] = [];
+  let currentPage = page;
+  let hasMore = true;
+  const maxPages = 20; // Ограничиваем количество страниц для безопасности
+  
+  // Собираем блогеров из кэша
+  for (let i = 1; i < page; i++) {
+    const cachedBloggers = cachedPages.get(i);
+    if (cachedBloggers) {
+      // Дополнительно фильтруем кэшированных блогеров
+      const filteredCachedBloggers = cachedBloggers.filter(blogger => 
+        !blogger.genderType || blogger.genderType === null
+      );
+      bloggersWithoutGender.push(...filteredCachedBloggers);
+    }
+  }
+  
+  // Загружаем новые страницы
+  while (hasMore && currentPage <= maxPages) {
+    // Проверяем, есть ли уже эта страница в кэше
+    if (cachedPages.has(currentPage)) {
+      const cachedBloggers = cachedPages.get(currentPage)!;
+      // Дополнительно фильтруем кэшированных блогеров
+      const filteredCachedBloggers = cachedBloggers.filter(blogger => 
+        !blogger.genderType || blogger.genderType === null
+      );
+      bloggersWithoutGender.push(...filteredCachedBloggers);
+      currentPage++;
+      continue;
+    }
+    
+    // Загружаем страницу блогеров через админский API
+    const bloggersResponse = await adminGetBloggers({
+      page: currentPage,
+      size: size,
+      sortDirection: "desc",
+      sortField: "createdAt",
+    });
+    
+    if (bloggersResponse.items.length === 0) {
+      hasMore = false;
+      break;
+    }
+    
+    // Обогащаем блогеров информацией о поле
+    const enrichedBloggers = await adminEnrichBloggersWithGender(bloggersResponse.items);
+    
+    // Фильтруем только блогеров без пола
+    const bloggersWithoutGenderInBatch = enrichedBloggers.filter(
+      blogger => !blogger.genderType || blogger.genderType === null
+    );
+    
+    // Сохраняем в кэш
+    cachedPages.set(currentPage, bloggersWithoutGenderInBatch);
+    bloggersWithoutGender.push(...bloggersWithoutGenderInBatch);
+    
+    // Если получили меньше блогеров чем запрашивали, значит это последняя страница
+    if (bloggersResponse.items.length < size) {
+      hasMore = false;
+    }
+    
+    // Если набрали достаточно блогеров без пола, останавливаемся
+    if (bloggersWithoutGender.length >= size) {
+      hasMore = false;
+    }
+    
+    currentPage++;
+  }
+  
+  return {
+    bloggers: bloggersWithoutGender.slice(0, size), // Возвращаем только нужное количество
+    hasMore: hasMore && currentPage <= maxPages,
+    totalCount: bloggersWithoutGender.length,
+    cachedPages,
+  };
+}
+
+// ====== PARSER ACCOUNTS MANAGEMENT ======
+
+/**
+ * Получение списка Instagram сессий
+ * GET /ig-client
+ *
+ * @param params - параметры пагинации и фильтрации
+ * @returns Promise с пагинированным списком Instagram сессий
+ *
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ *
+ * @example
+ * ```typescript
+ * const sessions = await getIgSessions({
+ *   page: 1,
+ *   size: 20,
+ *   isAuthorized: true
+ * });
+ * ```
+ */
+export async function getIgSessions(
+  params: GetIgSessionsParams = {},
+): Promise<IgSessionsResponse> {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      query.append(key, String(value));
+    }
+  });
+
+  return apiRequest<IgSessionsResponse>(`/ig-client?${query}`);
+}
+
+/**
+ * Добавление нового Instagram аккаунта для парсинга
+ * POST /ig-client/login
+ *
+ * @param username - Instagram username
+ * @param password - Instagram password
+ * @returns Promise с результатом логина
+ *
+ * @throws APIError 400 - Incorrect input data или can not load ig session
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ *
+ * @example
+ * ```typescript
+ * const result = await loginIgAccount('username', 'password');
+ * ```
+ */
+export async function loginIgAccount(
+  username: string,
+  password: string,
+): Promise<IgClientLoginOutputDto> {
+  const data: IgClientLoginInputDto = { username, password };
+
+  return apiRequest<IgClientLoginOutputDto>("/ig-client/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Удаление Instagram сессии
+ * DELETE /ig-client/{sessionId}
+ *
+ * @param sessionId - ID сессии для удаления
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Session not found
+ *
+ * @example
+ * ```typescript
+ * await deleteIgSession(123);
+ * ```
+ */
+export async function deleteIgSession(sessionId: number): Promise<void> {
+  return apiRequest<void>(`/ig-client/${sessionId}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Выход из Instagram сессии
+ * POST /ig-client/logout/{sessionId}
+ *
+ * @param sessionId - ID сессии для выхода
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Session not found
+ *
+ * @example
+ * ```typescript
+ * await logoutIgSession(123);
+ * ```
+ */
+export async function logoutIgSession(sessionId: number): Promise<void> {
+  return apiRequest<void>(`/ig-client/logout/${sessionId}`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Начало процесса логина Telegram аккаунта
+ * POST /tg-client/login
+ *
+ * @param phone - номер телефона
+ * @param apiHash - API hash из Telegram
+ * @param apiId - API ID из Telegram
+ * @returns Promise с результатом логина (требует подтверждения кода)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ *
+ * @example
+ * ```typescript
+ * const result = await loginTgAccount('+1234567890', 'hash', 12345);
+ * ```
+ */
+export async function loginTgAccount(
+  phone: string,
+  apiHash: string,
+  apiId: number,
+): Promise<TgClientLoginOutputDto> {
+  const data: TgClientLoginInputDto = { phone, apiHash, apiId };
+
+  return apiRequest<TgClientLoginOutputDto>("/tg-client/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Подтверждение логина Telegram аккаунта кодом из SMS
+ * POST /tg-client/confirm
+ *
+ * @param phone - номер телефона
+ * @param code - код подтверждения из SMS
+ * @returns Promise с результатом подтверждения
+ *
+ * @throws APIError 400 - Incorrect input data или can not confirm and login telegram account
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Session for telegram account not found
+ *
+ * @example
+ * ```typescript
+ * const result = await confirmTgLogin('+1234567890', '12345');
+ * ```
+ */
+export async function confirmTgLogin(
+  phone: string,
+  code: string,
+): Promise<TgClientConfirmOutputDto> {
+  const data: TgClientConfirmInputDto = { phone, code };
+
+  return apiRequest<TgClientConfirmOutputDto>("/tg-client/confirm", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }
