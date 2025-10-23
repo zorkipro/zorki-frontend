@@ -445,6 +445,11 @@ export interface AdminGetBloggerOutputDto {
   updatedAt: string | null; // ISO string
 }
 
+// Расширенный тип для админки с информацией о поле
+export interface AdminBloggerWithGender extends AdminGetBloggerOutputDto {
+  genderType: ApiGender | null; // Получено через публичный API
+}
+
 // GET /admin/blogger/stats - Response
 export interface AdminGetBloggersStatsOutputDto {
   totalBloggersCount: number;
@@ -795,3 +800,89 @@ export const formatGenderType = (gender: ApiGender): string => {
 
   return labels[gender] || gender;
 };
+
+// ====== PARSER ACCOUNTS MANAGEMENT ======
+
+export type ParserPlatform = 'INSTAGRAM' | 'TELEGRAM' | 'YOUTUBE' | 'TIKTOK';
+
+// Instagram Session (из swagger)
+export interface IgClientSessionsOutputDto {
+  id: number;
+  username: string;
+  isAuthorized: boolean;
+  requests: number | null; // Может быть null если запросы не отслеживаются
+  lastReset: string | null; // ISO date string, может быть null
+  createdAt: string; // ISO date string
+}
+
+// Instagram Login Input (из swagger)
+export interface IgClientLoginInputDto {
+  username: string;
+  password: string;
+}
+
+// Instagram Login Output (из swagger)
+export interface IgClientLoginOutputDto {
+  isAuthorized: boolean;
+  isVerify: boolean;
+}
+
+// Telegram Login Input (из swagger)
+export interface TgClientLoginInputDto {
+  phone: string;
+  apiHash: string;
+  apiId: number;
+}
+
+// Telegram Login Output (из swagger)
+export interface TgClientLoginOutputDto {
+  isAuthorized: boolean;
+  isVerify: boolean;
+}
+
+// Telegram Confirm Input (из swagger)
+export interface TgClientConfirmInputDto {
+  phone: string;
+  code: string;
+}
+
+// Telegram Confirm Output (из swagger)
+export interface TgClientConfirmOutputDto {
+  isAuthorized: boolean;
+  isVerify: boolean;
+}
+
+// Telegram Session (для будущего API - пока не реализован)
+export interface TgClientSessionsOutputDto {
+  id: number;
+  phone: string;
+  isAuthorized: boolean;
+  createdAt: string; // ISO date string
+}
+
+// Общий тип для UI компонентов
+export interface ParserAccount {
+  id: number;
+  platform: ParserPlatform;
+  identifier: string; // username для IG, phone для TG
+  isAuthorized: boolean;
+  createdAt: string;
+  // Дополнительные поля для Instagram
+  requests?: number | null;
+  lastReset?: string | null;
+}
+
+// Типы для запросов к API
+export interface GetIgSessionsParams {
+  page?: number;
+  size?: number;
+  isAuthorized?: boolean;
+}
+
+export interface IgSessionsResponse {
+  totalCount: number;
+  pagesCount: number;
+  page: number;
+  size: number;
+  items: IgClientSessionsOutputDto[];
+}

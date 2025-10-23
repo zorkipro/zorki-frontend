@@ -5,12 +5,14 @@ import { useAdminBloggerActions } from "@/hooks/admin/useAdminBloggerActions";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Button } from "@/ui-kit";
 import { Input } from "@/ui-kit";
+import { Checkbox } from "@/ui-kit";
 import { Star, LogOut, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/ui-kit/components";
 import { StatsCards } from "@/components/admin/StatsCards";
 import { AdminLinkRequestsTable } from "@/components/admin/AdminLinkRequestsTable";
 import { BloggersTable } from "@/components/admin/BloggersTable";
+import { GenderSelectionTable } from "@/components/admin/GenderSelectionTable";
 import { AddBloggerDialog } from "@/components/admin/AddBloggerDialog";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { TopicsManagementDialog } from "@/components/admin/TopicsManagementDialog";
@@ -30,6 +32,7 @@ const AdminDashboard = () => {
 
   const {
     allBloggers,
+    bloggersWithoutGender,
     linkRequests,
     loading,
     searchLoading,
@@ -39,11 +42,20 @@ const AdminDashboard = () => {
     stats,
     searchTerm,
     setSearchTerm,
+    showHidden,
+    setShowHidden,
     fetchBloggers,
     loadMoreBloggers,
     approveRequest,
     rejectRequest,
     updateBloggerVisibility,
+    updateBloggerGenderLocally,
+    fetchBloggersWithoutGender,
+    loadMoreGenderBloggers,
+    loadingGenderBloggers,
+    hasMoreGenderBloggers,
+    totalGenderBloggersCount,
+    clearGenderCache,
     isProcessing,
     error,
   } = useAdminBloggers();
@@ -53,6 +65,13 @@ const AdminDashboard = () => {
     // Обновляем список блогеров после добавления
     fetchBloggers(1);
   });
+
+  // Загружаем первую пачку блогеров без пола при переходе на вкладку "Выбор пола"
+  useEffect(() => {
+    if (activeTab === "gender-selection" && bloggersWithoutGender.length === 0 && !loadingGenderBloggers) {
+      fetchBloggersWithoutGender(1, false);
+    }
+  }, [activeTab, bloggersWithoutGender.length, loadingGenderBloggers, fetchBloggersWithoutGender]);
 
   // Поиск теперь обрабатывается на сервере через API
   const filteredBloggers = allBloggers;
@@ -130,15 +149,35 @@ const AdminDashboard = () => {
 
         {/* Controls */}
         <div className="space-y-4 mb-6">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск по имени или username..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          {/* Search and Filters */}
+          <div className="flex gap-4 items-center">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по имени или username..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Show Hidden Checkbox */}
+            {activeTab === "bloggers" && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="show-hidden"
+                  checked={showHidden}
+                  onCheckedChange={(checked) => setShowHidden(!!checked)}
+                />
+                <label
+                  htmlFor="show-hidden"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Показывать скрытых
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Tabs and Add Blogger Button */}
@@ -150,6 +189,13 @@ const AdminDashboard = () => {
                 size="sm"
               >
                 Все блогеры
+              </Button>
+              <Button
+                variant={activeTab === "gender-selection" ? "default" : "outline"}
+                onClick={() => setActiveTab("gender-selection")}
+                size="sm"
+              >
+                Выбор пола
               </Button>
               <Button
                 variant={activeTab === "link-requests" ? "default" : "outline"}
@@ -170,6 +216,8 @@ const AdminDashboard = () => {
           <div className="text-sm text-muted-foreground">
             {activeTab === "link-requests"
               ? "Показаны запросы на связывание блогеров с клиентами. При одобрении запроса блогер автоматически становится верифицированным."
+              : activeTab === "gender-selection"
+              ? "Быстрый выбор пола для блогеров без указанного пола. Нажмите на кнопку с нужным полом для обновления."
               : ""}
           </div>
         </div>
@@ -182,13 +230,23 @@ const AdminDashboard = () => {
             formatNumber={formatNumber}
             searchLoading={searchLoading}
             isLoadingMore={isLoadingMore}
-            hasMore={hasMoreBloggers && !searchTerm}
+            hasMore={hasMoreBloggers}
             onLoadMore={loadMoreBloggers}
             totalCount={
               searchTerm ? filteredBloggers.length : totalBloggersCount
             }
           />
-        ) : (
+       ) : activeTab === "gender-selection" ? (
+         <GenderSelectionTable
+           bloggers={bloggersWithoutGender}
+           onBloggerGenderUpdated={updateBloggerGenderLocally}
+           loading={loadingGenderBloggers}
+           hasMore={hasMoreGenderBloggers}
+           onLoadMore={loadMoreGenderBloggers}
+           totalCount={totalGenderBloggersCount}
+           onClearCache={clearGenderCache}
+         />
+       ) : (
           <AdminLinkRequestsTable
             requests={filteredLinkRequests}
             loading={loading}

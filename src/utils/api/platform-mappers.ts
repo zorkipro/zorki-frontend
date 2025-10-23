@@ -19,7 +19,7 @@ import { parseBigInt, parseDecimal } from "./common-mappers";
  * @param username - username канала (например, Ivleeva)
  * @returns полный URL канала
  */
-function convertYouTubeIdToUrl(externalId: string, username?: string): string {
+export function convertYouTubeIdToUrl(externalId: string, username?: string): string {
   // Если externalId null или undefined, обрабатываем как пустую строку
   const safeExternalId = externalId || "";
   
@@ -82,6 +82,9 @@ export function mapSinglePlatform(
     storyReach: parseBigInt(social.coverage), // Охват сторис
     storyPrice: parseDecimal(price.storiesPrice),
     screenshots: [], // В list response нет скриншотов
+    ...(social.type === 'YOUTUBE' && {
+      views: parseBigInt(social.postCoverage),
+    }),
   };
 }
 
@@ -136,6 +139,9 @@ export function mapMultiplePlatforms(
         storyReach: parseBigInt(social.coverage), // ✅ Исправлено: охват сториз
         storyPrice: parseDecimal(priceData.storiesPrice),
         screenshots, // Добавляем скриншоты
+        ...(social.type === 'YOUTUBE' && {
+          views: parseBigInt(social.postCoverage),
+        }),
       };
     }
   });

@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Button } from "@/ui-kit";
-import { LogOut, User, Calendar, Settings } from "lucide-react";
+import { LogOut, User, Calendar, Settings, Database } from "lucide-react";
 
 interface AdminHeaderProps {
   onOpenTopicsManagement?: () => void;
@@ -11,6 +12,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   onOpenTopicsManagement,
 }) => {
   const { adminInfo, adminSignOut } = useAdminAuth();
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
   if (!adminInfo) {
@@ -29,17 +31,32 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     <div className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold text-gray-900">Админ панель</h1>
-          {onOpenTopicsManagement && (
+          <h1 
+            className="text-2xl font-bold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => navigate("/admin")}
+          >
+            Админ панель
+          </h1>
+          <div className="flex items-center space-x-2">
+            {onOpenTopicsManagement && (
+              <Button
+                variant="outline"
+                onClick={onOpenTopicsManagement}
+                className="flex items-center space-x-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Управление топиками</span>
+              </Button>
+            )}
             <Button
               variant="outline"
-              onClick={onOpenTopicsManagement}
+              onClick={() => navigate("/admin/parser-accounts")}
               className="flex items-center space-x-2"
             >
-              <Settings className="w-4 h-4" />
-              <span>Управление топиками</span>
+              <Database className="w-4 h-4" />
+              <span>Аккаунты парсера</span>
             </Button>
-          )}
+          </div>
         </div>
 
         <div className="relative">

@@ -164,6 +164,7 @@ export interface PlatformData {
   views?: number;
   screenshots?: Screenshot[]; // Добавляем скриншоты
   isPending?: boolean; // Флаг "на модерации" для новых платформ
+  isLoading?: boolean; // НОВОЕ: индикатор загрузки при перепривязке
 }
 
 // Form validation errors

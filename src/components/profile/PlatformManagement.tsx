@@ -34,6 +34,8 @@ import {
   getPlatformUrlExamples,
   getPlatformHints 
 } from "@/utils/platformUrlParsers";
+import { getBloggerById } from "@/api/endpoints/blogger";
+import { convertYouTubeIdToUrl } from "@/utils/api/platform-mappers";
 
 interface Platform {
   id: string;
@@ -46,6 +48,7 @@ interface PlatformManagementProps {
   onPlatformsChange: (platforms: Record<string, PlatformData>) => void;
   hasMaxPlatforms?: boolean;
   bloggerId?: number; // ID блогера для API запросов
+  onPlatformUpdated?: (platformId: string) => void; // НОВОЕ: callback для переключения таба
 }
 
 const PlatformManagementComponent = ({
@@ -53,6 +56,7 @@ const PlatformManagementComponent = ({
   onPlatformsChange,
   hasMaxPlatforms = false,
   bloggerId,
+  onPlatformUpdated,
 }: PlatformManagementProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -146,6 +150,73 @@ const PlatformManagementComponent = ({
     }
   }, [newPlatform, platforms, onPlatformsChange, bloggerId, requestTgLink, requestYtLink]);
 
+  /**
+   * Функция для периодической проверки статуса парсинга платформы
+   */
+  const pollPlatformData = useCallback(async (
+    bloggerId: number, 
+    platformType: string,
+    maxAttempts: number = 60, // 60 попыток * 5 сек = 5 минут максимум
+    interval: number = 5000 // Проверяем каждые 5 секунд
+  ): Promise<void> => {
+    let attempts = 0;
+    
+    return new Promise((resolve, reject) => {
+      const poll = setInterval(async () => {
+        attempts++;
+        
+        try {
+          // Запрашиваем обновленные данные блогера
+          const detailedBlogger = await getBloggerById(bloggerId);
+          
+          // Ищем платформу в обновленных данных
+          const updatedPlatform = detailedBlogger.social?.find(
+            s => s.type.toLowerCase() === platformType
+          );
+          
+          if (updatedPlatform && updatedPlatform.subscribers && updatedPlatform.subscribers !== "0") {
+            // Парсинг завершен - обновляем данные платформы
+            clearInterval(poll);
+            
+            const platformsData: Record<string, PlatformData> = {};
+            detailedBlogger.social?.forEach((social) => {
+              const pName = social.type.toLowerCase();
+              platformsData[pName] = {
+                username: social.username || "",
+                profile_url: social.type === 'YOUTUBE' 
+                  ? convertYouTubeIdToUrl(social.externalId || "", social.username)
+                  : social.externalId || "",
+                subscribers: parseInt(social.subscribers || "0"),
+                er: social.er || 0,
+                reach: parseInt(social.postCoverage || "0"),
+                price: social.type === 'YOUTUBE' 
+                  ? parseFloat(detailedBlogger.price.find((p) => p.type === social.type)?.integrationPrice || "0")
+                  : parseFloat(detailedBlogger.price.find((p) => p.type === social.type)?.postPrice || "0"),
+                storyReach: parseInt(social.coverage || "0"),
+                storyPrice: parseFloat(detailedBlogger.price.find((p) => p.type === social.type)?.storiesPrice || "0"),
+                isLoading: false,
+                ...(pName === "youtube" && {
+                  views: parseInt(social.postCoverage || "0"),
+                }),
+              };
+            });
+            
+            onPlatformsChange(platformsData);
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            // Превышено максимальное количество попыток
+            clearInterval(poll);
+            reject(new Error("Превышено время ожидания парсинга. Попробуйте обновить страницу позже."));
+          }
+          // Иначе продолжаем ждать
+        } catch (error) {
+          clearInterval(poll);
+          reject(error);
+        }
+      }, interval);
+    });
+  }, [onPlatformsChange]);
+
   const handleEditPlatform = useCallback(
     (platformId: string) => {
       setEditingPlatform(platformId);
@@ -158,20 +229,65 @@ const PlatformManagementComponent = ({
     [platforms],
   );
 
-  const handleUpdatePlatform = useCallback(() => {
-    if (editingPlatform && newPlatform.url) {
+  const handleUpdatePlatform = useCallback(async () => {
+    if (!editingPlatform || !newPlatform.url || !bloggerId) return;
+    
+    const platformType = editingPlatform.toLowerCase();
+    
+    // Валидация URL
+    if (!validatePlatformUrl(newPlatform.url, platformType as 'telegram' | 'youtube')) {
+      setUrlError(`Неверный формат URL для ${getPlatformName(platformType)}`);
+      return;
+    }
+    
+    setUrlError(null);
+    
+    try {
+      // 1. Показываем лоадер вместо данных платформы
       onPlatformsChange({
         ...platforms,
-        [editingPlatform]: {
-          ...platforms[editingPlatform],
+        [platformType]: {
+          ...platforms[platformType],
           profile_url: newPlatform.url,
+          isLoading: true, // Новый флаг для отображения лоадера
         },
       });
+      
+      // 2. Отправляем запрос на перепривязку
+      if (platformType === 'telegram') {
+        const username = extractTelegramUsername(newPlatform.url);
+        await requestTgLink(bloggerId, { username });
+      } else if (platformType === 'youtube') {
+        const channel = extractYoutubeChannel(newPlatform.url);
+        await requestYtLink(bloggerId, { channel });
+      }
+      
+      // 3. Ждем завершения парсинга через polling
+      await pollPlatformData(bloggerId, platformType);
+      
+      // 4. Закрываем диалог и очищаем форму
       setEditingPlatform(null);
       setNewPlatform({ name: "", url: "" });
       setIsDialogOpen(false);
+      
+      // 5. Переключаем на таб платформы
+      if (onPlatformUpdated) {
+        onPlatformUpdated(platformType);
+      }
+      
+    } catch (error) {
+      // Откатываем изменения при ошибке
+      onPlatformsChange({
+        ...platforms,
+        [platformType]: {
+          ...platforms[platformType],
+          isLoading: false,
+        },
+      });
+      
+      setUrlError(error instanceof Error ? error.message : "Ошибка обновления платформы");
     }
-  }, [editingPlatform, newPlatform, platforms, onPlatformsChange]);
+  }, [editingPlatform, newPlatform, platforms, onPlatformsChange, bloggerId, requestTgLink, requestYtLink, pollPlatformData, onPlatformUpdated]);
 
   const handleDeletePlatform = useCallback(
     (platformId: string) => {
@@ -308,16 +424,24 @@ const PlatformManagementComponent = ({
                     apiLoading ||
                     !newPlatform.url || 
                     (!editingPlatform && !newPlatform.name) ||
-                    !!urlError
+                    !!urlError ||
+                    platforms[editingPlatform || ""]?.isLoading // НОВОЕ: блокируем если идет парсинг
                   }
                 >
-                  {apiLoading 
-                    ? "Добавление..." 
-                    : editingPlatform 
-                      ? "Сохранить" 
-                      : "Добавить"
+                  {platforms[editingPlatform || ""]?.isLoading
+                    ? "Парсинг данных..." 
+                    : apiLoading 
+                      ? editingPlatform ? "Обновление..." : "Добавление..."
+                      : editingPlatform 
+                        ? "Сохранить" 
+                        : "Добавить"
                   }
                 </Button>
+                {platforms[editingPlatform || ""]?.isLoading && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Парсинг данных может занять несколько минут. Пожалуйста, не закрывайте окно.
+                  </p>
+                )}
               </div>
             </div>
           </DialogContent>

@@ -285,7 +285,7 @@ const AdminLinkRequestsTableComponent = ({
         <TableCell>
           <div className="flex items-center space-x-3">
             <SafeAvatar
-              src={request.social?.avatar || null}
+              src={request.social_accounts?.[0]?.avatarUrl || null}
               alt={`Аватар ${request.name}`}
               className="w-10 h-10 aspect-square"
               username={request.username}
@@ -350,7 +350,7 @@ const AdminLinkRequestsTableComponent = ({
       >
         <div className="flex items-start space-x-3 mb-3">
           <SafeAvatar
-            src={request.social?.avatar || null}
+            src={request.social_accounts?.[0]?.avatarUrl || null}
             alt={`Аватар ${request.name}`}
             className="w-12 h-12 flex-shrink-0 aspect-square"
             username={request.username}

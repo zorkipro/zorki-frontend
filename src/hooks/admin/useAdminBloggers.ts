@@ -11,12 +11,16 @@ import {
   rejectLinkRequest,
   adminGetBloggers,
   adminGetBloggersStats,
+  adminEnrichBloggersWithGender,
+  adminGetBloggersWithoutGender,
 } from "../../api/endpoints/admin";
 import type {
   AdminGetLinkBloggerClientRequestOutputDto,
   LinkRequestStatus,
   AdminGetBloggerOutputDto,
   AdminGetBloggersStatsOutputDto,
+  AdminBloggerWithGender,
+  ApiGender,
 } from "../../api/types";
 
 interface BloggerStats {
@@ -36,9 +40,15 @@ interface GetLinkRequestsParams {
 
 export const useAdminBloggers = () => {
   const { toast } = useToast();
-  const [allBloggers, setAllBloggers] = useState<AdminGetBloggerOutputDto[]>(
+  const [allBloggers, setAllBloggers] = useState<AdminBloggerWithGender[]>(
     [],
   );
+  const [bloggersWithoutGender, setBloggersWithoutGender] = useState<AdminBloggerWithGender[]>([]);
+  const [loadingGenderBloggers, setLoadingGenderBloggers] = useState(false);
+  const [genderBloggersPage, setGenderBloggersPage] = useState(1);
+  const [hasMoreGenderBloggers, setHasMoreGenderBloggers] = useState(true);
+  const [totalGenderBloggersCount, setTotalGenderBloggersCount] = useState(0);
+  const [genderPagesCache, setGenderPagesCache] = useState<Map<number, AdminBloggerWithGender[]>>(new Map());
   const [linkRequests, setLinkRequests] = useState<
     AdminGetLinkBloggerClientRequestOutputDto[]
   >([]);
@@ -51,6 +61,7 @@ export const useAdminBloggers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalBloggersCount, setTotalBloggersCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showHidden, setShowHidden] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms задержка
   const [stats, setStats] = useState<AdminGetBloggersStatsOutputDto>({
     totalBloggersCount: 0,
@@ -90,11 +101,14 @@ export const useAdminBloggers = () => {
           username: debouncedSearchTerm || undefined, // Используем debounced поиск
         });
 
+        // 1.5. Обогащаем блогеров информацией о поле
+        const enrichedBloggers = await adminEnrichBloggersWithGender(bloggersResponse.items);
+
         // Обновляем состояние блогеров
         if (page === 1) {
-          setAllBloggers(bloggersResponse.items);
+          setAllBloggers(enrichedBloggers);
         } else {
-          setAllBloggers((prev) => [...prev, ...bloggersResponse.items]);
+          setAllBloggers((prev) => [...prev, ...enrichedBloggers]);
         }
 
         // Обновляем информацию о пагинации
@@ -292,8 +306,95 @@ export const useAdminBloggers = () => {
     [],
   );
 
+  // Фильтруем блогеров в зависимости от настройки показа скрытых
+  const filteredBloggers = showHidden 
+    ? allBloggers 
+    : allBloggers.filter(blogger => !blogger.isHidden);
+
+  // Локальное обновление пола блогера без перезагрузки
+  const updateBloggerGenderLocally = useCallback((bloggerId: number, genderType: ApiGender) => {
+    setAllBloggers(prevBloggers => 
+      prevBloggers.map(blogger => 
+        blogger.id === bloggerId 
+          ? { ...blogger, genderType }
+          : blogger
+      )
+    );
+    
+    // Удаляем блогера из списка без пола
+    setBloggersWithoutGender(prevBloggers => 
+      prevBloggers.filter(blogger => blogger.id !== bloggerId)
+    );
+    
+    // Обновляем кэш - удаляем этого блогера из всех страниц в кэше
+    setGenderPagesCache(prevCache => {
+      const newCache = new Map(prevCache);
+      newCache.forEach((bloggers, pageNumber) => {
+        const updatedBloggers = bloggers.filter(blogger => blogger.id !== bloggerId);
+        newCache.set(pageNumber, updatedBloggers);
+      });
+      return newCache;
+    });
+    
+    // Уменьшаем общий счетчик
+    setTotalGenderBloggersCount(prev => Math.max(0, prev - 1));
+  }, []);
+
+  // Загрузка блогеров без пола
+  const fetchBloggersWithoutGender = useCallback(async (page: number = 1, append: boolean = false) => {
+    try {
+      setLoadingGenderBloggers(true);
+      
+      const result = await adminGetBloggersWithoutGender(page, 50, genderPagesCache);
+      
+      // Дополнительно фильтруем результат, чтобы исключить блогеров с уже выбранным полом
+      const filteredBloggers = result.bloggers.filter(blogger => 
+        !blogger.genderType || blogger.genderType === null
+      );
+      
+      if (append) {
+        setBloggersWithoutGender(prev => [...prev, ...filteredBloggers]);
+      } else {
+        setBloggersWithoutGender(filteredBloggers);
+      }
+      
+      setHasMoreGenderBloggers(result.hasMore);
+      setTotalGenderBloggersCount(result.totalCount);
+      setGenderBloggersPage(page);
+      
+      // Обновляем кэш
+      setGenderPagesCache(result.cachedPages);
+    } catch (error) {
+      console.error("Error fetching bloggers without gender:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить блогеров без пола",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingGenderBloggers(false);
+    }
+  }, [toast, genderPagesCache]);
+
+  // Загрузка следующей пачки блогеров без пола
+  const loadMoreGenderBloggers = useCallback(() => {
+    if (!loadingGenderBloggers && hasMoreGenderBloggers) {
+      fetchBloggersWithoutGender(genderBloggersPage + 1, true);
+    }
+  }, [loadingGenderBloggers, hasMoreGenderBloggers, genderBloggersPage, fetchBloggersWithoutGender]);
+
+  // Очистка кэша блогеров без пола (например, при обновлении данных)
+  const clearGenderCache = useCallback(() => {
+    setGenderPagesCache(new Map());
+    setBloggersWithoutGender([]);
+    setGenderBloggersPage(1);
+    setHasMoreGenderBloggers(true);
+    setTotalGenderBloggersCount(0);
+  }, []);
+
   return {
-    allBloggers,
+    allBloggers: filteredBloggers,
+    bloggersWithoutGender,
     linkRequests,
     loading,
     searchLoading,
@@ -303,6 +404,8 @@ export const useAdminBloggers = () => {
     stats,
     searchTerm,
     setSearchTerm,
+    showHidden,
+    setShowHidden,
     fetchBloggers,
     loadMoreBloggers,
     // Дополнительные функции для работы с запросами на связывание
@@ -310,6 +413,15 @@ export const useAdminBloggers = () => {
     rejectRequest,
     // Функция для обновления видимости блогера
     updateBloggerVisibility,
+    // Функция для локального обновления пола блогера
+    updateBloggerGenderLocally,
+    // Функции для работы с блогерами без пола
+    fetchBloggersWithoutGender,
+    loadMoreGenderBloggers,
+    loadingGenderBloggers,
+    hasMoreGenderBloggers,
+    totalGenderBloggersCount,
+    clearGenderCache,
     isProcessing,
     error,
   };

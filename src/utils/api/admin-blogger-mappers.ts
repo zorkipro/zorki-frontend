@@ -25,26 +25,26 @@ export function mapEditDataToProfileUpdate(
   const dto: BloggerUpdateProfileInputDto = {};
 
   // Базовые поля профиля
-  if (data.full_name) {
+  if (data.full_name && data.full_name.trim()) {
     const [firstName, ...lastNameParts] = data.full_name.trim().split(' ');
     dto.name = firstName;
     dto.lastName = lastNameParts.join(' ') || undefined;
   }
 
-  if (data.description !== undefined) {
+  if (data.description !== undefined && data.description.trim()) {
     dto.description = data.description;
   }
 
-  if (data.contact_link !== undefined) {
-    dto.contactLink = data.contact_link;
+  if (data.contact_link !== undefined && data.contact_link.trim()) {
+    dto.contactLink = data.contact_link.trim();
   }
 
   // Форматы работы и гендер
-  if (data.work_format) {
+  if (data.work_format && data.work_format.trim()) {
     dto.workFormat = mapWorkFormatToApi(data.work_format);
   }
 
-  if (data.gender_type) {
+  if (data.gender_type && data.gender_type.trim()) {
     dto.genderType = mapGenderToApi(data.gender_type);
   }
 
@@ -57,14 +57,11 @@ export function mapEditDataToProfileUpdate(
     dto.isMartRegistry = data.mart_registry;
   }
 
-  // Темы (требуются массивы ID)
-  if (data.topics !== undefined) {
-    dto.topics = data.topics;
-  }
-
-  if (data.banned_topics !== undefined) {
-    dto.restrictedTopics = data.banned_topics;
-  }
+  // Темы (обязательные поля согласно Swagger)
+  // Всегда отправляем массивы, даже если они пустые
+  // Фильтруем только числовые ID
+  dto.topics = (data.topics || []).filter((topic): topic is number => typeof topic === 'number');
+  dto.restrictedTopics = (data.banned_topics || []).filter((topic): topic is number => typeof topic === 'number');
 
   // Обработка охватов сторис (coverage)
   // Приоритет: Instagram > TikTok > YouTube > Telegram

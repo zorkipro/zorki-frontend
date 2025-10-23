@@ -88,7 +88,7 @@ export const BloggerProfileStats = ({
         />
         <StatsCard
           icon={<Eye className="w-6 h-6" />}
-          value={formatNumber(stats.reach)}
+          value={formatNumber(stats.views || 0)}
           label="Просмотров"
           color="text-warning"
         />

@@ -119,7 +119,7 @@ export const useProfileData = () => {
                   ?.storiesPrice || "0",
               ),
               ...(platformName === "youtube" && {
-                views: parseInt(social.totalViews || "0"),
+                views: parseInt(social.postCoverage || "0"),
               }),
             };
           });

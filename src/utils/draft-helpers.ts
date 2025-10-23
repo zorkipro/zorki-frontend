@@ -115,7 +115,7 @@ function mapGenderTypeFromApi(
       return "женщина";
     case "COUPLE":
       return "пара";
-    case "PUBLIC":
+    case "PUBLIC_PAGE":
       return "паблик";
     default:
       return "женщина";

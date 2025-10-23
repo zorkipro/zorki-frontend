@@ -127,8 +127,8 @@ export const useAdminBloggerEditor = (username?: string) => {
           description: profileData.description || '',
           avatar_url: bloggerDetails.social?.[0]?.avatar || '',
           contact_link: profileData.contactLink || '',
-          work_format: profileData.workFormat ? mapWorkFormatFromApi(profileData.workFormat) || '' : '',
-          gender_type: profileData.genderType ? mapGenderFromApi(profileData.genderType) || '' : '',
+          work_format: profileData.workFormat ? (mapWorkFormatFromApi(profileData.workFormat) || '') as "ИП" | "профдоход" | "договор подряда" | "ООО" | "" : '',
+          gender_type: profileData.genderType ? (mapGenderFromApi(profileData.genderType) || '') as "мужчина" | "женщина" | "пара" | "паблик" | "" : '',
           barter_available: profileData.isBarterAvailable || false,
           mart_registry: profileData.isMartRegistry || false,
           // Используем темы из черновиков или основных данных
@@ -254,7 +254,15 @@ export const useAdminBloggerEditor = (username?: string) => {
         // Сохраняем изменения профиля
         if (hasProfileChanges) {
           const profileDto = mapEditDataToProfileUpdate(data);
+          console.log('💾 Saving profile changes:', { 
+            originalData: data, 
+            mappedDto: profileDto,
+            dtoKeys: Object.keys(profileDto),
+            topicsLength: profileDto.topics?.length || 0,
+            restrictedTopicsLength: profileDto.restrictedTopics?.length || 0
+          });
           await adminUpdateBlogger(profile.id, profileDto);
+          console.log('✅ Profile updated successfully');
         }
 
         // Сохраняем изменения цен для каждой платформы

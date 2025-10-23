@@ -159,6 +159,7 @@ const PlatformProfileFormComponent = ({
                 onPlatformsChange={onAvailablePlatformsChange}
                 hasMaxPlatforms={hasMaxPlatforms}
                 bloggerId={bloggerId}
+                onPlatformUpdated={onActiveTabChange} // НОВОЕ: callback для переключения таба
               />
             )}
           </div>

@@ -4,6 +4,7 @@ import { LoadingSpinner } from "@/ui-kit/components";
 
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminBloggerEditor = lazy(() => import("@/pages/AdminBloggerEditor"));
+const ParserAccountsManagement = lazy(() => import("@/pages/ParserAccountsManagement"));
 
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..." />;
 
@@ -29,6 +30,14 @@ export const AdminRoutes = () => {
         element={
           <Suspense fallback={<PageLoader />}>
             <AdminBloggerEditor key={location.pathname} />
+          </Suspense>
+        }
+      />
+      <Route
+        path="parser-accounts"
+        element={
+          <Suspense fallback={<PageLoader />}>
+            <ParserAccountsManagement key={location.pathname} />
           </Suspense>
         }
       />
