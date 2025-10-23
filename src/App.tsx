@@ -1,97 +1,64 @@
-import {lazy} from "react";
-import {Route, Routes} from "react-router-dom";
-import {AdminRoutes} from "./components/AdminRoutes";
-// Loading component for lazy routes
-import {LoadingSpinner} from "@/ui-kit/components";
 import {AppLayout} from "@/components/layout/AppLayout.tsx";
-import {PrivateLayout} from "@/components/layout/PrivateLayout.tsx";
-import {AdminLayout} from "@/components/layout/AdminLayout.tsx";
+import {AppRoutes} from "@/routes";
 
-// Lazy load all page components
-const Index = lazy(() => import("./pages/Index"));
-const BloggerProfile = lazy(() =>
-    import("./pages/BloggerProfile").then((module) => ({
-        default: module.BloggerProfile,
-    })),
-);
-const ProfileEditor = lazy(() =>
-    import("./pages/ProfileEditor").then((module) => ({
-        default: module.ProfileEditor,
-    })),
-);
-const Dashboard = lazy(() =>
-    import("./pages/Dashboard").then((module) => ({default: module.Dashboard})),
-);
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Login = lazy(() =>
-    import("./pages/Login").then((module) => ({default: module.Login})),
-);
-const Register = lazy(() =>
-    import("./pages/Register").then((module) => ({default: module.Register})),
-);
-const ForgotPassword = lazy(() =>
-    import("./pages/ForgotPassword").then((module) => ({
-        default: module.ForgotPassword,
-    })),
-);
-const EmailConfirmation = lazy(() =>
-    import("./pages/EmailConfirmation").then((module) => ({
-        default: module.EmailConfirmation,
-    })),
-);
-const ProfileSetup = lazy(() =>
-    import("./pages/ProfileSetup").then((module) => ({
-        default: module.ProfileSetup,
-    })),
-);
-const DevTools = lazy(() =>
-    import("./pages/DevTools").then((module) => ({default: module.DevTools})),
-);
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-const AdminTwoFactor = lazy(() => import("./pages/AdminTwoFactor"));
-const AdminBloggerEditor = lazy(() => import("./pages/AdminBloggerEditor"));
-const TermsOfService = lazy(() => import("./pages/TermsOfService"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-
-const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..."/>;
 
 const App = () => (
     <AppLayout>
-        <Routes>
-            <Route path="/" element={<Index/>}/>
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/register" element={<Register/>}/>
-            <Route path="/forgot-password" element={<ForgotPassword/>}/>
-            <Route path="/email-confirmation" element={<EmailConfirmation/>}/>
-            <Route
-                path="/profile-setup"
-                element={<PrivateLayout><ProfileSetup/></PrivateLayout>}/>
-            <Route
-                path="/dashboard"
-                element={<PrivateLayout><Dashboard/></PrivateLayout>}/>
-            <Route
-                path="/profile/edit"
-                element={<PrivateLayout><ProfileEditor/></PrivateLayout>}/>
-            <Route path="/admin/login" element={<AdminLogin/>}/>
-            <Route path="/admin/2fa" element={<AdminTwoFactor/>}/>
-            <Route
-                path="/admin/*"
-                element={<AdminLayout><AdminRoutes/></AdminLayout>}/>
-            <Route path="/:username" element={<BloggerProfile/>}/>
-            <Route path="/dev-tools" element={<DevTools/>}/>
-            <Route path="/terms" element={<TermsOfService/>}/>
-            <Route path="/privacy" element={<PrivacyPolicy/>}/>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound/>}/>
-        </Routes>
+        <AppRoutes />
     </AppLayout>
 
 );
 
-
 export default App;
 
+//// Lazy load all page components
+// const Index = lazy(() => import("./pages/Index"));
+// const BloggerProfile = lazy(() =>
+//     import("./pages/profile/[username]/BloggerProfile.tsx").then((module) => ({
+//         default: module.BloggerProfile,
+//     })),
+// );
+// const ProfileEditor = lazy(() =>
+//     import("./pages/profile/ProfileEditor.tsx").then((module) => ({
+//         default: module.ProfileEditor,
+//     })),
+// );
+// const Dashboard = lazy(() =>
+//     import("./pages/dashboard/Dashboard.tsx").then((module) => ({default: module.Dashboard})),
+// );
+// const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+// const Login = lazy(() =>
+//     import("./pages/auth/Login.tsx").then((module) => ({default: module.Login})),
+// );
+// const Register = lazy(() =>
+//     import("./pages/auth/Register.tsx").then((module) => ({default: module.Register})),
+// );
+// const ForgotPassword = lazy(() =>
+//     import("./pages/auth/ForgotPassword.tsx").then((module) => ({
+//         default: module.ForgotPassword,
+//     })),
+// );
+// const EmailConfirmation = lazy(() =>
+//     import("./pages/auth/EmailConfirmation.tsx").then((module) => ({
+//         default: module.EmailConfirmation,
+//     })),
+// );
+// const ProfileSetup = lazy(() =>
+//     import("./pages/profile/ProfileSetup.tsx").then((module) => ({
+//         default: module.ProfileSetup,
+//     })),
+// );
+// const DevTools = lazy(() =>
+//     import("./pages/static/DevTools.tsx").then((module) => ({default: module.DevTools})),
+// );
+// const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.tsx"));
+// const AdminLogin = lazy(() => import("./pages/admin/AdminLogin.tsx"));
+// const AdminTwoFactor = lazy(() => import("./pages/admin/AdminTwoFactor.tsx"));
+// const AdminBloggerEditor = lazy(() => import("./pages/admin/blogger/[username]/AdminBloggerEditor.tsx"));
+// const TermsOfService = lazy(() => import("./pages/static/TermsOfService.tsx"));
+// const PrivacyPolicy = lazy(() => import("./pages/static/PrivacyPolicy.tsx"));
+//
+// const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..."/>;
 // const App = () => (
 //   <ErrorBoundary>
 //     <AuthProvider>

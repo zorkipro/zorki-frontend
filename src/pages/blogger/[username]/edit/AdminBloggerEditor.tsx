@@ -15,22 +15,22 @@ import {
 import { ArrowLeft, AlertCircle, Edit } from "lucide-react";
 import { Alert, AlertDescription } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
-import { logError } from "@/utils/logger";
+import { logError } from "@/utils/logger.ts";
 
 // Импортируем переиспользуемые компоненты
-import { BloggerInfo } from "@/components/profile/BloggerInfo";
-import { VerificationNotice } from "@/components/profile/VerificationNotice";
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm";
-import { PricingSection } from "@/components/profile/organisms/PricingSection";
+import { BloggerInfo } from "@/components/profile/BloggerInfo.tsx";
+import { VerificationNotice } from "@/components/profile/VerificationNotice.tsx";
+import { ProfileHeader } from "@/components/profile/ProfileHeader.tsx";
+import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm.tsx";
+import { PricingSection } from "@/components/profile/organisms/PricingSection.tsx";
 
 // Импортируем хук и типы
-import { useAdminBloggerEditor } from "@/hooks/admin/useAdminBloggerEditor";
-import { useAdminStatsFileManagement } from "@/hooks/admin/useAdminStatsFileManagement";
-import { useAuth } from "@/contexts/AuthContext";
-import { formatNumber } from "@/utils/formatters";
-import type { Blogger } from "@/types/blogger";
-import type { ApiSocialType } from "@/api/types";
+import { useAdminBloggerEditor } from "@/hooks/admin/useAdminBloggerEditor.ts";
+import { useAdminStatsFileManagement } from "@/hooks/admin/useAdminStatsFileManagement.ts";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { formatNumber } from "@/utils/formatters.ts";
+import type { Blogger } from "@/types/blogger.ts";
+import type { ApiSocialType } from "@/api/types.ts";
 
 export const AdminBloggerEditor = () => {
   const { user } = useAuth();

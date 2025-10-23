@@ -1,15 +1,23 @@
-import { ReactNode } from "react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
+import {ProtectedRoute} from "@/components/ProtectedRoute";
+import {AdminAuthProvider} from "@/contexts/AdminAuthContext";
+import {Outlet} from "react-router-dom";
 
-interface AdminLayoutProps {
-    children: ReactNode;
-}
+export const AdminLayout = () => (
+    <AdminAuthProvider>
+        <ProtectedRoute>
+            <Outlet />
+        </ProtectedRoute>
+    </AdminAuthProvider>
+);
 
-export const AdminLayout = ({ children }: AdminLayoutProps) => {
-    return (
-        <AdminAuthProvider>
-            <ProtectedRoute>{children}</ProtectedRoute>
-        </AdminAuthProvider>
-    );
-};
+// interface AdminLayoutProps {
+//     children: ReactNode;
+// }
+//
+// export const AdminLayout = ({ children }: AdminLayoutProps) => {
+//     return (
+//         <AdminAuthProvider>
+//             <ProtectedRoute>{children}</ProtectedRoute>
+//         </AdminAuthProvider>
+//     );
+// };

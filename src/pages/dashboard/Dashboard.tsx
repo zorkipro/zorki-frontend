@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback, useMemo, memo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 import { Star } from "lucide-react";
 import { LoadingSpinner } from "@/ui-kit/components";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
-import { DashboardPlatformCard } from "@/components/dashboard/DashboardPlatformCard";
-import { useDashboardNavigation } from "@/hooks/dashboard/useDashboardNavigation";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader.tsx";
+import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard.tsx";
+import { DashboardPlatformCard } from "@/components/dashboard/DashboardPlatformCard.tsx";
+import { useDashboardNavigation } from "@/hooks/dashboard/useDashboardNavigation.ts";
 
 const DashboardComponent = () => {
   const {

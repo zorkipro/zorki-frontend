@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { getBloggerProfilePath } from "@/config/routes";
+import { useAuth } from "@/contexts/AuthContext.tsx";
+import { getBloggerProfilePath } from "@/config/routes.ts";
 import {
   Button,
   Card,
@@ -15,19 +15,19 @@ import { Alert, AlertDescription } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
 
 // Components
-import { BloggerInfo } from "@/components/profile/BloggerInfo";
-import { VerificationNotice } from "@/components/profile/VerificationNotice";
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm";
-import { PricingSection } from "@/components/profile/organisms/PricingSection";
-import { CooperationTermsSection } from "@/components/profile/CooperationTermsSection";
+import { BloggerInfo } from "@/components/profile/BloggerInfo.tsx";
+import { VerificationNotice } from "@/components/profile/VerificationNotice.tsx";
+import { ProfileHeader } from "@/components/profile/ProfileHeader.tsx";
+import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm.tsx";
+import { PricingSection } from "@/components/profile/organisms/PricingSection.tsx";
+import { CooperationTermsSection } from "@/components/profile/CooperationTermsSection.tsx";
 
 // Hooks
-import { useProfileEditor } from "@/hooks/profile/useProfileEditor";
-import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager";
+import { useProfileEditor } from "@/hooks/profile/useProfileEditor.ts";
+import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager.ts";
 
 // Utils
-import { formatNumber } from "@/utils/formatters";
+import { formatNumber } from "@/utils/formatters.ts";
 
 export const ProfileEditor = () => {
   const { user, bloggerInfo } = useAuth();

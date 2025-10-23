@@ -1,7 +1,7 @@
-import { AuthForm } from "@/components/auth/AuthForm";
-import { useAuthForm } from "@/hooks/useAuthForm";
+import { AuthForm } from "@/components/auth/AuthForm.tsx";
+import { useAuthForm } from "@/hooks/useAuthForm.ts";
 
-export const Register = () => {
+const Register = () => {
   const { loading, error, handleSubmit, handleGoogleAuth } = useAuthForm({
     mode: "register",
   });
@@ -17,3 +17,5 @@ export const Register = () => {
     />
   );
 };
+
+export default Register;

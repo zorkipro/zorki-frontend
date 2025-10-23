@@ -2,8 +2,8 @@ import { Suspense, lazy } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { LoadingSpinner } from "@/ui-kit/components";
 
-const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
-const AdminBloggerEditor = lazy(() => import("@/pages/AdminBloggerEditor"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.tsx"));
+const AdminBloggerEditor = lazy(() => import("@/pages/blogger/[username]/edit/AdminBloggerEditor.tsx"));
 
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..." />;
 
