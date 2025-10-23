@@ -9,7 +9,7 @@ import { getAccessToken } from "@/utils/googleAuth.ts";
 import { LogOut } from "lucide-react";
 import { logger } from "@/utils/logger.ts";
 
-export const ProfileSetup = () => {
+const ProfileSetup = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [instagramUsername, setInstagramUsername] = useState("");
@@ -174,3 +174,5 @@ export const ProfileSetup = () => {
     </div>
   );
 };
+
+export default ProfileSetup;

@@ -6,7 +6,7 @@ import { BloggerProfileHeader } from "@/components/blogger-profile/BloggerProfil
 import { BloggerProfileTabs } from "@/components/blogger-profile/BloggerProfileTabs.tsx";
 import { BloggerProfilePricing } from "@/components/blogger-profile/BloggerProfilePricing.tsx";
 
-export const BloggerProfile = () => {
+const BloggerProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
 
@@ -50,3 +50,6 @@ export const BloggerProfile = () => {
     </div>
   );
 };
+
+
+export default BloggerProfile;

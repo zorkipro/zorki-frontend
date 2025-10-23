@@ -29,7 +29,7 @@ import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager.ts";
 // Utils
 import { formatNumber } from "@/utils/formatters.ts";
 
-export const ProfileEditor = () => {
+const ProfileEditor = () => {
   const { user, bloggerInfo } = useAuth();
   const navigate = useNavigate();
 
@@ -217,3 +217,5 @@ export const ProfileEditor = () => {
     </div>
   );
 };
+
+export default ProfileEditor;

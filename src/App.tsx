@@ -11,7 +11,7 @@ const App = () => (
 
 export default App;
 
-//// Lazy load all page components
+// Lazy load all page components
 // const Index = lazy(() => import("./pages/Index"));
 // const BloggerProfile = lazy(() =>
 //     import("./pages/profile/[username]/BloggerProfile.tsx").then((module) => ({

@@ -6,16 +6,12 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { LoadingSpinner } from "@/ui-kit";
 import NotFound from "@/pages/not-found/NotFound.tsx";
 
-// Загрузка страниц с fallback
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..." />;
 
-// ---------------------
-// Приватный роут
-// ---------------------
 const PrivateRoute = ({ element }: { element: JSX.Element }) => {
-    // TODO: заменить на реальную проверку
-    // const isAuthenticated = true;
-    // return isAuthenticated ? element : <Navigate to="/login" replace />;
+    // TODO: заменить на реальную проверку авторизации
+    const isAuthenticated = true;
+    return isAuthenticated ? element : <Navigate to="/login" replace />;
 };
 
 const RenderRoutes = ({
@@ -27,10 +23,10 @@ const RenderRoutes = ({
     layout?: ComponentType;
     isPrivate?: boolean;
 }) => {
-    // Сортировка: динамические пути в конец
+    // Сортируем: динамические пути (с :) идут в конец, чтобы не перекрывали статические
     const sortedRoutes = [...routes].sort((a, b) => {
-        const aDynamic = a.pathName.includes(':');
-        const bDynamic = b.pathName.includes(':');
+        const aDynamic = a.pathName.includes(":");
+        const bDynamic = b.pathName.includes(":");
         return aDynamic === bDynamic ? 0 : aDynamic ? 1 : -1;
     });
 
@@ -38,7 +34,15 @@ const RenderRoutes = ({
         <Route
             key={pathName}
             path={pathName}
-            element={<Component />}
+            element={
+                <Suspense fallback={<PageLoader />}>
+                    {isPrivate ? (
+                        <PrivateRoute element={<Component />} />
+                    ) : (
+                        <Component />
+                    )}
+                </Suspense>
+            }
         />
     ));
 
@@ -49,16 +53,25 @@ const RenderRoutes = ({
     return routeElements;
 };
 
-export const AppRoutes = () => {
 
+export const AppRoutes = () => {
     return (
         <Routes>
+            {/* Публичные страницы */}
             {RenderRoutes({ routes: publicRoutes })}
-            {RenderRoutes({ routes: privateRoutes, layout: PrivateLayout, isPrivate: true })}
+
+            {/* Приватные страницы (под PrivateLayout) */}
+            {RenderRoutes({
+                routes: privateRoutes,
+                layout: PrivateLayout,
+                isPrivate: true,
+            })}
+
+            {/* Админские страницы (под AdminLayout) */}
             {RenderRoutes({ routes: adminRoutes, layout: AdminLayout })}
-            {/* Catch-all */}
+
+            {/* Страница 404 */}
             <Route path="*" element={<NotFound />} />
         </Routes>
-
     );
 };

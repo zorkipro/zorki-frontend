@@ -32,7 +32,7 @@ import { formatNumber } from "@/utils/formatters.ts";
 import type { Blogger } from "@/types/blogger.ts";
 import type { ApiSocialType } from "@/api/types.ts";
 
-export const AdminBloggerEditor = () => {
+const AdminBloggerEditor = () => {
   const { user } = useAuth();
   const { username } = useParams();
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ export const AdminBloggerEditor = () => {
     setAvailablePlatforms,
     refetch: fetchBloggerData,
   } = useAdminBloggerEditor(username);
-
+    console.log('PROFILE_ADMIN:',profile)
   // Извлекаем скриншоты из профиля для текущей платформы
   const currentPlatformScreenshots = useMemo(() => {
     if (!profile?.social) return [];
