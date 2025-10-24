@@ -58,5 +58,6 @@ export const privateRoutes = createDynamicRoutes(pageFiles, [
 
 export const adminRoutes = createDynamicRoutes(pageFiles, [
     'admin',
+    'parser-accounts'
     // 'blogger',
 ]);
