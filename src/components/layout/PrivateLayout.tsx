@@ -11,16 +11,3 @@ export const PrivateLayout = () => (
     </ProtectedRoute>
 );
 
-// interface PrivateLayoutProps {
-//     children: ReactNode;
-// }
-//
-// export const PrivateLayout = ({ children }: PrivateLayoutProps) => {
-//     return (
-//         <ProtectedRoute>
-//             <Suspense fallback={<LoadingSpinner text="Загрузка страницы..." />}>
-//                 {children}
-//             </Suspense>
-//         </ProtectedRoute>
-//     );
-// };

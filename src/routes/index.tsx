@@ -1,72 +1,63 @@
-import { Suspense, ComponentType } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 import { publicRoutes, privateRoutes, adminRoutes } from "./createRoutes";
 import { PrivateLayout } from "@/components/layout/PrivateLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { LoadingSpinner } from "@/ui-kit";
+import { LoadingSpinner } from "@/ui-kit/components";
 import NotFound from "@/pages/not-found/NotFound.tsx";
 
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..." />;
 
-// Обёртка для приватных маршрутов (если пользователь не авторизован, редирект на /login)
-const PrivateRoute = ({ element }: { element: JSX.Element }) => {
-    const isAuthenticated = true; // TODO: заменить на реальную проверку
-    return isAuthenticated ? element : <Navigate to="/login" replace />;
-};
+// Разделяем открытые админские маршруты (login/2fa) и защищённые
+const openAdminRoutes = adminRoutes.filter(
+    (r) => r.pathName === "/admin/login" || r.pathName === "/admin/2fa"
+);
+const protectedAdminRoutes = adminRoutes.filter(
+    (r) => r.pathName !== "/admin/login" && r.pathName !== "/admin/2fa"
+);
 
-// Универсальная функция рендеринга массива маршрутов
-const renderRouteElements = (routes: typeof publicRoutes, isPrivate = false) => {
-    // Сортируем: динамические пути (с :) идут в конец
-    const sortedRoutes = [...routes].sort((a, b) => {
-        const aDynamic = a.pathName.includes(":");
-        const bDynamic = b.pathName.includes(":");
-        return aDynamic === bDynamic ? 0 : aDynamic ? 1 : -1;
-    });
+export const AppRoutes = () => (
+    <Routes>
+        {/* Публичные страницы */}
+        {publicRoutes.map(({ pathName, Component }) => (
+            <Route key={pathName} path={pathName} element={<Component />} />
+        ))}
 
-    return sortedRoutes.map(({ pathName, Component }) => (
-        <Route
-            key={pathName}
-            path={pathName}
-            element={
-                <Suspense fallback={<PageLoader />}>
-                    {isPrivate ? <PrivateRoute element={<Component />} /> : <Component />}
-                </Suspense>
-            }
-        />
-    ));
-};
+        {/* Приватные страницы */}
+        <Route element={<PrivateLayout />}>
+            {privateRoutes.map(({ pathName, Component }) => (
+                <Route key={pathName} path={pathName} element={<Component />} />
+            ))}
+        </Route>
 
-export const AppRoutes = () => {
-    return (
-        <Routes>
-            {/* Публичные маршруты */}
-            {renderRouteElements(publicRoutes)}
+        {/* Открытые админские страницы (login, 2fa) */}
+        {openAdminRoutes.map(({ pathName, Component }) => (
+            <Route key={pathName} path={pathName} element={<Component />} />
+        ))}
 
-            {/* Приватные маршруты под PrivateLayout */}
-            <Route element={<PrivateLayout />}>
-                {renderRouteElements(privateRoutes, true)}
-            </Route>
+        {/* Защищённые админские страницы */}
+        <Route element={<AdminLayout />}>
+            {protectedAdminRoutes.map(({ pathName, Component }) => {
+                const isIndex = pathName === "/admin";
 
-            {/* Админские маршруты под AdminLayout */}
-            <Route path="/admin/*" element={<AdminLayout />}>
-                {adminRoutes.map(({ pathName, Component }) => (
+                return (
                     <Route
                         key={pathName}
-                        path={pathName.replace(/^\/admin\//, "")} // относительный путь внутри /admin
+                        index={isIndex}
+                        path={pathName}
                         element={
-                            <Suspense fallback={<PageLoader />}>
+                            <React.Suspense fallback={<PageLoader />}>
                                 <Component />
-                            </Suspense>
+                            </React.Suspense>
                         }
                     />
-                ))}
-            </Route>
+                );
+            })}
+        </Route>
+        <Route path="*" element={<NotFound />} />
+    </Routes>
+);
 
-            {/* Страница 404 */}
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    );
-};
 
 
 // import { ComponentType, Suspense } from "react";

@@ -1,23 +1,15 @@
 import {ProtectedRoute} from "@/components/ProtectedRoute";
 import {AdminAuthProvider} from "@/contexts/AdminAuthContext";
 import {Outlet} from "react-router-dom";
+import {Suspense} from "react";
+import {LoadingSpinner} from "@/ui-kit";
 
 export const AdminLayout = () => (
     <AdminAuthProvider>
         <ProtectedRoute>
+            <Suspense fallback={<LoadingSpinner text="Загрузка страницы..." />}>
             <Outlet />
+            </Suspense>
         </ProtectedRoute>
     </AdminAuthProvider>
 );
-
-// interface AdminLayoutProps {
-//     children: ReactNode;
-// }
-//
-// export const AdminLayout = ({ children }: AdminLayoutProps) => {
-//     return (
-//         <AdminAuthProvider>
-//             <ProtectedRoute>{children}</ProtectedRoute>
-//         </AdminAuthProvider>
-//     );
-// };
