@@ -1,15 +1,15 @@
 import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/Header";
-import { FilterSidebar } from "@/components/filters/FilterSidebar";
-import { BloggerTable } from "@/components/bloggers/BloggerTable";
-import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton";
-import { FilterState } from "@/types/blogger";
+import { Header } from "@/components/layout/Header.tsx";
+import { FilterSidebar } from "@/components/filters/FilterSidebar.tsx";
+import { BloggerTable } from "@/components/bloggers/BloggerTable.tsx";
+import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton.tsx";
+import { FilterState } from "@/types/blogger.ts";
 import { Filter } from "lucide-react";
 import { Button } from "@/ui-kit";
 import { Sheet, SheetContent, SheetTrigger } from "@/ui-kit";
-import { useBloggers } from "@/hooks/useBloggers";
-import SEOHead from "@/components/SEO/SEOHead";
-import { DEFAULT_FILTER_STATE } from "@/config/filters";
+import { useBloggers } from "@/hooks/useBloggers.ts";
+import SEOHead from "@/components/SEO/SEOHead.tsx";
+import { DEFAULT_FILTER_STATE } from "@/config/filters.ts";
 
 const Index = () => {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);

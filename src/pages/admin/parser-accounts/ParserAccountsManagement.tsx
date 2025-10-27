@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/ui-kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { useParserAccounts } from "@/hooks/admin/useParserAccounts";
-import { ParserAccountsTable } from "@/components/admin/parser/ParserAccountsTable";
-import { AddInstagramAccountDialog } from "@/components/admin/parser/AddInstagramAccountDialog";
-import { AddTelegramAccountDialog } from "@/components/admin/parser/AddTelegramAccountDialog";
-import { PlatformNotAvailableMessage } from "@/components/admin/parser/PlatformNotAvailableMessage";
-import type { ParserPlatform } from "@/api/types";
+import { AdminHeader } from "@/components/admin/AdminHeader.tsx";
+import { useParserAccounts } from "@/hooks/admin/useParserAccounts.ts";
+import { ParserAccountsTable } from "@/components/admin/parser/ParserAccountsTable.tsx";
+import { AddInstagramAccountDialog } from "@/components/admin/parser/AddInstagramAccountDialog.tsx";
+import { AddTelegramAccountDialog } from "@/components/admin/parser/AddTelegramAccountDialog.tsx";
+import { PlatformNotAvailableMessage } from "@/components/admin/parser/PlatformNotAvailableMessage.tsx";
+import type { ParserPlatform } from "@/api/types.ts";
 
 const ParserAccountsManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ParserPlatform>("INSTAGRAM");

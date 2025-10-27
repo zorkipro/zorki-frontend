@@ -1,7 +1,7 @@
-import { AuthForm } from "@/components/auth/AuthForm";
-import { useAuthForm } from "@/hooks/useAuthForm";
+import { AuthForm } from "@/components/auth/AuthForm.tsx";
+import { useAuthForm } from "@/hooks/useAuthForm.ts";
 
-export const Login = () => {
+const Login = () => {
   const { loading, error, handleSubmit, handleGoogleAuth } = useAuthForm({
     mode: "login",
   });
@@ -16,3 +16,5 @@ export const Login = () => {
     />
   );
 };
+
+export default Login;

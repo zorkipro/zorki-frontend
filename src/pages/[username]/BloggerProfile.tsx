@@ -1,12 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
-import { useBloggerProfile } from "@/hooks/useBloggerProfile";
-import { BloggerProfileHeader } from "@/components/blogger-profile/BloggerProfileHeader";
-import { BloggerProfileTabs } from "@/components/blogger-profile/BloggerProfileTabs";
-import { BloggerProfilePricing } from "@/components/blogger-profile/BloggerProfilePricing";
+import { useBloggerProfile } from "@/hooks/useBloggerProfile.ts";
+import { BloggerProfileHeader } from "@/components/blogger-profile/BloggerProfileHeader.tsx";
+import { BloggerProfileTabs } from "@/components/blogger-profile/BloggerProfileTabs.tsx";
+import { BloggerProfilePricing } from "@/components/blogger-profile/BloggerProfilePricing.tsx";
 
-export const BloggerProfile = () => {
+const BloggerProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
 
@@ -50,3 +50,6 @@ export const BloggerProfile = () => {
     </div>
   );
 };
+
+
+export default BloggerProfile;
