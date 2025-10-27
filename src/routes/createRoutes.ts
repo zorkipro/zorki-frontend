@@ -54,6 +54,7 @@ export const publicRoutes = createDynamicRoutes(pageFiles, [
 export const privateRoutes = createDynamicRoutes(pageFiles, [
     'dashboard',
     'profile',
+    'profile-setup'
 ]);
 
 export const adminRoutes = createDynamicRoutes(pageFiles, [
