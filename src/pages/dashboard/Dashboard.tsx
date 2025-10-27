@@ -111,3 +111,4 @@ const DashboardComponent = () => {
 
 // Export the memoized component
 export const Dashboard = memo(DashboardComponent);
+export default Dashboard;
