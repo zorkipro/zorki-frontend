@@ -7,15 +7,31 @@ import { FilterState } from "@/types/blogger.ts";
 import { Filter } from "lucide-react";
 import { Button } from "@/ui-kit";
 import { Sheet, SheetContent, SheetTrigger } from "@/ui-kit";
-import { useBloggers } from "@/hooks/useBloggers.ts";
+import {useBloggersQuery} from "@/hooks/useBloggers.ts";
 import SEOHead from "@/components/SEO/SEOHead.tsx";
 import { DEFAULT_FILTER_STATE } from "@/config/filters.ts";
 
 const Index = () => {
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  // const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // const {
+  //   allBloggers,
+  //   filteredBloggers,
+  //   loading,
+  //   searchLoading,
+  //   error,
+  //   totalCount,
+  //   hasMore,
+  //   isLoadingMore,
+  //   loadMoreBloggers,
+  // } = useBloggers(filters);
 
   const {
+    filters,
+    isFilterOpen,
+    handleFilterChange,
+    handleFilterToggle,
     allBloggers,
     filteredBloggers,
     loading,
@@ -25,17 +41,17 @@ const Index = () => {
     hasMore,
     isLoadingMore,
     loadMoreBloggers,
-  } = useBloggers(filters);
+  } = useBloggersQuery(DEFAULT_FILTER_STATE);
 
-  // Мемоизированная функция для обновления фильтров
-  const handleFilterChange = (newFilters: FilterState) => {
-    setFilters(newFilters);
-  };
-
-  // Мемоизированная функция для переключения мобильных фильтров
-  const handleFilterToggle = (open: boolean) => {
-    setIsFilterOpen(open);
-  };
+  // // Мемоизированная функция для обновления фильтров
+  // const handleFilterChange = (newFilters: FilterState) => {
+  //   setFilters(newFilters);
+  // };
+  //
+  // // Мемоизированная функция для переключения мобильных фильтров
+  // const handleFilterToggle = (open: boolean) => {
+  //   setIsFilterOpen(open);
+  // };
 
   // Показываем ошибку только если она критическая
   if (error) {
