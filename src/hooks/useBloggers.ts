@@ -6,6 +6,7 @@ import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTopics } from "@/hooks/useTopics";
 import { buildApiParams } from "@/utils/api/filterParams";
+import {PAGINATION} from "@/config/pagination.ts";
 
 interface BloggersPage {
   bloggers: Blogger[];
@@ -19,7 +20,7 @@ export const useBloggersQuery = (initialFilters: FilterState) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const { categories, restrictedTopics } = useTopics();
-  const debouncedSearch = useDebounce(filters.search || "", 500);
+  const debouncedSearch = useDebounce(filters.search || "", PAGINATION.LOAD_DELAY_MS);
 
   const query = useInfiniteQuery<BloggersPage, Error, InfiniteData<BloggersPage>>({
     queryKey: ["bloggers", debouncedSearch, filters],
@@ -29,7 +30,7 @@ export const useBloggersQuery = (initialFilters: FilterState) => {
       const apiParams = buildApiParams(
           { ...filters, search: debouncedSearch },
           page,
-          50,
+          PAGINATION.DEFAULT_PAGE_SIZE,
           { categories, restrictedTopics }
       );
 
@@ -46,7 +47,7 @@ export const useBloggersQuery = (initialFilters: FilterState) => {
         lastPage.currentPage < lastPage.pagesCount
             ? lastPage.currentPage + 1
             : undefined,
-    initialPageParam: 1,
+    initialPageParam: PAGINATION.DEFAULT_PAGE,
   });
 
   const allBloggers: Blogger[] = useMemo(

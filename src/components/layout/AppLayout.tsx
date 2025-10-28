@@ -6,6 +6,7 @@ import { TooltipProvider, Toaster } from "@/ui-kit";
 import { AuthRedirectHandler } from "@/components/AuthRedirectHandler";
 import { ProfileChecker } from "@/components/ProfileChecker";
 import { LoadingSpinner } from "@/ui-kit/components";
+import {UI_MESSAGES} from "@/config/messages.ts";
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -25,7 +26,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
                     >
                         <AuthRedirectHandler />
                         <ProfileChecker>
-                            <Suspense fallback={<LoadingSpinner fullScreen text="Загрузка..." />}>
+                            <Suspense fallback={<LoadingSpinner fullScreen text={UI_MESSAGES.LOADING} />}>
                                 {children}
                             </Suspense>
                         </ProfileChecker>
