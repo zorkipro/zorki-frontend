@@ -122,7 +122,7 @@ export async function getBloggerById(
  * @throws APIError 403 - Blogger does not belong to user
  * @throws APIError 404 - Blogger not found
  *
- * @note topics и restrictedTopics REQUIRED! (можно пустой массив, но нельзя undefined)
+ * @note topics и restrictedTopics опциональны - отправляются только если не пустые
  * @note Если блогер не верифицирован - изменения сохраняются в drafts
  *
  * @example
@@ -131,8 +131,7 @@ export async function getBloggerById(
  *   name: 'Анна',
  *   lastName: 'Петрова',
  *   genderType: 'FEMALE',
- *   topics: [1, 2, 3], // Обязательно!
- *   restrictedTopics: [], // Обязательно!
+ *   topics: [1, 2, 3], // Отправляется только если не пустой
  *   isBarterAvailable: true,
  * });
  * ```
@@ -177,13 +176,6 @@ export async function updateBloggerSocialPrice(
   bloggerId: number,
   data: BloggerUpdateSocialPriceInputDto,
 ): Promise<void> {
-  console.log('📡 updateBloggerSocialPrice request:', {
-    url: `/blogger/social-price/${bloggerId}`,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  
   return apiRequest<void>(`/blogger/social-price/${bloggerId}`, {
     method: "PUT",
     headers: {

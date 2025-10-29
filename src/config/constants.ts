@@ -24,7 +24,7 @@ export const REDIRECT_URL =
 
 // Backend API URL
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+  import.meta.env.VITE_API_BASE_URL || "https://zorki.pro/api";
 
 // Проверка обязательных переменных окружения
 export const validateEnvironmentVariables = () => {

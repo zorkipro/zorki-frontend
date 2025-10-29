@@ -23,6 +23,7 @@ npm run dev
 
 - [Быстрый запуск](QUICK_START.md)
 - [Что изменилось](WHAT_CHANGED.md)
+- [Очистка логирования](LOGGING_CLEANUP.md)
 - [Архитектура API](docs/API_ARCHITECTURE.md)
 - [Руководство разработчика](docs/DEVELOPMENT.md)
 

@@ -57,11 +57,17 @@ export function mapEditDataToProfileUpdate(
     dto.isMartRegistry = data.mart_registry;
   }
 
-  // Темы (обязательные поля согласно Swagger)
-  // Всегда отправляем массивы, даже если они пустые
+  // Темы - добавляем только если они не пустые
   // Фильтруем только числовые ID
-  dto.topics = (data.topics || []).filter((topic): topic is number => typeof topic === 'number');
-  dto.restrictedTopics = (data.banned_topics || []).filter((topic): topic is number => typeof topic === 'number');
+  const topics = (data.topics || []).filter((topic): topic is number => typeof topic === 'number');
+  const restrictedTopics = (data.banned_topics || []).filter((topic): topic is number => typeof topic === 'number');
+  
+  if (topics.length > 0) {
+    dto.topics = topics;
+  }
+  if (restrictedTopics.length > 0) {
+    dto.restrictedTopics = restrictedTopics;
+  }
 
   // Обработка охватов сторис (coverage)
   // Приоритет: Instagram > TikTok > YouTube > Telegram
@@ -98,19 +104,6 @@ export function mapPlatformPricesToUpdate(
   const storyPriceKey = `${prefix}_story_price` as keyof EditData;
   const integrationPriceKey = `${prefix}_integration_price` as keyof EditData;
 
-  console.log('🔍 mapPlatformPricesToUpdate:', {
-    platform,
-    prefix,
-    postPriceKey,
-    storyPriceKey,
-    integrationPriceKey,
-    data: {
-      [postPriceKey]: data[postPriceKey],
-      [storyPriceKey]: data[storyPriceKey],
-      [integrationPriceKey]: data[integrationPriceKey]
-    }
-  });
-
   const dto: BloggerUpdateSocialPriceInputDto = {
     type: platform,
   };
@@ -120,22 +113,18 @@ export function mapPlatformPricesToUpdate(
   if (data[postPriceKey] !== undefined) {
     dto.postPrice = parseFloat(String(data[postPriceKey])) || undefined;
     hasChanges = true;
-    console.log('✅ Added postPrice:', dto.postPrice);
   }
 
   if (data[storyPriceKey] !== undefined) {
     dto.storiesPrice = parseFloat(String(data[storyPriceKey])) || undefined;
     hasChanges = true;
-    console.log('✅ Added storiesPrice:', dto.storiesPrice);
   }
 
   if (data[integrationPriceKey] !== undefined) {
     dto.integrationPrice = parseFloat(String(data[integrationPriceKey])) || undefined;
     hasChanges = true;
-    console.log('✅ Added integrationPrice:', dto.integrationPrice);
   }
 
-  console.log('📤 Final DTO:', { dto, hasChanges });
   return hasChanges ? dto : null;
 }
 

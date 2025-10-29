@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/ui-kit";
-import { Star, Mail, CheckCircle, ArrowLeft } from "lucide-react";
+import { Mail, CheckCircle, ArrowLeft } from "lucide-react";
 
 export const EmailConfirmation = () => {
   return (
@@ -16,9 +16,11 @@ export const EmailConfirmation = () => {
       <div className="p-4">
         <div className="flex items-center justify-center">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-              <Star className="w-5 h-5 text-white fill-white" />
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="Zorki" 
+              className="w-8 h-8"
+            />
             <span className="text-xl font-bold text-foreground">Zorki</span>
           </Link>
         </div>

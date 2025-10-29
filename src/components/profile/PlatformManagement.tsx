@@ -49,6 +49,7 @@ interface PlatformManagementProps {
   hasMaxPlatforms?: boolean;
   bloggerId?: number; // ID блогера для API запросов
   onPlatformUpdated?: (platformId: string) => void; // НОВОЕ: callback для переключения таба
+  isVerified?: boolean; // Статус верификации пользователя
 }
 
 const PlatformManagementComponent = ({
@@ -57,6 +58,7 @@ const PlatformManagementComponent = ({
   hasMaxPlatforms = false,
   bloggerId,
   onPlatformUpdated,
+  isVerified = false, // По умолчанию false для неверифицированных пользователей
 }: PlatformManagementProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -128,11 +130,9 @@ const PlatformManagementComponent = ({
       // Отправка API запроса
       if (platformType === 'telegram') {
         const username = extractTelegramUsername(newPlatform.url);
-        console.log('🔍 Telegram request data:', { bloggerId: numericBloggerId, username, url: newPlatform.url });
         await requestTgLink(numericBloggerId, { username });
       } else if (platformType === 'youtube') {
         const channel = extractYoutubeChannel(newPlatform.url);
-        console.log('🔍 YouTube request data:', { bloggerId: numericBloggerId, channel, url: newPlatform.url });
         await requestYtLink(numericBloggerId, { channel });
       }
 

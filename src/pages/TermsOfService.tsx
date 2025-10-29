@@ -14,7 +14,7 @@ const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Условия использования - Zorki.pro"
+        title="Zorki.pro - Условия использования"
         description="Условия использования платформы Zorki.pro - рейтинга блогеров Беларуси. Правила и соглашения для пользователей платформы."
         keywords={[
           "условия использования",

@@ -62,17 +62,6 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
   const hasValidSession = !!(session?.access_token && accessToken && session?.user?.id);
   
   // Добавляем логирование для отладки (только в development)
-  if (import.meta.env.DEV) {
-    console.log('🔍 BloggerContext Debug:', {
-      hasSession: !!session,
-      hasAccessToken: !!accessToken,
-      hasUser: !!session?.user?.id,
-      hasValidSession,
-      sessionAccessToken: session?.access_token ? 'present' : 'missing',
-      accessTokenValue: accessToken ? 'present' : 'missing',
-      sessionStorageToken: sessionStorage.getItem('accessToken') ? 'present' : 'missing'
-    });
-  }
 
   /**
    * Очистить данные блогера
@@ -108,23 +97,13 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
    * Обновить данные блогера
    */
   const refreshBloggerInfo = useCallback(async () => {
-    if (import.meta.env.DEV) {
-      console.log('🔄 refreshBloggerInfo called:', { hasValidSession });
-    }
-    
     // КРИТИЧНО: Двойная проверка - не вызываем API если нет валидной сессии
     if (!hasValidSession) {
-      if (import.meta.env.DEV) {
-        console.log('❌ Skipping API call - no valid session');
-      }
       clearBloggerInfo();
       setBloggerInfoLoading(false);
       return;
     }
 
-    if (import.meta.env.DEV) {
-      console.log('✅ Making API call to getClientMe');
-    }
     try {
       setBloggerInfoLoading(true);
       setBloggerInfoError(null);
@@ -143,9 +122,6 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
 
       // Для 401 ошибок просто очищаем данные без показа ошибки
       if (error instanceof Error && error.message.includes('401')) {
-        if (import.meta.env.DEV) {
-          console.log('🔄 BloggerContext: 401 error - clearing blogger info silently');
-        }
         clearBloggerInfo();
         setBloggerInfoError(null); // Не показываем ошибку для 401
       } else {
@@ -168,19 +144,10 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
       const data = await getClientMe();
       setBloggerInfo(data.blogger);
       setLastLinkRequest(data.lastLinkRequest);
-      if (import.meta.env.DEV) {
-        console.log('✅ Manual blogger info load successful:', data);
-      }
     } catch (error) {
       // Тихо игнорируем 401 - пользователь может быть не связан с блогером
       if (!(error instanceof Error && error.message.includes('401'))) {
-        if (import.meta.env.DEV) {
-          console.log('❌ Manual blogger info load failed:', error);
-        }
         throw error;
-      }
-      if (import.meta.env.DEV) {
-        console.log('🔄 Manual load: 401 error - user not linked to blogger');
       }
     }
   }, [hasValidSession]);
@@ -188,22 +155,12 @@ export const BloggerProvider = ({ children }: BloggerProviderProps) => {
   // Автоматическая загрузка данных блогера при изменении сессии
   // Загружаем данные только если есть сессия И данные еще не загружены
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('🔄 BloggerContext useEffect triggered:', { hasValidSession, hasBloggerInfo: !!bloggerInfo });
-    }
-    
     if (!hasValidSession) {
-      if (import.meta.env.DEV) {
-        console.log('❌ Clearing blogger info - no valid session');
-      }
       // Если нет сессии - очищаем данные
       clearBloggerInfo();
       setBloggerInfoLoading(false);
     } else if (!bloggerInfo && !bloggerInfoLoading) {
       // Если есть сессия, но нет данных блогера - загружаем их
-      if (import.meta.env.DEV) {
-        console.log('🔄 BloggerContext: Loading blogger info automatically...');
-      }
       tryLoadBloggerInfo();
     }
   }, [hasValidSession, bloggerInfo, bloggerInfoLoading, clearBloggerInfo, tryLoadBloggerInfo]);

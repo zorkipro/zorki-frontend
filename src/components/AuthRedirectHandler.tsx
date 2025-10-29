@@ -17,25 +17,14 @@ export const AuthRedirectHandler = () => {
     const handleAuthRedirect = async () => {
       // Если пользователь авторизован и еще не делали редирект
       if (user && !loading && !hasRedirectedRef.current) {
-        if (import.meta.env.DEV) {
-          console.log('🔄 AuthRedirectHandler: User authenticated, determining redirect path...');
-        }
-        
         setIsDeterminingRedirect(true);
         hasRedirectedRef.current = true;
         
         try {
           const redirectPath = await determineRedirectPath();
           
-          if (import.meta.env.DEV) {
-            console.log('🔄 AuthRedirectHandler: Redirecting to:', redirectPath);
-          }
-          
           navigate(redirectPath);
         } catch (error) {
-          if (import.meta.env.DEV) {
-            console.log('❌ AuthRedirectHandler: Failed to determine redirect path:', error);
-          }
           // В случае ошибки редиректим на главную
           navigate('/');
         } finally {

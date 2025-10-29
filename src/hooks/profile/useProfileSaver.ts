@@ -38,7 +38,6 @@ export const useProfileSaver = (
 
   const handleSave = useCallback(
     async (data: Partial<EditData>) => {
-      console.log('🚀 handleSave called with data:', data);
       
       if (!user || !profile) return;
 
@@ -49,20 +48,9 @@ export const useProfileSaver = (
         const mergedData = { ...formData, ...data };
         const profileUpdateData = mapLocalToApiUpdate(mergedData, topicLookup);
 
-        // Убедиться, что topics и restrictedTopics всегда есть (required поля)
-        if (!profileUpdateData.topics) {
-          profileUpdateData.topics = [];
-        }
-        if (!profileUpdateData.restrictedTopics) {
-          profileUpdateData.restrictedTopics = [];
-        }
-
         await updateBloggerProfile(Number(profile.id), profileUpdateData);
 
         // Сохранение цен платформ последовательно (чтобы избежать deadlock)
-        console.log('🔄 Processing platforms:', ALL_PLATFORMS);
-        console.log('📊 Current data:', data);
-        console.log('📊 Current formData:', formData);
         
         // Фильтруем только платформы с изменениями (как в админке)
         const platformsWithChanges = ALL_PLATFORMS.filter((platform) => {
@@ -76,10 +64,7 @@ export const useProfileSaver = (
                  data[integrationPriceKey] !== undefined;
         });
 
-        console.log('🎯 Platforms with changes:', platformsWithChanges);
-        
         const platformPriceUpdates = platformsWithChanges.map((platform) => {
-          console.log(`🔍 Processing platform: ${platform}`);
           
           const postPriceKey = `${platform}_post_price` as keyof EditData;
           const storyPriceKey = `${platform}_story_price` as keyof EditData;
@@ -90,21 +75,6 @@ export const useProfileSaver = (
           const postPrice = data[postPriceKey];
           const storyPrice = data[storyPriceKey];
           const integrationPrice = data[integrationPriceKey];
-
-          console.log(`🔍 Platform ${platform} prices:`, {
-            postPrice,
-            storyPrice,
-            integrationPrice,
-            postPriceKey,
-            storyPriceKey,
-            integrationPriceKey,
-            dataHasPostPrice: data[postPriceKey],
-            dataHasStoryPrice: data[storyPriceKey],
-            dataHasIntegrationPrice: data[integrationPriceKey],
-            formDataHasPostPrice: formData[postPriceKey],
-            formDataHasStoryPrice: formData[storyPriceKey],
-            formDataHasIntegrationPrice: formData[integrationPriceKey]
-          });
 
           if (postPrice || storyPrice || integrationPrice) {
             const priceUpdateData: any = {
@@ -129,15 +99,8 @@ export const useProfileSaver = (
                                priceUpdateData.integrationPrice !== undefined;
 
             if (!hasValidData) {
-              console.log(`⚠️ No valid price data for ${platform}, skipping update`);
               return Promise.resolve();
             }
-
-            console.log('💰 Updating social price:', {
-              bloggerId: Number(profile.id),
-              platform: platform,
-              priceUpdateData
-            });
 
             return updateBloggerSocialPrice(
               Number(profile.id),
@@ -149,11 +112,9 @@ export const useProfileSaver = (
         });
 
         // Выполняем обновления последовательно (как в админке)
-        console.log('⏳ Executing platform price updates sequentially...');
         for (const updatePromise of platformPriceUpdates) {
           await updatePromise;
         }
-        console.log('✅ Platform price updates completed');
 
         setAvailablePlatforms((prev) => {
           const updated = { ...prev };

@@ -141,7 +141,7 @@ const PricingSectionComponent = ({
               <div className="flex items-center space-x-2">
                 <div className="text-right">
                   <div className="text-sm font-medium">
-                    {stats.price || 0} BYN
+                    {platform === 'youtube' ? (stats.integrationPrice || 0) : (stats.price || 0)} BYN
                   </div>
                   {stats.storyPrice > 0 && (
                     <div className="text-xs text-muted-foreground">

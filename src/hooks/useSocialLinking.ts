@@ -98,13 +98,6 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(true);
         setError(null);
 
-        console.log('🚀 Sending Telegram link request:', { bloggerId, data });
-        console.log('📡 Request details:', {
-          url: `/blogger/link/social/tg/${bloggerId}`,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
         await linkTgChannelRequest(bloggerId, data);
 
         toast({
@@ -113,8 +106,6 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
             "Запрос на связывание Telegram канала отправлен на модерацию",
         });
       } catch (err) {
-        console.error('❌ Telegram link request failed:', err);
-        
         // Обработка специфичных ошибок Telegram
         let errorMessage = "Ошибка отправки запроса";
         if (err instanceof Error) {
@@ -159,13 +150,6 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
         setLoading(true);
         setError(null);
 
-        console.log('🚀 Sending YouTube link request:', { bloggerId, data });
-        console.log('📡 YouTube request details:', {
-          url: `/blogger/link/social/yt/${bloggerId}`,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
         await linkYtChannelRequest(bloggerId, data);
 
         toast({
@@ -174,8 +158,6 @@ export const useSocialLinking = (): UseSocialLinkingReturn => {
             "Запрос на связывание YouTube канала отправлен на модерацию",
         });
       } catch (err) {
-        console.error('❌ YouTube link request failed:', err);
-        
         // Обработка специфичных ошибок YouTube
         let errorMessage = "Ошибка отправки запроса";
         if (err instanceof Error) {

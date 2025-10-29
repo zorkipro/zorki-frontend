@@ -285,6 +285,7 @@ export interface PublicGetBloggerByIdOutputDto {
   profileDraft: PublicGetBloggerByIdProfileDraftOutputDto | null;
   priceDraft: PublicGetBloggerByIdPriceDraftOutputDto[] | null;
   coverageDraft: PublicGetBloggerByIdCoverageDraftOutputDto[] | null;
+  socialMediaDrafts: PublicGetBloggerByIdSocialAccOutputDto[] | null; // Платформы на модерации
   createdAt: string; // ISO date string
   updatedAt: string | null; // ISO date string
 }

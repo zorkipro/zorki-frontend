@@ -14,7 +14,7 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Политика конфиденциальности - Zorki.pro"
+        title="Zorki.pro - Политика конфиденциальности"
         description="Политика конфиденциальности платформы Zorki.pro. Как мы собираем, используем и защищаем ваши персональные данные."
         keywords={[
           "политика конфиденциальности",

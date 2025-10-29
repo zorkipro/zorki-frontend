@@ -34,6 +34,7 @@ export const useScreenshotLoader = (
         // Ищем скриншоты для нужной платформы
         const platformScreenshots: Screenshot[] = [];
         
+        // Сначала проверяем одобренные платформы
         if (bloggerData.social) {
           for (const social of bloggerData.social) {
             if (social.type.toLowerCase() === platform.toLowerCase() && social.statsFiles) {
@@ -42,6 +43,29 @@ export const useScreenshotLoader = (
                 id: file.id,
                 influencer_id: Number(profileId),
                 platform: social.type.toLowerCase(),
+                file_name: file.name,
+                file_url: file.publicUrl,
+                file_size: file.size * 1024, // Конвертируем KB в байты
+                width: file.width,
+                height: file.height,
+                created_at: file.createdAt,
+                is_draft: false,
+              }));
+              
+              platformScreenshots.push(...platformScreenshotsData);
+            }
+          }
+        }
+        
+        // Затем проверяем платформы на модерации (socialMediaDrafts)
+        if (bloggerData.socialMediaDrafts) {
+          for (const socialDraft of bloggerData.socialMediaDrafts) {
+            if (socialDraft.type.toLowerCase() === platform.toLowerCase() && socialDraft.statsFiles) {
+              // Преобразуем API формат в локальный формат Screenshot
+              const platformScreenshotsData = socialDraft.statsFiles.map(file => ({
+                id: file.id,
+                influencer_id: Number(profileId),
+                platform: socialDraft.type.toLowerCase(),
                 file_name: file.name,
                 file_url: file.publicUrl,
                 file_size: file.size * 1024, // Конвертируем KB в байты

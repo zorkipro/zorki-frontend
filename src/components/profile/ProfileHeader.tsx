@@ -276,11 +276,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                   {formData?.topics &&
                     formData.topics.length > 0 &&
                     formData.topics.map((topic, index) => {
-                      // Конвертируем ID в название, если это число
-                      const topicName =
-                        typeof topic === "number"
-                          ? topicReverseLookup[topic]
-                          : topic;
+                      // Конвертируем строковые ID в числовые для lookup
+                      const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
+                      const topicName = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
 
                       return topicName ? (
                         <Badge key={index} variant="secondary">

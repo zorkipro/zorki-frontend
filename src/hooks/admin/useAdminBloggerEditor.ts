@@ -108,11 +108,6 @@ export const useAdminBloggerEditor = (username?: string) => {
         const bloggerDetails = await getBloggerById(bloggerSummary.id);
 
         setProfile(bloggerDetails);
-        console.log('📊 Loaded blogger details:', {
-          id: bloggerDetails.id,
-          youtubePrices: bloggerDetails.price?.find(p => p.type === 'YOUTUBE'),
-          priceDraft: bloggerDetails.priceDraft?.find(p => p.type === 'YOUTUBE')
-        });
 
         // Инициализируем formData полными данными блогера
         // Приоритет: черновики > основные данные
@@ -156,11 +151,6 @@ export const useAdminBloggerEditor = (username?: string) => {
           telegram_story_price: bloggerDetails.price?.find(p => p.type === 'TELEGRAM')?.storiesPrice?.toString() || '0',
           telegram_integration_price: bloggerDetails.price?.find(p => p.type === 'TELEGRAM')?.integrationPrice?.toString() || '0',
         }));
-
-        console.log('📝 Initialized formData with YouTube prices:', {
-          youtube_integration_price: bloggerDetails.price?.find(p => p.type === 'YOUTUBE')?.integrationPrice?.toString() || '0',
-          allPrices: bloggerDetails.price
-        });
 
         // Устанавливаем данные в formData
 
@@ -254,28 +244,17 @@ export const useAdminBloggerEditor = (username?: string) => {
         // Сохраняем изменения профиля
         if (hasProfileChanges) {
           const profileDto = mapEditDataToProfileUpdate(data);
-          console.log('💾 Saving profile changes:', { 
-            originalData: data, 
-            mappedDto: profileDto,
-            dtoKeys: Object.keys(profileDto),
-            topicsLength: profileDto.topics?.length || 0,
-            restrictedTopicsLength: profileDto.restrictedTopics?.length || 0
-          });
           await adminUpdateBlogger(profile.id, profileDto);
-          console.log('✅ Profile updated successfully');
         }
 
         // Сохраняем изменения цен для каждой платформы
         if (hasPriceChanges) {
-          console.log('💰 Processing price changes:', data);
           const platforms: ApiSocialType[] = ['INSTAGRAM', 'YOUTUBE', 'TELEGRAM', 'TIKTOK'];
           
           for (const platform of platforms) {
             const priceDto = mapPlatformPricesToUpdate(platform, data);
             if (priceDto) {
-              console.log(`🚀 Updating ${platform} prices:`, priceDto);
               await adminUpdateBloggerSocialPrice(profile.id, priceDto);
-              console.log(`✅ ${platform} prices updated successfully`);
             }
           }
         }
@@ -290,9 +269,7 @@ export const useAdminBloggerEditor = (username?: string) => {
         });
 
         // Перезагружаем данные блогера
-        console.log('🔄 Refreshing blogger data after save...');
         await fetchBloggerData();
-        console.log('✅ Blogger data refreshed');
 
       } catch (err: unknown) {
         logger.error('Error saving blogger changes', err);

@@ -88,10 +88,10 @@ export function mergeDraftsWithPublished(
       if (priceDraft) {
         return {
           ...price,
-          postPrice: priceDraft.postPrice || price.postPrice,
-          storiesPrice: priceDraft.storiesPrice || price.storiesPrice,
-          integrationPrice:
-            priceDraft.integrationPrice || price.integrationPrice,
+          // Черновики имеют приоритет над основными данными
+          postPrice: priceDraft.postPrice !== null ? priceDraft.postPrice : price.postPrice,
+          storiesPrice: priceDraft.storiesPrice !== null ? priceDraft.storiesPrice : price.storiesPrice,
+          integrationPrice: priceDraft.integrationPrice !== null ? priceDraft.integrationPrice : price.integrationPrice,
         };
       }
 
