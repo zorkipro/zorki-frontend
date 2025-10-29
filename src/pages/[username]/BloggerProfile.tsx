@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import {useParams, useNavigate, useLocation} from "react-router-dom";
 import { Button } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
 import { useBloggerProfile } from "@/hooks/useBloggerProfile.ts";
@@ -9,9 +9,11 @@ import { BloggerProfilePricing } from "@/components/blogger-profile/BloggerProfi
 const BloggerProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const bloggerId = location.state?.bloggerId ?? undefined;
 
   // Use the optimized hook
-  const { blogger, loading, error } = useBloggerProfile(username);
+  const { blogger, loading, error } = useBloggerProfile({username, id: bloggerId});
 
   if (loading) {
     return <LoadingSpinner fullScreen text="Загрузка профиля..." />;

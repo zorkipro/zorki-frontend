@@ -96,7 +96,9 @@ const BloggerTableComponent = ({
       <div
         key={blogger.id}
         className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-sm transition-shadow duration-200 cursor-pointer mb-4"
-        onClick={() => navigate(`/${normalizeUsername(blogger.handle)}`)}
+        onClick={() => navigate(`/${normalizeUsername(blogger.handle)}`,{
+          state: { bloggerId: blogger.id },
+        })}
       >
         {/* Аватарка/имя/никнейм - главная информация */}
         <div className="flex items-center space-x-4 mb-6">
@@ -257,7 +259,9 @@ const BloggerTableComponent = ({
                   key={blogger.id}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() =>
-                    navigate(`/${normalizeUsername(blogger.handle)}`)
+                    navigate(`/${normalizeUsername(blogger.handle)}`,{
+                      state: { bloggerId: blogger.id },
+                    })
                   }
                   role="button"
                   tabIndex={0}
@@ -265,7 +269,9 @@ const BloggerTableComponent = ({
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      navigate(`/${normalizeUsername(blogger.handle)}`);
+                      navigate(`/${normalizeUsername(blogger.handle)}`,{
+                        state: { bloggerId: blogger.id },
+                      });
                     }
                   }}
                 >
