@@ -1,12 +1,17 @@
-import { useState, useMemo, useCallback } from "react";
-import { useInfiniteQuery, InfiniteData } from "@tanstack/react-query";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import {
+  useInfiniteQuery,
+  InfiniteData,
+  UseInfiniteQueryOptions,
+} from "@tanstack/react-query";
 import { FilterState, Blogger } from "@/types/blogger";
 import { getAllBloggers } from "@/api/endpoints/blogger";
 import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTopics } from "@/hooks/useTopics";
 import { buildApiParams } from "@/utils/api/filterParams";
-import {PAGINATION} from "@/config/pagination.ts";
+import { PAGINATION } from "@/config/pagination";
+import {CACHE_SETTINGS} from "@/config";
 
 interface BloggersPage {
   bloggers: Blogger[];
@@ -18,18 +23,22 @@ interface BloggersPage {
 export const useBloggersQuery = (initialFilters: FilterState) => {
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [mergedBloggers, setMergedBloggers] = useState<Blogger[]>([]);
 
   const { categories, restrictedTopics } = useTopics();
   const debouncedSearch = useDebounce(filters.search || "", PAGINATION.LOAD_DELAY_MS);
 
-  const query = useInfiniteQuery<BloggersPage, Error, InfiniteData<BloggersPage>>({
-    queryKey: ["bloggers", debouncedSearch, filters],
-    queryFn: async ({ pageParam }) => {
-      const page = typeof pageParam === "number" ? pageParam : 1;
+  const memoizedFilters = useMemo(
+      () => ({ ...filters, search: debouncedSearch }),
+      [filters, debouncedSearch]
+  );
 
+  const queryOptions: UseInfiniteQueryOptions<BloggersPage, Error, InfiniteData<BloggersPage>, readonly unknown[], number> = {
+    queryKey: ["bloggers", memoizedFilters],
+    queryFn: async ({ pageParam = PAGINATION.DEFAULT_PAGE }) => {
       const apiParams = buildApiParams(
-          { ...filters, search: debouncedSearch },
-          page,
+          memoizedFilters,
+          pageParam,
           PAGINATION.DEFAULT_PAGE_SIZE,
           { categories, restrictedTopics }
       );
@@ -48,24 +57,48 @@ export const useBloggersQuery = (initialFilters: FilterState) => {
             ? lastPage.currentPage + 1
             : undefined,
     initialPageParam: PAGINATION.DEFAULT_PAGE,
-  });
+    staleTime: CACHE_SETTINGS.STALE_TIME,
+    gcTime: CACHE_SETTINGS.PROFILE_CACHE_DURATION,
+    refetchOnWindowFocus: false,
+  };
 
-  const allBloggers: Blogger[] = useMemo(
-      () => query.data?.pages.flatMap((page) => page.bloggers) || [],
-      [query.data]
-  );
+  const query = useInfiniteQuery(queryOptions);
+
+  useEffect(() => {
+    if (!query.data) return;
+
+    const newBloggers = query.data.pages.flatMap((p) => p.bloggers);
+
+    setMergedBloggers((prev) => {
+      const isReset =
+          query.data.pages.length === 1 &&
+          query.data.pages[0].currentPage === PAGINATION.DEFAULT_PAGE;
+
+      if (isReset) {
+        return newBloggers;
+      }
+
+      if (newBloggers.length > prev.length) {
+        return [...prev, ...newBloggers.slice(prev.length)];
+      }
+
+      return prev;
+    });
+  }, [query.data]);
 
   const totalCount = query.data?.pages[0]?.totalCount || 0;
   const hasMore = !!query.hasNextPage;
 
-  // Методы для компонента
-  const handleFilterChange = useCallback((newFilters: FilterState) => {
-    setFilters(newFilters);
+  const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setMergedBloggers([]);
   }, []);
 
   const handleFilterToggle = useCallback((open: boolean) => {
     setIsFilterOpen(open);
   }, []);
+
+  const allBloggers = useMemo(() => mergedBloggers, [mergedBloggers]);
 
   return {
     filters,
@@ -77,7 +110,7 @@ export const useBloggersQuery = (initialFilters: FilterState) => {
     allBloggers,
     filteredBloggers: allBloggers,
     loading: query.isLoading,
-    searchLoading: query.isFetching,
+    searchLoading: query.isFetching && !query.isFetchingNextPage,
     error: query.isError ? "Ошибка загрузки данных" : "",
     totalCount,
     hasMore,
@@ -86,7 +119,6 @@ export const useBloggersQuery = (initialFilters: FilterState) => {
     refetch: query.refetch,
   };
 };
-
 
 // import { useMemo } from "react";
 // import { useInfiniteQuery, InfiniteData } from "@tanstack/react-query";
