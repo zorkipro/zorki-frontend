@@ -5,7 +5,7 @@ import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const HeaderComponent = () => {
-  const { user, signOut, loading, bloggerInfo } = useAuth();
+  const { user, signOut, loading, bloggerInfo, lastLinkRequest } = useAuth();
 
   const handleSignOut = useCallback(() => {
     signOut();
@@ -13,9 +13,10 @@ const HeaderComponent = () => {
 
   // Определяем ссылку для личного кабинета
   const getProfileLink = () => {
-    // Если у пользователя есть связанный блогер
-    if (bloggerInfo) {
-      // Всегда ведем на редактирование профиля
+    // Если у пользователя есть связанный блогер ИЛИ есть запрос на связывание
+    // (даже если блогер еще на модерации)
+    if (bloggerInfo || lastLinkRequest?.username) {
+      // Ведем на редактирование профиля
       return "/profile/edit";
     }
     // Иначе ведем на настройку профиля
