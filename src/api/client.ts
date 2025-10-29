@@ -20,11 +20,10 @@ export type {
 export { APIError } from "./core/ApiErrorHandler";
 export { tokenManager } from "./core/TokenManager";
 
-// API Configuration
+//API Configuration
 const API_BASE_URL = import.meta.env.DEV
   ? "/api" // Прокси в режиме разработки
-  : import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
-
+  : import.meta.env.VITE_API_BASE_URL;
 /**
  * Базовая функция для выполнения API запросов
  * Автоматически добавляет токен аутентификации и обрабатывает ошибки
