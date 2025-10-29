@@ -1,31 +1,14 @@
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/Header.tsx";
-import { FilterSidebar } from "@/components/filters/FilterSidebar.tsx";
-import { BloggerTable } from "@/components/bloggers/BloggerTable.tsx";
-import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton.tsx";
-import { FilterState } from "@/types/blogger.ts";
-import { Filter } from "lucide-react";
-import { Button } from "@/ui-kit";
-import { Sheet, SheetContent, SheetTrigger } from "@/ui-kit";
+import {Header} from "@/components/layout/Header.tsx";
+import {FilterSidebar} from "@/components/filters/FilterSidebar.tsx";
+import {BloggerTable} from "@/components/bloggers/BloggerTable.tsx";
+import {ScrollToTopButton} from "@/components/ui/ScrollToTopButton.tsx";
+import {Filter} from "lucide-react";
+import {Button, Sheet, SheetContent, SheetTrigger} from "@/ui-kit";
 import {useBloggersQuery} from "@/hooks/useBloggers.ts";
 import SEOHead from "@/components/SEO/SEOHead.tsx";
-import { DEFAULT_FILTER_STATE } from "@/config/filters.ts";
+import {DEFAULT_FILTER_STATE} from "@/config/filters.ts";
 
 const Index = () => {
-  // const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
-  // const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  // const {
-  //   allBloggers,
-  //   filteredBloggers,
-  //   loading,
-  //   searchLoading,
-  //   error,
-  //   totalCount,
-  //   hasMore,
-  //   isLoadingMore,
-  //   loadMoreBloggers,
-  // } = useBloggers(filters);
 
   const {
     filters,
@@ -43,17 +26,6 @@ const Index = () => {
     loadMoreBloggers,
   } = useBloggersQuery(DEFAULT_FILTER_STATE);
 
-  // // Мемоизированная функция для обновления фильтров
-  // const handleFilterChange = (newFilters: FilterState) => {
-  //   setFilters(newFilters);
-  // };
-  //
-  // // Мемоизированная функция для переключения мобильных фильтров
-  // const handleFilterToggle = (open: boolean) => {
-  //   setIsFilterOpen(open);
-  // };
-
-  // Показываем ошибку только если она критическая
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
