@@ -66,50 +66,22 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
    */
   const determineRedirectPath = useCallback(async (): Promise<string> => {
     try {
-      if (import.meta.env.DEV) {
-        console.log('🔍 SessionContext: Determining redirect path after auth...');
-      }
       
       const clientData = await getClientMe();
       
-      if (import.meta.env.DEV) {
-        console.log('✅ SessionContext: Client data received:', {
-          hasBlogger: !!clientData.blogger,
-          bloggerUsername: clientData.blogger?.username,
-          hasLinkRequest: !!clientData.lastLinkRequest,
-          fullClientData: clientData  // Добавляем полный ответ для отладки
-        });
-      }
 
-      // ПРОСТАЯ ЛОГИКА: Если есть username в blogger - идем на редактирование профиля
-      // Проверяем разные возможные места, где может быть username
+      // ПРОСТАЯ ЛОГИКА: Если есть username в blogger ИЛИ в активном запросе на связывание - идем на редактирование профиля
       const username = clientData.blogger?.username || 
-                      (clientData as any).username || 
-                      (clientData as any).user?.username;
+                      clientData.lastLinkRequest?.username;
       
       if (username) {
-        if (import.meta.env.DEV) {
-          console.log('✅ SessionContext: User has username, redirecting to profile edit', { username });
-        }
         return '/profile/edit';
       }
 
       // Если нет username - идем на страницу настройки профиля
-      if (import.meta.env.DEV) {
-        console.log('❌ SessionContext: User has no username, redirecting to profile setup', {
-          bloggerUsername: clientData.blogger?.username,
-          directUsername: (clientData as any).username,
-          userUsername: (clientData as any).user?.username,
-          bloggerExists: !!clientData.blogger
-        });
-      }
       return '/profile-setup';
       
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.log('❌ SessionContext: Failed to get client data, redirecting to profile setup:', error);
-      }
-      
       // Если не удалось получить данные - идем на настройку профиля
       // Пользователь сможет ввести username
       return '/profile-setup';

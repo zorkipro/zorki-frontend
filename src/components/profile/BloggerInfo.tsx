@@ -48,7 +48,7 @@ interface BloggerInfoProps {
 export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
   ({ formData, editingSection, saving, onEditingChange, onSave }) => {
     // Получаем темы и lookup таблицы
-    const { topicLookup, topicReverseLookup } = useTopics();
+    const { topicLookup, topicReverseLookup, loading: topicsLoading } = useTopics();
     
     // Используем useMemo для создания начального состояния только при изменении formData
     const initialState = useMemo(() => {
@@ -66,20 +66,10 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
     const handleSave = useCallback(() => {
       const editData = stateToEditData(state);
       
-      // Конвертируем названия тем в ID для API
-      const topicsWithIds = {
-        ...editData,
-        topics: editData.topics?.map(topic => 
-          typeof topic === 'string' ? topicLookup[topic] : topic
-        ).filter(id => typeof id === 'number') || [],
-        banned_topics: editData.banned_topics?.map(topic => 
-          typeof topic === 'string' ? topicLookup[topic] : topic
-        ).filter(id => typeof id === 'number') || []
-      };
-      
-      onSave(topicsWithIds);
+      // Передаем данные как есть - конвертация будет в mapLocalToApiUpdate
+      onSave(editData);
       onEditingChange(null);
-    }, [state, onSave, onEditingChange, topicLookup]);
+    }, [state, onSave, onEditingChange]);
 
     const handleCancel = useCallback(() => {
       dispatch({ type: 'RESET_TO_INITIAL', payload: initialState });
@@ -166,27 +156,45 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                   {/* Категории */}
                   <div>
                     <Label>Категории</Label>
-                    <CategorySelector
-                      value={state.categories.map(topic => 
-                        typeof topic === 'number' ? topicReverseLookup[topic] : topic
-                      ).filter(Boolean)}
-                      onChange={(categories) =>
-                        dispatch({ type: 'SET_CATEGORIES', payload: categories })
-                      }
-                    />
+                    {topicsLoading ? (
+                      <div className="flex items-center justify-center p-3 text-sm text-muted-foreground">
+                        Загрузка тематик...
+                      </div>
+                    ) : (
+                      <CategorySelector
+                        value={state.categories.map(topic => {
+                          // Конвертируем строковые ID в числовые для lookup
+                          const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
+                          const name = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
+                          return name || '';
+                        }).filter(Boolean) as string[]}
+                        onChange={(categories) =>
+                          dispatch({ type: 'SET_CATEGORIES', payload: categories })
+                        }
+                      />
+                    )}
                   </div>
 
                   {/* Запрещенные темы */}
                   <div>
                     <Label>Запрещенные темы</Label>
-                    <RestrictedTopicsSelector
-                      value={state.restrictedTopics.map(topic => 
-                        typeof topic === 'number' ? topicReverseLookup[topic] : topic
-                      ).filter(Boolean)}
-                      onChange={(topics) =>
-                        dispatch({ type: 'SET_RESTRICTED_TOPICS', payload: topics })
-                      }
-                    />
+                    {topicsLoading ? (
+                      <div className="flex items-center justify-center p-3 text-sm text-muted-foreground">
+                        Загрузка запрещенных тематик...
+                      </div>
+                    ) : (
+                      <RestrictedTopicsSelector
+                        value={state.restrictedTopics.map(topic => {
+                          // Конвертируем строковые ID в числовые для lookup
+                          const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
+                          const name = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
+                          return name || '';
+                        }).filter(Boolean) as string[]}
+                        onChange={(topics) =>
+                          dispatch({ type: 'SET_RESTRICTED_TOPICS', payload: topics })
+                        }
+                      />
+                    )}
                   </div>
 
                   {/* Дополнительные опции */}
@@ -268,10 +276,9 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                 <span className="text-sm text-muted-foreground">Категории:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {formData.topics.map((topic) => {
-                    // Конвертируем ID в название, если это число
-                    const topicName = typeof topic === 'number' 
-                      ? topicReverseLookup[topic] 
-                      : topic;
+                    // Конвертируем строковые ID в числовые для lookup
+                    const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
+                    const topicName = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
                     
                     return topicName ? (
                       <Badge key={topic} variant="outline" className="text-xs">
@@ -288,10 +295,9 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                 <span className="text-sm text-muted-foreground">Запрещенные темы:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {formData.banned_topics.map((topic) => {
-                    // Конвертируем ID в название, если это число
-                    const topicName = typeof topic === 'number' 
-                      ? topicReverseLookup[topic] 
-                      : topic;
+                    // Конвертируем строковые ID в числовые для lookup
+                    const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
+                    const topicName = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
                     
                     return topicName ? (
                       <Badge key={topic} variant="destructive" className="text-xs">

@@ -64,6 +64,7 @@ export interface ProfileLoaderReturn extends LoaderState {
 export const useProfileLoader = (): ProfileLoaderReturn => {
   const {
     profile,
+    rawApiResponse,
     loading: dataLoading,
     error,
     availablePlatforms,
@@ -95,8 +96,10 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
         const localProfile = mapApiDetailBloggerToLocal(apiProfile);
 
         // Получаем темы из профиля (они уже в правильном формате)
-        const loadedTopics = localProfile.topics || [];
-        const loadedBannedTopics = localProfile.restrictedTopics || [];
+        // ПРИОРИТЕТ ЧЕРНОВИКАМ: если есть черновик профиля, используем тематики из него
+        const profileDraft = apiProfile.profileDraft;
+        const loadedTopics = profileDraft?.topics?.map(t => t.id) || localProfile.topics || [];
+        const loadedBannedTopics = profileDraft?.restrictedTopics?.map(t => t.id) || localProfile.restrictedTopics || [];
 
         setTopics(loadedTopics);
         setBannedTopics(loadedBannedTopics);
@@ -175,7 +178,7 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
         await fetchProfileData();
       }
 
-      if (!profile || !availablePlatforms) {
+      if (!profile || !availablePlatforms || !rawApiResponse) {
         return null;
       }
 
@@ -185,7 +188,7 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
 
       // Пытаемся загрузить черновики
       const draftFormData = await loadDrafts(
-        profile,
+        rawApiResponse!,
         availablePlatforms,
         loadedTopics,
         loadedBannedTopics,
@@ -205,6 +208,7 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
       );
     }, [
       profile,
+      rawApiResponse,
       availablePlatforms,
       fetchProfileData,
       loadTopics,

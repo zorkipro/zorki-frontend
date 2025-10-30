@@ -46,8 +46,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Рейтинг блогеров Беларуси - Zorki7"
-        description={`Найдите лучших блогеров Беларуси для рекламы. ${filteredBloggers.length} блогеров в рейтинге по подписчикам, ценам и охватам. Instagram, TikTok, YouTube, Telegram.`}
+        title="Zorki.pro - Рейтинг блогеров Беларуси"
+        description="Платформа, где бренды находят блогеров. Всё удобно и бесплатно."
         keywords={[
           "блогеры беларуси",
           "рейтинг блогеров",
@@ -60,7 +60,7 @@ const Index = () => {
           "продвижение блогеров",
           "сотрудничество с блогерами",
         ]}
-        url="https://zorki7.com"
+        url="https://zorki.pro"
         type="website"
       />
       <Header />

@@ -11,7 +11,7 @@ import { logger } from "@/utils/logger.ts";
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshBloggerInfo } = useAuth();
   const [instagramUsername, setInstagramUsername] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -74,6 +74,10 @@ const ProfileSetup = () => {
 
       // Вызываем API для связывания пользователя с блогером
       await linkClientToBlogger(instagramUsername.trim());
+
+      // Обновляем данные блогера в контексте перед навигацией
+      // Это необходимо, чтобы ProfileEditor мог загрузить профиль сразу
+      await refreshBloggerInfo();
 
       // Перенаправляем на страницу редактирования профиля
       navigate("/profile/edit");

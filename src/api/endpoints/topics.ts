@@ -82,7 +82,6 @@ export async function getAllCategories(): Promise<TopicsOutputDto[]> {
     const result = await getTopics({ isRestricted: false, size: 50 });
     return result.items;
   } catch (error) {
-    console.warn('Failed to load categories, using empty array:', error);
     return []; // Возвращаем пустой массив в случае ошибки
   }
 }
@@ -104,7 +103,6 @@ export async function getAllRestrictedTopics(): Promise<TopicsOutputDto[]> {
     const result = await getTopics({ isRestricted: true, size: 50 });
     return result.items;
   } catch (error) {
-    console.warn('Failed to load restricted topics, using empty array:', error);
     return []; // Возвращаем пустой массив в случае ошибки
   }
 }

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/ui-kit";
-import { Star, LogOut, Database } from "lucide-react";
+import { LogOut, Database } from "lucide-react";
 
 interface DashboardHeaderProps {
   displayName: string;
@@ -16,9 +16,11 @@ export const DashboardHeader = ({
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-              <Star className="w-5 h-5 text-white fill-white" />
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="Zorki" 
+              className="w-8 h-8"
+            />
             <span className="text-xl font-bold text-foreground">Zorki</span>
           </Link>
 

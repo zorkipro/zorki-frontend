@@ -18,8 +18,8 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({
-  title = "Zorki7 - Рейтинг блогеров Беларуси",
-  description = "Найдите лучших блогеров Беларуси для рекламы. Рейтинг по подписчикам, ценам и охватам. Instagram, TikTok, YouTube, Telegram.",
+  title = "Zorki.pro - Рейтинг блогеров Беларуси",
+  description = "Платформа, где бренды находят блогеров. Всё удобно и бесплатно.",
   keywords = [
     "блогеры беларуси",
     "рейтинг блогеров",
@@ -33,7 +33,7 @@ const SEOHead = ({
     "сотрудничество с блогерами",
   ],
   image = "/og-image.jpg",
-  url = "https://zorki7.com",
+  url = "https://zorki.pro",
   type = "website",
   author,
   publishedTime,
@@ -44,7 +44,7 @@ const SEOHead = ({
   nofollow = false,
   canonical,
 }: SEOHeadProps) => {
-  const fullTitle = title.includes("Zorki7") ? title : `${title} | Zorki7`;
+  const fullTitle = title.includes("Zorki") ? title : `${title} | Zorki.pro`;
   const fullDescription =
     description.length > 160
       ? description.substring(0, 157) + "..."
@@ -64,7 +64,7 @@ const SEOHead = ({
       <meta name="description" content={fullDescription} />
       <meta name="keywords" content={allKeywords} />
       <meta name="robots" content={robots} />
-      <meta name="author" content={author || "Zorki7 Team"} />
+      <meta name="author" content={author || "Zorki.pro Team"} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta httpEquiv="Content-Language" content="ru" />
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
@@ -80,7 +80,7 @@ const SEOHead = ({
       <meta property="og:image" content={image} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="Zorki7" />
+      <meta property="og:site_name" content="Zorki.pro" />
       <meta property="og:locale" content="ru_RU" />
 
       {/* Article specific */}
@@ -106,8 +106,8 @@ const SEOHead = ({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={fullDescription} />
       <meta name="twitter:image" content={image} />
-      <meta name="twitter:site" content="@zorki7" />
-      <meta name="twitter:creator" content="@zorki7" />
+      <meta name="twitter:site" content="@zorki_pro" />
+      <meta name="twitter:creator" content="@zorki_pro" />
 
       {/* Additional SEO */}
       <meta name="theme-color" content="#000000" />
@@ -117,7 +117,7 @@ const SEOHead = ({
         name="apple-mobile-web-app-status-bar-style"
         content="black-translucent"
       />
-      <meta name="apple-mobile-web-app-title" content="Zorki7" />
+      <meta name="apple-mobile-web-app-title" content="Zorki.pro" />
 
       {/* Structured Data */}
       <script type="application/ld+json">
@@ -136,11 +136,11 @@ const SEOHead = ({
             : undefined,
           publisher: {
             "@type": "Organization",
-            name: "Zorki7",
-            url: "https://zorki7.com",
+            name: "Zorki.pro",
+            url: "https://zorki.pro",
             logo: {
               "@type": "ImageObject",
-              url: "https://zorki7.com/logo.png",
+              url: "https://zorki.pro/logo.png",
             },
           },
           datePublished: publishedTime,

@@ -1,11 +1,11 @@
 import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/ui-kit";
-import { Star, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const HeaderComponent = () => {
-  const { user, signOut, loading, bloggerInfo } = useAuth();
+  const { user, signOut, loading, bloggerInfo, lastLinkRequest } = useAuth();
 
   const handleSignOut = useCallback(() => {
     signOut();
@@ -13,9 +13,10 @@ const HeaderComponent = () => {
 
   // Определяем ссылку для личного кабинета
   const getProfileLink = () => {
-    // Если у пользователя есть связанный блогер
-    if (bloggerInfo) {
-      // Всегда ведем на редактирование профиля
+    // Если у пользователя есть связанный блогер ИЛИ есть запрос на связывание
+    // (даже если блогер еще на модерации)
+    if (bloggerInfo || lastLinkRequest?.username) {
+      // Ведем на редактирование профиля
       return "/profile/edit";
     }
     // Иначе ведем на настройку профиля
@@ -27,9 +28,11 @@ const HeaderComponent = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-              <Star className="w-5 h-5 text-white fill-white" />
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="Zorki" 
+              className="w-8 h-8"
+            />
             <div>
               <h1 className="text-xl font-bold text-foreground">Zorki</h1>
             </div>

@@ -17,14 +17,8 @@ const AdminTwoFactor = () => {
   // Проверяем наличие временного токена для 2FA
   useEffect(() => {
     const tempToken = sessionStorage.getItem("adminTempToken");
-    console.log("🔍 AdminTwoFactor Check:", {
-      tempTokenExists: !!tempToken,
-      tempTokenLength: tempToken?.length,
-      tempTokenPrefix: tempToken ? tempToken.substring(0, 20) + "..." : "none"
-    });
     
     if (!tempToken) {
-      console.log("❌ No temp token found, redirecting to login");
       navigate("/admin/login");
     }
   }, [navigate]);

@@ -40,7 +40,7 @@ export const useProfileEditor = () => {
   } = useProfileLoader();
 
   // 2. Загрузка топиков для справочника
-  const { topicLookup, loading: topicsLoading } = useTopics();
+  const { topicLookup, topicReverseLookup, loading: topicsLoading } = useTopics();
 
   // 3. Управление формой
   const {

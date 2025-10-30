@@ -202,7 +202,7 @@ export function mapLocalToApiUpdate(
     coverage = parseFloat(local.telegram_story_reach);
   }
 
-  const result = {
+  const result: BloggerUpdateProfileInputDto = {
     name: name || undefined,
     lastName: lastName || undefined,
     description: local.description || undefined,
@@ -213,15 +213,20 @@ export function mapLocalToApiUpdate(
     genderType: local.gender_type
       ? GENDER_REVERSE[local.gender_type]
       : undefined,
-    // topics и restrictedTopics REQUIRED! (можно пустой массив, но нельзя undefined)
-    topics: topicIds,
-    restrictedTopics: restrictedTopicIds,
     isBarterAvailable: local.barter_available,
     isMartRegistry: local.mart_registry,
     // coverageSocialType и coverage - для обновления охвата платформы
     coverageSocialType,
     coverage,
   };
+
+  // Добавляем topics и restrictedTopics только если они не пустые
+  if (topicIds.length > 0) {
+    result.topics = topicIds;
+  }
+  if (restrictedTopicIds.length > 0) {
+    result.restrictedTopics = restrictedTopicIds;
+  }
 
   return result;
 }

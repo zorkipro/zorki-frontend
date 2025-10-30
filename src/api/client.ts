@@ -20,10 +20,15 @@ export type {
 export { APIError } from "./core/ApiErrorHandler";
 export { tokenManager } from "./core/TokenManager";
 
-//API Configuration
-const API_BASE_URL = import.meta.env.DEV
+// API Configuration
+// Если указан VITE_API_BASE_URL, используем его (работает и в dev, и в production)
+// Иначе в dev используем прокси /api, в production - https://zorki.pro/api
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL
+  : import.meta.env.DEV
   ? "/api" // Прокси в режиме разработки
-  : import.meta.env.VITE_API_BASE_URL;
+  : "https://zorki.pro/api";
+
 /**
  * Базовая функция для выполнения API запросов
  * Автоматически добавляет токен аутентификации и обрабатывает ошибки
@@ -63,22 +68,6 @@ export async function apiRequest<T = unknown>(
   }
 
   const url = `${baseUrl || API_BASE_URL}${endpoint}`;
-
-  // Добавляем логирование для отладки
-  if (endpoint.includes('/auth/admin/') || endpoint.includes('/admin/') || endpoint.includes('/auth/client/')) {
-    console.log("🌐 API Request Debug:", {
-      url,
-      method: fetchOptions.method,
-      headers,
-      body: fetchOptions.body,
-      skipAuth,
-      tokenType: token ? 'present' : 'missing',
-      tokenValue: token ? `${token.substring(0, 20)}...` : 'none',
-      tokenLength: token ? token.length : 0,
-      tokenStartsWith: token ? token.substring(0, 10) : 'none',
-      apiBaseUrl: API_BASE_URL
-    });
-  }
 
   try {
     // Выполняем запрос

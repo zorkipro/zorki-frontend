@@ -199,7 +199,7 @@ export const useAdminBloggers = () => {
       // Обновляем локальное состояние запросов на связывание
       setLinkRequests((prev) => {
         const filtered = prev.filter(
-          (req) => Number(req.request_id) !== Number(requestId),
+          (req) => Number(req.id) !== Number(requestId),
         );
         logWarn(
           `🔄 Обновление состояния после одобрения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`,
@@ -253,7 +253,7 @@ export const useAdminBloggers = () => {
       // Обновляем локальное состояние запросов на связывание
       setLinkRequests((prev) => {
         const filtered = prev.filter(
-          (req) => Number(req.request_id) !== Number(requestId),
+          (req) => Number(req.id) !== Number(requestId),
         );
         logWarn(
           `🔄 Обновление состояния после отклонения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`,
@@ -365,7 +365,6 @@ export const useAdminBloggers = () => {
       // Обновляем кэш
       setGenderPagesCache(result.cachedPages);
     } catch (error) {
-      console.error("Error fetching bloggers without gender:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить блогеров без пола",

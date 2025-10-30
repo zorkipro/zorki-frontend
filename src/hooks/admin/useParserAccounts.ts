@@ -74,26 +74,14 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
         ...params,
       });
       
-      // Debug logging
-      console.log("Instagram API Response:", response);
-      console.log("Instagram sessions:", response.items);
+      // Debug logging removed
       
       // Детальное логирование каждого аккаунта
       response.items.forEach((session, index) => {
-        console.log(`Session ${index}:`, {
-          id: session.id,
-          username: session.username,
-          isAuthorized: session.isAuthorized,
-          requests: session.requests,
-          requestsType: typeof session.requests,
-          lastReset: session.lastReset,
-          createdAt: session.createdAt
-        });
+        // Session logging removed
       });
       
       const accounts = response.items.map(convertIgSessionToAccount);
-      
-      console.log("Converted accounts:", accounts);
       
       setIgAccounts(accounts);
       setIgTotalCount(response.totalCount);

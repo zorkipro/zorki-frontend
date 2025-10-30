@@ -76,19 +76,9 @@ export function validateBloggerInfo(
   bloggerInfo: ClientBloggerInfo | null,
 ): BloggerValidationResult {
   // Добавляем отладочную информацию
-  if (import.meta.env.DEV) {
-    console.log('🔍 validateBloggerInfo:', {
-      bloggerInfo: bloggerInfo ? 'present' : 'null',
-      username: bloggerInfo?.username,
-      verificationStatus: bloggerInfo?.verificationStatus
-    });
-  }
 
   // Нет связанного блогера
   if (!bloggerInfo) {
-    if (import.meta.env.DEV) {
-      console.log('❌ validateBloggerInfo: No blogger info');
-    }
     return {
       isValid: false,
       reason: "no_blogger",
@@ -143,9 +133,6 @@ export function determineRedirectPath(
 ): string | null {
   // Если валидация прошла - редирект не нужен
   if (validationResult.isValid) {
-    if (import.meta.env.DEV) {
-      console.log('✅ determineRedirectPath: Validation passed, no redirect needed');
-    }
     return null;
   }
 
@@ -161,14 +148,6 @@ export function determineRedirectPath(
         return null;
     }
   })();
-
-  if (import.meta.env.DEV) {
-    console.log('🔄 determineRedirectPath:', {
-      reason: validationResult.reason,
-      message: validationResult.message,
-      redirectPath
-    });
-  }
 
   return redirectPath;
 }

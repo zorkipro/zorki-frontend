@@ -57,7 +57,6 @@ export const AddInstagramAccountDialog: React.FC<AddInstagramAccountDialogProps>
       
     } catch (error) {
       // Error is handled by the parent component via toast
-      console.error("Error adding Instagram account:", error);
       // Don't close dialog on error - let user try again
     } finally {
       setLoading(false);

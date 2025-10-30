@@ -38,31 +38,18 @@ export class TokenManager {
     // 1. Admin token from sessionStorage (для админских операций)
     const adminToken = sessionStorage.getItem("adminToken");
     if (adminToken) {
-      if (import.meta.env.DEV) {
-        console.log('🔑 TokenManager: Using admin token');
-      }
       return adminToken;
     }
 
     // 2. Admin temp token for 2FA (для подтверждения 2FA)
     const adminTempToken = sessionStorage.getItem("adminTempToken");
     if (adminTempToken) {
-      if (import.meta.env.DEV) {
-        console.log('🔑 TokenManager: Using admin temp token');
-      }
       return adminTempToken;
     }
 
     // 3. Access Token из sessionStorage (основной токен для пользователей)
     const accessToken = getAccessToken();
     if (accessToken) {
-      if (import.meta.env.DEV) {
-        console.log('🔑 TokenManager: Using access token', {
-          length: accessToken.length,
-          startsWith: accessToken.substring(0, 10),
-          isSupabaseJWT: accessToken.startsWith('eyJ')
-        });
-      }
       return accessToken;
     }
 
@@ -73,22 +60,11 @@ export class TokenManager {
       } = await supabase.auth.getSession();
       const supabaseToken = session?.access_token || null;
 
-      if (supabaseToken) {
-        if (import.meta.env.DEV) {
-          console.log('🔑 TokenManager: Using Supabase token', {
-            length: supabaseToken.length,
-            startsWith: supabaseToken.substring(0, 10),
-            isSupabaseJWT: supabaseToken.startsWith('eyJ')
-          });
+        if (supabaseToken) {
+          return supabaseToken;
         }
-        return supabaseToken;
-      }
     } catch (error) {
       logger.error("Error getting Supabase session", error);
-    }
-
-    if (import.meta.env.DEV) {
-      console.log('🔑 TokenManager: No token found');
     }
     return null;
   }

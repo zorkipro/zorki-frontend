@@ -52,11 +52,6 @@ const FilterSidebarComponent = ({
         // Загружаем запрещенные тематики
         const restrictedTopicsData = await getAllRestrictedTopics();
         setRestrictedTopicsOptions(restrictedTopicsData);
-
-        console.log("✅ Filter data loaded successfully:", {
-          categoriesCount: categoriesData.length,
-          restrictedCount: restrictedTopicsData.length,
-        });
       } catch (error) {
         logError("Error loading filter data:", error);
         setError("Ошибка загрузки тематик. Попробуйте обновить страницу.");

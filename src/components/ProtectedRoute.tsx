@@ -19,24 +19,9 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     location.pathname === "/admin/login" || location.pathname === "/admin/2fa";
 
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('🛡️ ProtectedRoute Debug:', {
-        pathname: location.pathname,
-        isAdminRoute,
-        isAdminAuthPage,
-        user: user ? 'present' : 'missing',
-        loading,
-        adminInfo: adminInfo ? 'present' : 'missing',
-        adminLoading
-      });
-    }
-
     if (isAdminRoute) {
       // Для админки используем AdminAuthContext
       if (!adminLoading && !adminInfo && !isAdminAuthPage) {
-        if (import.meta.env.DEV) {
-          console.log('🛡️ ProtectedRoute: Redirecting to admin login');
-        }
         navigate("/admin/login");
       }
       return;
@@ -45,9 +30,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // Для обычных защищенных маршрутов используем проверку Supabase
     // УПРОЩЕНО: Проверяем только наличие Supabase пользователя
     if (!loading && !user) {
-      if (import.meta.env.DEV) {
-        console.log('🛡️ ProtectedRoute: Redirecting to login - no user');
-      }
       navigate("/login");
     }
   }, [

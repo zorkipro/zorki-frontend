@@ -451,68 +451,42 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
               {stats.integrationPrice || stats.price || 0} BYN
             </div>
             <div className="text-sm text-muted-foreground">Цена интеграции</div>
-            {isPending && !isVerified && (
-              <Badge variant="secondary" className="text-xs mt-2">
-                <Clock className="w-3 h-3 mr-1" />
-                На модерации
-              </Badge>
-            )}
           </>
         )}
         renderEditForm={() => (
           <div className="space-y-4">
-            {isPending && !isVerified ? (
-              <div className="text-center py-4">
-                <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Платформа находится на модерации. Редактирование цен будет доступно после одобрения.
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => onEditingChange(null)}
-                  className="mt-4"
-                >
-                  Закрыть
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div>
-                  <Label htmlFor="youtube_integration_price">
-                    Цена за интеграцию (BYN)
-                  </Label>
-                  <Input
-                    id="youtube_integration_price"
-                    type="number"
-                    defaultValue={formData.youtube_integration_price || stats.price || ""}
-                    placeholder="0"
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => onEditingChange(null)}>
-                    Отмена
-                  </Button>
-                  <Button
-                    onClick={async () => {
-                      const input = document.getElementById(
-                        "youtube_integration_price",
-                      ) as HTMLInputElement;
-                      console.log('💾 YouTube price save clicked, value:', input.value);
-                      try {
-                        await onSave({ youtube_integration_price: input.value });
-                        onEditingChange(null);
-                      } catch (error) {
-                        console.error('❌ YouTube price save error:', error);
-                        // Ошибка при сохранении
-                      }
-                    }}
-                    disabled={saving}
-                  >
-                    Сохранить
-                  </Button>
-                </div>
-              </>
-            )}
+            <div>
+              <Label htmlFor="youtube_integration_price">
+                Цена за интеграцию (BYN)
+              </Label>
+              <Input
+                id="youtube_integration_price"
+                type="number"
+                defaultValue={formData.youtube_integration_price || stats.price || ""}
+                placeholder="0"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => onEditingChange(null)}>
+                Отмена
+              </Button>
+              <Button
+                onClick={async () => {
+                  const input = document.getElementById(
+                    "youtube_integration_price",
+                  ) as HTMLInputElement;
+                  try {
+                    await onSave({ youtube_integration_price: input.value });
+                    onEditingChange(null);
+                  } catch (error) {
+                    // Ошибка при сохранении
+                  }
+                }}
+                disabled={saving}
+              >
+                Сохранить
+              </Button>
+            </div>
           </div>
         )}
       />

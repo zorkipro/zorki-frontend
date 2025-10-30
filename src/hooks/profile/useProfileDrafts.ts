@@ -76,6 +76,7 @@ interface PlatformData {
   price: number;
   storyReach: number;
   storyPrice: number;
+  integrationPrice?: number;
   views?: number;
 }
 
@@ -161,17 +162,17 @@ export const useProfileDrafts = (profileId?: string) => {
         instagram_story_reach:
           updatedPlatformsData.instagram?.storyReach?.toString() || "",
         instagram_post_price:
-          priceDrafts.instagram?.post_price?.toString() ||
-          updatedPlatformsData.instagram?.price?.toString() ||
-          "",
+          priceDrafts.instagram?.post_price !== undefined 
+            ? priceDrafts.instagram.post_price.toString() 
+            : (updatedPlatformsData.instagram?.price?.toString() || ""),
         instagram_story_price:
-          priceDrafts.instagram?.story_price?.toString() ||
-          updatedPlatformsData.instagram?.storyPrice?.toString() ||
-          "",
+          priceDrafts.instagram?.story_price !== undefined 
+            ? priceDrafts.instagram.story_price.toString() 
+            : (updatedPlatformsData.instagram?.storyPrice?.toString() || ""),
         instagram_integration_price:
-          priceDrafts.instagram?.post_price?.toString() ||
-          updatedPlatformsData.instagram?.price?.toString() ||
-          "",
+          priceDrafts.instagram?.integration_price !== undefined 
+            ? priceDrafts.instagram.integration_price.toString() 
+            : (updatedPlatformsData.instagram?.integrationPrice?.toString() || ""),
 
         // TikTok данные
         tiktok_username: updatedPlatformsData.tiktok?.username || "",
@@ -184,17 +185,17 @@ export const useProfileDrafts = (profileId?: string) => {
         tiktok_story_reach:
           updatedPlatformsData.tiktok?.storyReach?.toString() || "",
         tiktok_post_price:
-          priceDrafts.tiktok?.post_price?.toString() ||
-          updatedPlatformsData.tiktok?.price?.toString() ||
-          "",
+          priceDrafts.tiktok?.post_price !== undefined 
+            ? priceDrafts.tiktok.post_price.toString() 
+            : (updatedPlatformsData.tiktok?.price?.toString() || ""),
         tiktok_story_price:
-          priceDrafts.tiktok?.story_price?.toString() ||
-          updatedPlatformsData.tiktok?.storyPrice?.toString() ||
-          "",
+          priceDrafts.tiktok?.story_price !== undefined 
+            ? priceDrafts.tiktok.story_price.toString() 
+            : (updatedPlatformsData.tiktok?.storyPrice?.toString() || ""),
         tiktok_integration_price:
-          priceDrafts.tiktok?.post_price?.toString() ||
-          updatedPlatformsData.tiktok?.price?.toString() ||
-          "",
+          priceDrafts.tiktok?.integration_price !== undefined 
+            ? priceDrafts.tiktok.integration_price.toString() 
+            : (updatedPlatformsData.tiktok?.integrationPrice?.toString() || ""),
 
         // YouTube данные
         youtube_username: updatedPlatformsData.youtube?.username || "",
@@ -208,17 +209,17 @@ export const useProfileDrafts = (profileId?: string) => {
         youtube_story_reach:
           updatedPlatformsData.youtube?.storyReach?.toString() || "",
         youtube_post_price:
-          priceDrafts.youtube?.post_price?.toString() ||
-          updatedPlatformsData.youtube?.price?.toString() ||
-          "",
+          priceDrafts.youtube?.post_price !== undefined 
+            ? priceDrafts.youtube.post_price.toString() 
+            : (updatedPlatformsData.youtube?.price?.toString() || ""),
         youtube_story_price:
-          priceDrafts.youtube?.story_price?.toString() ||
-          updatedPlatformsData.youtube?.storyPrice?.toString() ||
-          "",
+          priceDrafts.youtube?.story_price !== undefined 
+            ? priceDrafts.youtube.story_price.toString() 
+            : (updatedPlatformsData.youtube?.storyPrice?.toString() || ""),
         youtube_integration_price:
-          priceDrafts.youtube?.post_price?.toString() ||
-          updatedPlatformsData.youtube?.price?.toString() ||
-          "",
+          priceDrafts.youtube?.integration_price !== undefined 
+            ? priceDrafts.youtube.integration_price.toString() 
+            : (updatedPlatformsData.youtube?.integrationPrice?.toString() || ""),
 
         // Telegram данные
         telegram_username: updatedPlatformsData.telegram?.username || "",
@@ -232,21 +233,21 @@ export const useProfileDrafts = (profileId?: string) => {
         telegram_story_reach:
           updatedPlatformsData.telegram?.storyReach?.toString() || "",
         telegram_post_price:
-          priceDrafts.telegram?.post_price?.toString() ||
-          updatedPlatformsData.telegram?.price?.toString() ||
-          "",
+          priceDrafts.telegram?.post_price !== undefined 
+            ? priceDrafts.telegram.post_price.toString() 
+            : (updatedPlatformsData.telegram?.price?.toString() || ""),
         telegram_story_price:
-          priceDrafts.telegram?.story_price?.toString() ||
-          updatedPlatformsData.telegram?.storyPrice?.toString() ||
-          "",
+          priceDrafts.telegram?.story_price !== undefined 
+            ? priceDrafts.telegram.story_price.toString() 
+            : (updatedPlatformsData.telegram?.storyPrice?.toString() || ""),
         telegram_integration_price:
-          priceDrafts.telegram?.post_price?.toString() ||
-          updatedPlatformsData.telegram?.price?.toString() ||
-          "",
+          priceDrafts.telegram?.integration_price !== undefined 
+            ? priceDrafts.telegram.integration_price.toString() 
+            : (updatedPlatformsData.telegram?.integrationPrice?.toString() || ""),
 
         // Темы
-        topics,
-        banned_topics: bannedTopics,
+        topics: topics.map(t => t.toString()),
+        banned_topics: bannedTopics.map(t => t.toString()),
       };
 
       return mergedData;

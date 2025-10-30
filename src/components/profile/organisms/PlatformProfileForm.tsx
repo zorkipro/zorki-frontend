@@ -137,7 +137,7 @@ const PlatformProfileFormComponent = ({
                 {/* Screenshots Section - только для платформ */}
                 <ScreenshotManagement
                   platform={platform}
-                  screenshots={screenshots}
+                  screenshots={stats.screenshots || []}
                   uploadingScreenshot={uploadingScreenshot}
                   loading={loadingScreenshots}
                   error={screenshotError}
@@ -160,6 +160,7 @@ const PlatformProfileFormComponent = ({
                 hasMaxPlatforms={hasMaxPlatforms}
                 bloggerId={bloggerId}
                 onPlatformUpdated={onActiveTabChange} // НОВОЕ: callback для переключения таба
+                isVerified={isVerified} // Передаем статус верификации
               />
             )}
           </div>

@@ -56,19 +56,9 @@ export class ResponseHandler {
     endpoint: string,
   ): Promise<ParsedResponse<T>> {
     // Логируем ответ для админских эндпоинтов
-    if (endpoint.includes('/admin/')) {
-      console.log('📥 API Response Debug:', {
-        endpoint,
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        ok: response.ok
-      });
-    }
 
     // Handle 204 No Content
     if (response.status === 204) {
-      console.log('✅ 204 No Content response for:', endpoint);
       return {
         data: undefined,
         hasError: false,
@@ -84,11 +74,7 @@ export class ResponseHandler {
       try {
         data = await response.json();
       } catch (error) {
-        logger.error("Failed to parse JSON response", error, {
-          component: "ResponseHandler",
-          endpoint,
-          status: response.status,
-        });
+        logger.error("Failed to parse JSON response", error);
 
         // Если парсинг провалился, но ответ OK - возвращаем undefined
         if (response.ok) {

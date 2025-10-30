@@ -38,6 +38,7 @@ function mapApiSocialTypeToLocal(apiType: ApiSocialType): string | null {
 export interface PlatformDraftData {
   post_price?: number;
   story_price?: number;
+  integration_price?: number;
   post_reach?: number;
   story_reach?: number;
 }
@@ -93,7 +94,7 @@ function mapWorkFormatFromApi(
       return "профдоход";
     case "SERVICE_CONTRACT":
       return "договор подряда";
-    case "LIMITED_LIABILITY_COMPANY":
+    case "LLC":
       return "ООО";
     default:
       return "ИП";
@@ -146,6 +147,9 @@ export function extractPriceDrafts(
         post_price: draft.postPrice ? parseFloat(draft.postPrice) : undefined,
         story_price: draft.storiesPrice
           ? parseFloat(draft.storiesPrice)
+          : undefined,
+        integration_price: draft.integrationPrice
+          ? parseFloat(draft.integrationPrice)
           : undefined,
       };
     }
@@ -214,12 +218,12 @@ export function mergePlatformDrafts<T extends Record<string, any>>(
     ) {
       updatedData[platform] = {
         ...updatedData[platform],
-        price: priceData.post_price ?? updatedData[platform]?.price ?? 0,
-        storyPrice:
-          priceData.story_price ?? updatedData[platform]?.storyPrice ?? 0,
-        reach: coverageData.post_reach ?? updatedData[platform]?.reach ?? 0,
-        storyReach:
-          coverageData.story_reach ?? updatedData[platform]?.storyReach ?? 0,
+        // Черновики имеют приоритет над основными данными
+        price: priceData.post_price !== undefined ? priceData.post_price : (updatedData[platform]?.price ?? 0),
+        storyPrice: priceData.story_price !== undefined ? priceData.story_price : (updatedData[platform]?.storyPrice ?? 0),
+        integrationPrice: priceData.integration_price !== undefined ? priceData.integration_price : (updatedData[platform]?.integrationPrice ?? 0),
+        reach: coverageData.post_reach !== undefined ? coverageData.post_reach : (updatedData[platform]?.reach ?? 0),
+        storyReach: coverageData.story_reach !== undefined ? coverageData.story_reach : (updatedData[platform]?.storyReach ?? 0),
       };
     }
   });

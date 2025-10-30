@@ -151,12 +151,6 @@ export async function adminConfirm2FA(
   }
 
   // Добавляем логирование для отладки
-  console.log("🔐 AdminConfirm2FA Debug:", {
-    code,
-    tempTokenLength: tempToken.length,
-    tempTokenPrefix: tempToken.substring(0, 20) + "...",
-    endpoint: "/auth/admin/2fa/confirm"
-  });
 
   return apiRequest<AdminLoginOutputDto>("/auth/admin/2fa/confirm", {
     method: "POST",
@@ -660,21 +654,13 @@ export async function adminUpdateBloggerSocialPrice(
   bloggerId: number,
   data: BloggerUpdateSocialPriceInputDto,
 ): Promise<void> {
-  console.log('🌐 adminUpdateBloggerSocialPrice API call:', {
-    url: `/admin/blogger/social-price/${bloggerId}`,
-    method: 'PUT',
-    data
-  });
-  
   try {
     const result = await apiRequest<void>(`/admin/blogger/social-price/${bloggerId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
-    console.log('✅ adminUpdateBloggerSocialPrice API response:', result);
     return result;
   } catch (error) {
-    console.error('❌ adminUpdateBloggerSocialPrice API error:', error);
     throw error;
   }
 }
@@ -776,7 +762,6 @@ export async function adminEnrichBloggersWithGender(
         } as AdminBloggerWithGender;
       } catch (error) {
         // Если не удалось получить информацию о поле, используем null
-        console.warn(`Failed to get gender info for blogger ${blogger.id}:`, error);
         return {
           ...blogger,
           genderType: null,

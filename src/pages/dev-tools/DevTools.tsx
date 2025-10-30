@@ -14,7 +14,7 @@ const DevTools: React.FC = () => {
           </h2>
           <div className="space-y-2 text-gray-600">
             <p>
-              <strong>Название:</strong> Zorki7 - Blogger Platform
+              <strong>Название:</strong> Zorki.pro - Blogger Platform
             </p>
             <p>
               <strong>Версия:</strong> 0.0.0

@@ -79,7 +79,6 @@ export const AddTelegramAccountDialog: React.FC<AddTelegramAccountDialogProps> =
       
     } catch (error) {
       // Error is handled by the parent component via toast
-      console.error("Error adding Telegram account:", error);
     } finally {
       setLoading(false);
     }
@@ -105,7 +104,6 @@ export const AddTelegramAccountDialog: React.FC<AddTelegramAccountDialogProps> =
       
     } catch (error) {
       // Error is handled by the parent component via toast
-      console.error("Error confirming Telegram account:", error);
       // Don't close dialog on error - let user try again
     } finally {
       setLoading(false);
