@@ -23,6 +23,8 @@ import { ALL_PLATFORMS, platformToApi } from "@/types/platform";
  * Hook for saving profile changes
  */
 export const useProfileSaver = (
+
+
   profile: Influencer | null,
   formData: EditData,
   setAvailablePlatforms: (
@@ -38,7 +40,7 @@ export const useProfileSaver = (
 
   const handleSave = useCallback(
     async (data: Partial<EditData>) => {
-      
+
       if (!user || !profile) return;
 
       try {
@@ -51,7 +53,7 @@ export const useProfileSaver = (
         await updateBloggerProfile(Number(profile.id), profileUpdateData);
 
         // Сохранение цен платформ последовательно (чтобы избежать deadlock)
-        
+
         // Фильтруем только платформы с изменениями (как в админке)
         const platformsWithChanges = ALL_PLATFORMS.filter((platform) => {
           const postPriceKey = `${platform}_post_price` as keyof EditData;
@@ -59,13 +61,13 @@ export const useProfileSaver = (
           const integrationPriceKey = `${platform}_integration_price` as keyof EditData;
 
           // Проверяем ТОЛЬКО data (новые изменения), не formData
-          return data[postPriceKey] !== undefined || 
-                 data[storyPriceKey] !== undefined || 
+          return data[postPriceKey] !== undefined ||
+                 data[storyPriceKey] !== undefined ||
                  data[integrationPriceKey] !== undefined;
         });
 
         const platformPriceUpdates = platformsWithChanges.map((platform) => {
-          
+
           const postPriceKey = `${platform}_post_price` as keyof EditData;
           const storyPriceKey = `${platform}_story_price` as keyof EditData;
           const integrationPriceKey =
@@ -94,8 +96,8 @@ export const useProfileSaver = (
             }
 
             // Проверяем, что есть хотя бы одно валидное значение для отправки
-            const hasValidData = priceUpdateData.postPrice !== undefined || 
-                               priceUpdateData.storiesPrice !== undefined || 
+            const hasValidData = priceUpdateData.postPrice !== undefined ||
+                               priceUpdateData.storiesPrice !== undefined ||
                                priceUpdateData.integrationPrice !== undefined;
 
             if (!hasValidData) {
@@ -220,3 +222,144 @@ export const useProfileSaver = (
     handleSave,
   };
 };
+
+// import { useState, useCallback } from "react";
+// import { useAuth } from "@/contexts/AuthContext";
+// import { useBlogger } from "@/contexts/BloggerContext";
+// import { updateBloggerProfile, updateBloggerSocialPrice } from "@/api/endpoints/blogger";
+// import { mapLocalToApiUpdate } from "@/utils/api/mappers";
+// import { mapProfileChangesToBloggerFields, logProfileChanges } from "@/utils/profile-update-mapper";
+// import { APIError } from "@/api/client";
+// import { useToast } from "@/hooks/use-toast";
+// import type { Influencer, PlatformData, EditData } from "@/types/profile";
+// import { ALL_PLATFORMS, platformToApi } from "@/types/platform";
+//
+// /**
+//  * Хук для сохранения профиля блогера.
+//  * Отвечает за:
+//  *  - Обновление основного профиля
+//  *  - Обновление цен платформ
+//  *  - Синхронизацию с контекстами и локальным состоянием
+//  */
+// export const useProfileSaver = (
+//     profile: Influencer | null,
+//     formData: EditData,
+//     setAvailablePlatforms: React.Dispatch<React.SetStateAction<Record<string, PlatformData>>>,
+//     topicLookup: Record<string, number>,
+//     updateFormData?: (data: Partial<EditData>) => void,
+// ) => {
+//   const { user } = useAuth();
+//   const { updateBloggerFields } = useBlogger();
+//   const { toast } = useToast();
+//   const [saving, setSaving] = useState(false);
+//
+//   /**
+//    * Проверка: изменились ли цены для платформы
+//    */
+//   const platformHasPriceChanges = (platform: string, data: Partial<EditData>) => {
+//     const priceKeys = ["post_price", "story_price", "integration_price"] as const;
+//     return priceKeys.some((key) => data[`${platform}_${key}` as keyof EditData] !== undefined);
+//   };
+//
+//   /**
+//    * Формирование данных для обновления платформы
+//    */
+//   const makePlatformUpdateData = (platform: string, data: Partial<EditData>) => {
+//     const d: Partial<{
+//       type: string;
+//       postPrice?: number;
+//       storiesPrice?: number;
+//       integrationPrice?: number;
+//     }> = { type: platformToApi(platform) };
+//
+//     const p = (key: string) => data[key as keyof EditData];
+//
+//     const post = parseFloat(String(p(`${platform}_post_price`))) || undefined;
+//     const story = platform !== "youtube"
+//         ? parseFloat(String(p(`${platform}_story_price`))) || undefined
+//         : undefined;
+//     const integration = parseFloat(String(p(`${platform}_integration_price`))) || undefined;
+//
+//     if (post !== undefined) d.postPrice = post;
+//     if (story !== undefined) d.storiesPrice = story;
+//     if (integration !== undefined) d.integrationPrice = integration;
+//
+//     return Object.keys(d).length > 1 ? d : null;
+//   };
+//
+//   const handleSave = useCallback(
+//       async (data: Partial<EditData>) => {
+//         if (!user || !profile) return;
+//         if (!Object.keys(data).length) return;
+//
+//         try {
+//           setSaving(true);
+//
+//           // 1️⃣ Основное обновление профиля
+//           const merged = { ...formData, ...data };
+//           const payload = mapLocalToApiUpdate(merged, topicLookup);
+//           await updateBloggerProfile(Number(profile.id), payload);
+//
+//           // 2️⃣ Обновление цен по платформам
+//           const updates = ALL_PLATFORMS.flatMap((platform) => {
+//             if (!platformHasPriceChanges(platform, data)) return [];
+//             const platformData = makePlatformUpdateData(platform, data);
+//             return platformData
+//                 ? updateBloggerSocialPrice(Number(profile.id), platformData)
+//                 : [];
+//           });
+//
+//           await Promise.allSettled(updates);
+//
+//           // 3️⃣ Обновление локального состояния
+//           setAvailablePlatforms((prev) => {
+//             const updated = { ...prev };
+//             for (const platform of ALL_PLATFORMS) {
+//               const p = (key: keyof EditData) => data[key] ?? formData[key];
+//               updated[platform] = {
+//                 ...updated[platform],
+//                 price: parseFloat(p(`${platform}_post_price` as keyof EditData) as string) || updated[platform]?.price,
+//                 storyPrice:
+//                     platform !== "youtube"
+//                         ? parseFloat(p(`${platform}_story_price` as keyof EditData) as string) || updated[platform]?.storyPrice
+//                         : updated[platform]?.storyPrice,
+//                 integrationPrice:
+//                     parseFloat(p(`${platform}_integration_price` as keyof EditData) as string) ||
+//                     updated[platform]?.integrationPrice,
+//                 reach: parseFloat(p(`${platform}_post_reach` as keyof EditData) as string) || updated[platform]?.reach,
+//                 storyReach:
+//                     parseFloat(p(`${platform}_story_reach` as keyof EditData) as string) || updated[platform]?.storyReach,
+//               };
+//             }
+//             return updated;
+//           });
+//
+//           // 4️⃣ Локальный апдейт формы и контекста
+//           updateFormData?.(data);
+//
+//           const bloggerFields = mapProfileChangesToBloggerFields(data);
+//           if (Object.keys(bloggerFields).length) {
+//             logProfileChanges(data, "useProfileSaver");
+//             updateBloggerFields(bloggerFields);
+//           }
+//
+//           toast({
+//             title: "Успешно",
+//             description: "Профиль обновлён",
+//           });
+//         } catch (err) {
+//           const message = err instanceof APIError ? err.message : "Не удалось сохранить изменения";
+//           toast({
+//             title: "Ошибка",
+//             description: message,
+//             variant: "destructive",
+//           });
+//         } finally {
+//           setSaving(false);
+//         }
+//       },
+//       [user, profile, formData, topicLookup, setAvailablePlatforms, updateFormData, updateBloggerFields, toast],
+//   );
+//
+//   return { saving, handleSave };
+// };
