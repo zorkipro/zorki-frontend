@@ -26,8 +26,7 @@ import { CooperationTermsSection } from "@/components/profile/CooperationTermsSe
 import { useProfileEditor } from "@/hooks/profile/useProfileEditor";
 import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager";
 
-// API
-import { getBloggerById } from "@/api/endpoints/blogger";
+// API импорт удален - больше не используется, скриншоты загружаются через useProfileData
 
 // Utils
 import { formatNumber } from "@/utils/formatters";
@@ -68,80 +67,9 @@ export const ProfileEditor = () => {
     [setAvailablePlatforms],
   );
 
-  // Принудительно загружаем скриншоты для всех платформ при инициализации
-  const loadScreenshotsForAllPlatforms = useCallback(async () => {
-    if (!profile?.id || !availablePlatforms) return;
-    
-    const platforms = Object.keys(availablePlatforms).filter(p => p !== 'settings');
-    
-    try {
-      // Делаем ОДИН запрос для всех платформ
-      const response = await getBloggerById(Number(profile.id));
-      
-      // Обрабатываем скриншоты для всех платформ из одного ответа
-      platforms.forEach(platform => {
-        let platformScreenshots: any[] = [];
-        
-        // Проверяем одобренные платформы
-        if (response.social) {
-          for (const social of response.social) {
-            if (social.type.toLowerCase() === platform && social.statsFiles) {
-              const screenshots = social.statsFiles.map(file => ({
-                id: file.id,
-                influencer_id: profile.id,
-                platform: social.type.toLowerCase(),
-                file_name: file.name,
-                file_url: file.publicUrl,
-                file_size: file.size * 1024,
-                width: file.width,
-                height: file.height,
-                created_at: file.createdAt,
-                is_draft: false,
-              }));
-              
-              platformScreenshots.push(...screenshots);
-            }
-          }
-        }
-        
-        // Проверяем платформы на модерации
-        if (response.socialMediaDrafts) {
-          for (const socialDraft of response.socialMediaDrafts) {
-            if (socialDraft.type.toLowerCase() === platform && socialDraft.statsFiles) {
-              const screenshots = socialDraft.statsFiles.map(file => ({
-                id: file.id,
-                influencer_id: profile.id,
-                platform: socialDraft.type.toLowerCase(),
-                file_name: file.name,
-                file_url: file.publicUrl,
-                file_size: file.size * 1024,
-                width: file.width,
-                height: file.height,
-                created_at: file.createdAt,
-                is_draft: false,
-              }));
-              
-              platformScreenshots.push(...screenshots);
-            }
-          }
-        }
-        
-        // Обновляем скриншоты для платформы только если они есть
-        if (platformScreenshots.length > 0) {
-          handleScreenshotsUpdate(platform, platformScreenshots);
-        }
-      });
-    } catch (error) {
-      // Ошибка загрузки скриншотов - не критично, продолжаем работу
-    }
-  }, [profile?.id, availablePlatforms, handleScreenshotsUpdate]);
-
-  // Загружаем скриншоты для всех платформ после загрузки профиля
-  useEffect(() => {
-    if (profile && availablePlatforms && Object.keys(availablePlatforms).length > 0) {
-      loadScreenshotsForAllPlatforms();
-    }
-  }, [profile, availablePlatforms, loadScreenshotsForAllPlatforms]);
+  // Скриншоты уже загружаются в useProfileData и добавляются в availablePlatforms
+  // Дополнительный запрос getBloggerById не нужен, так как данные уже доступны
+  // Скриншоты автоматически обновляются через handleScreenshotsUpdate при загрузке
 
   // Use the fixed useScreenshotManager hook with platform support
   const {

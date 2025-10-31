@@ -18,10 +18,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 // Mock logger
 vi.mock("@/utils/logger", () => ({
   logger: {
-    debug: vi.fn(),
-    warn: vi.fn(),
     error: vi.fn(),
-    info: vi.fn(),
+    critical: vi.fn(),
   },
 }));
 

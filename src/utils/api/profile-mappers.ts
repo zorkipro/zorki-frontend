@@ -152,7 +152,7 @@ export function mapApiDetailBloggerToLocal(
           | "ООО")
       : undefined,
     restrictedTopics: api.restrictedTopics?.map((t) => t.id) || [],
-    cooperationConditions: "",
+    cooperationConditions: api.cooperation || "",
     workFormat: api.workFormat ? WORK_FORMAT_MAP[api.workFormat] : undefined,
     paymentTerms: "",
     contact_url: api.contactLink || undefined,
@@ -206,6 +206,7 @@ export function mapLocalToApiUpdate(
     name: name || undefined,
     lastName: lastName || undefined,
     description: local.description || undefined,
+    cooperation: local.cooperation_conditions || undefined,
     contactLink: local.contact_link || undefined,
     workFormat: local.work_format
       ? WORK_FORMAT_REVERSE[local.work_format]

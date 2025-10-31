@@ -3,7 +3,7 @@ import { getAllBloggers } from "@/api/endpoints/blogger";
 import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
 import { APIError } from "@/api/client";
 import { useToast } from "@/hooks/use-toast";
-import { logError, logWarn } from "@/utils/logger";
+import { logError } from "@/utils/logger";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   getAdminLinkRequests,
@@ -169,17 +169,12 @@ export const useAdminBloggers = () => {
     [debouncedSearchTerm],
   ); // Используем debounced значение
 
-  // Эффект для обычной загрузки (без поиска)
-  useEffect(() => {
-    if (!debouncedSearchTerm) {
-      fetchBloggers(1, false, false);
-    }
-  }, [fetchBloggers, debouncedSearchTerm]);
-
-  // Эффект для поиска
+  // Объединенный эффект для загрузки и поиска (предотвращает дублирование запросов)
   useEffect(() => {
     if (debouncedSearchTerm) {
       fetchBloggers(1, false, true);
+    } else {
+      fetchBloggers(1, false, false);
     }
   }, [debouncedSearchTerm, fetchBloggers]);
 
@@ -200,9 +195,6 @@ export const useAdminBloggers = () => {
       setLinkRequests((prev) => {
         const filtered = prev.filter(
           (req) => Number(req.id) !== Number(requestId),
-        );
-        logWarn(
-          `🔄 Обновление состояния после одобрения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`,
         );
         return filtered;
       });
@@ -254,9 +246,6 @@ export const useAdminBloggers = () => {
       setLinkRequests((prev) => {
         const filtered = prev.filter(
           (req) => Number(req.id) !== Number(requestId),
-        );
-        logWarn(
-          `🔄 Обновление состояния после отклонения: удален запрос ID ${requestId}, осталось ${filtered.length} запросов`,
         );
         return filtered;
       });

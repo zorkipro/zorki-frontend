@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getBloggerById } from "@/api/endpoints/blogger";
 import { mapApiDetailBloggerToLocal } from "@/utils/api/mappers";
@@ -77,6 +77,9 @@ export const useProfileData = () => {
   const [availablePlatforms, setAvailablePlatforms] = useState<
     Record<string, any>
   >({});
+
+  // Отслеживаем предыдущий bloggerId для предотвращения лишних запросов
+  const previousBloggerIdRef = useRef<string | number | null>(null);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -279,10 +282,22 @@ export const useProfileData = () => {
   }, [user, bloggerInfo, lastLinkRequest, handleError]);
 
   // Автоматически загружаем профиль при изменении bloggerInfo или lastLinkRequest
+  // Используем useRef для отслеживания предыдущего bloggerId, чтобы избежать лишних запросов
   useEffect(() => {
     const bloggerId = bloggerInfo?.id || lastLinkRequest?.bloggerId;
-    if (user && bloggerId && !bloggerInfoLoading) {
+    const currentBloggerId = bloggerId ?? null;
+    
+    // Загружаем только если:
+    // 1. Есть пользователь
+    // 2. Есть bloggerId
+    // 3. Не идет загрузка
+    // 4. bloggerId изменился (предотвращаем дублирование)
+    if (user && currentBloggerId && !bloggerInfoLoading && previousBloggerIdRef.current !== currentBloggerId) {
+      previousBloggerIdRef.current = currentBloggerId;
       fetchProfile();
+    } else if (!currentBloggerId) {
+      // Сбрасываем ref если bloggerId стал null
+      previousBloggerIdRef.current = null;
     }
   }, [user, bloggerInfo, lastLinkRequest, bloggerInfoLoading, fetchProfile]);
 

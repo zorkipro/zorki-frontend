@@ -7,11 +7,14 @@ import { useParserAccounts } from "@/hooks/admin/useParserAccounts";
 import { ParserAccountsTable } from "@/components/admin/parser/ParserAccountsTable";
 import { AddInstagramAccountDialog } from "@/components/admin/parser/AddInstagramAccountDialog";
 import { AddTelegramAccountDialog } from "@/components/admin/parser/AddTelegramAccountDialog";
+import { AddYouTubeAccountDialog } from "@/components/admin/parser/AddYouTubeAccountDialog";
 import { PlatformNotAvailableMessage } from "@/components/admin/parser/PlatformNotAvailableMessage";
 import type { ParserPlatform } from "@/api/types";
 
 const ParserAccountsManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ParserPlatform>("INSTAGRAM");
+  const [igAuthStatus, setIgAuthStatus] = useState<"active" | "inactive">("active");
+  const [tgAuthStatus, setTgAuthStatus] = useState<"active" | "inactive">("active");
   
   const {
     // Instagram
@@ -25,21 +28,47 @@ const ParserAccountsManagement: React.FC = () => {
     addIgAccount,
     deleteIgAccount,
     logoutIgAccount,
+    reauthIgAccount,
     
     // Telegram
+    tgAccounts,
+    tgLoading,
+    tgError,
+    tgHasMore,
+    tgTotalCount,
+    fetchTgAccounts,
+    loadMoreTgAccounts,
     addTgAccount,
     confirmTgAccount,
+    deleteTgAccount,
+    logoutTgAccount,
+    reauthTgAccount,
+    
+    // YouTube
+    ytAccounts,
+    ytLoading,
+    ytError,
+    ytHasMore,
+    ytTotalCount,
+    fetchYtAccounts,
+    loadMoreYtAccounts,
+    addYtAccount,
+    deleteYtAccount,
     
     // General
     isProcessing,
   } = useParserAccounts();
 
-  // Load Instagram accounts on mount
+  // Load accounts when tab changes
   useEffect(() => {
     if (activeTab === "INSTAGRAM") {
-      fetchIgAccounts();
+      fetchIgAccounts({ isAuthorized: igAuthStatus === "active" });
+    } else if (activeTab === "TELEGRAM") {
+      fetchTgAccounts({ isAuthorized: tgAuthStatus === "active" });
+    } else if (activeTab === "YOUTUBE") {
+      fetchYtAccounts();
     }
-  }, [activeTab, fetchIgAccounts]);
+  }, [activeTab, igAuthStatus, tgAuthStatus, fetchIgAccounts, fetchTgAccounts, fetchYtAccounts]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as ParserPlatform);
@@ -69,7 +98,42 @@ const ParserAccountsManagement: React.FC = () => {
     }
   };
 
-  if (igLoading && igAccounts.length === 0) {
+  const handleReauthInstagram = async (id: number, username: string, password: string) => {
+    await reauthIgAccount(id, username, password);
+  };
+
+  const handleDeleteTelegram = async (id: number) => {
+    if (window.confirm("Вы уверены, что хотите удалить этот Telegram аккаунт?")) {
+      await deleteTgAccount(id);
+    }
+  };
+
+  const handleLogoutTelegram = async (id: number) => {
+    if (window.confirm("Вы уверены, что хотите отключить этот Telegram аккаунт?")) {
+      await logoutTgAccount(id);
+    }
+  };
+
+  const handleReauthTelegram = async (id: number, phone: string, code: string) => {
+    await reauthTgAccount(id, phone, code);
+  };
+
+  const handleAddYouTube = async (token: string, name: string) => {
+    await addYtAccount(token, name);
+  };
+
+  const handleDeleteYouTube = async (id: number) => {
+    if (window.confirm("Вы уверены, что хотите удалить эту YouTube сессию?")) {
+      await deleteYtAccount(id);
+    }
+  };
+
+  // Show loading spinner only for initial load
+  if (
+    (activeTab === "INSTAGRAM" && igLoading && igAccounts.length === 0) ||
+    (activeTab === "TELEGRAM" && tgLoading && tgAccounts.length === 0) ||
+    (activeTab === "YOUTUBE" && ytLoading && ytAccounts.length === 0)
+  ) {
     return <LoadingSpinner fullScreen text="Загрузка аккаунтов парсера..." />;
   }
 
@@ -130,24 +194,60 @@ const ParserAccountsManagement: React.FC = () => {
               </div>
             </div>
 
-            {igError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <div className="text-sm text-red-600">
-                  <strong>Ошибка:</strong> {igError}
-                </div>
-              </div>
-            )}
+            {/* Instagram Auth Status Tabs */}
+            <Tabs value={igAuthStatus} onValueChange={(v) => setIgAuthStatus(v as "active" | "inactive")} className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2 gap-1 h-auto">
+                <TabsTrigger value="active" className="flex items-center space-x-2 py-2">
+                  <span className="text-sm font-medium">Активные</span>
+                </TabsTrigger>
+                <TabsTrigger value="inactive" className="flex items-center space-x-2 py-2">
+                  <span className="text-sm font-medium">Неактивные</span>
+                </TabsTrigger>
+              </TabsList>
 
-            <ParserAccountsTable
-              accounts={igAccounts}
-              platform="INSTAGRAM"
-              loading={igLoading}
-              hasMore={igHasMore}
-              onLoadMore={loadMoreIgAccounts}
-              onDelete={handleDeleteInstagram}
-              onLogout={handleLogoutInstagram}
-              totalCount={igTotalCount}
-            />
+              <TabsContent value="active" className="space-y-4">
+                {igError && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div className="text-sm text-red-600">
+                      <strong>Ошибка:</strong> {igError}
+                    </div>
+                  </div>
+                )}
+
+                <ParserAccountsTable
+                  accounts={igAccounts}
+                  platform="INSTAGRAM"
+                  loading={igLoading}
+                  hasMore={igHasMore}
+                  onLoadMore={() => loadMoreIgAccounts({ isAuthorized: true })}
+                  onDelete={handleDeleteInstagram}
+                  onLogout={handleLogoutInstagram}
+                  totalCount={igTotalCount}
+                />
+              </TabsContent>
+
+              <TabsContent value="inactive" className="space-y-4">
+                {igError && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div className="text-sm text-red-600">
+                      <strong>Ошибка:</strong> {igError}
+                    </div>
+                  </div>
+                )}
+
+                <ParserAccountsTable
+                  accounts={igAccounts}
+                  platform="INSTAGRAM"
+                  loading={igLoading}
+                  hasMore={igHasMore}
+                  onLoadMore={() => loadMoreIgAccounts({ isAuthorized: false })}
+                  onDelete={handleDeleteInstagram}
+                  onLogout={handleLogoutInstagram}
+                  onReauth={handleReauthInstagram}
+                  totalCount={igTotalCount}
+                />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* Telegram Tab */}
@@ -156,7 +256,7 @@ const ParserAccountsManagement: React.FC = () => {
               <div className="text-sm text-muted-foreground flex-1 min-w-0">
                 <p className="hidden sm:block">
                   Управление Telegram аккаунтами для парсинга данных. 
-                  Добавление аккаунтов работает, но просмотр списка сессий пока недоступен.
+                  Полностью функциональный с возможностью добавления, удаления и мониторинга активности.
                 </p>
                 <p className="sm:hidden">
                   Управление Telegram аккаунтами для парсинга данных.
@@ -171,32 +271,99 @@ const ParserAccountsManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* Telegram limitation notice */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-              <div className="text-sm text-yellow-800">
-                <strong>Ограничение:</strong> Просмотр списка Telegram сессий недоступен. 
-                Обратитесь к backend разработчику для добавления эндпоинта <code>GET /tg-client</code>.
-              </div>
-            </div>
+            {/* Telegram Auth Status Tabs */}
+            <Tabs value={tgAuthStatus} onValueChange={(v) => setTgAuthStatus(v as "active" | "inactive")} className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2 gap-1 h-auto">
+                <TabsTrigger value="active" className="flex items-center space-x-2 py-2">
+                  <span className="text-sm font-medium">Активные</span>
+                </TabsTrigger>
+                <TabsTrigger value="inactive" className="flex items-center space-x-2 py-2">
+                  <span className="text-sm font-medium">Неактивные</span>
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Empty state for Telegram */}
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">✈️</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Telegram аккаунты
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Добавление аккаунтов работает, но просмотр списка пока недоступен
-              </p>
-              <div className="text-sm text-gray-500">
-                Используйте кнопку "Добавить Telegram" для добавления новых аккаунтов
-              </div>
-            </div>
+              <TabsContent value="active" className="space-y-4">
+                {tgError && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div className="text-sm text-red-600">
+                      <strong>Ошибка:</strong> {tgError}
+                    </div>
+                  </div>
+                )}
+
+                <ParserAccountsTable
+                  accounts={tgAccounts}
+                  platform="TELEGRAM"
+                  loading={tgLoading}
+                  hasMore={tgHasMore}
+                  onLoadMore={() => loadMoreTgAccounts({ isAuthorized: true })}
+                  onDelete={handleDeleteTelegram}
+                  onLogout={handleLogoutTelegram}
+                  totalCount={tgTotalCount}
+                />
+              </TabsContent>
+
+              <TabsContent value="inactive" className="space-y-4">
+                {tgError && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div className="text-sm text-red-600">
+                      <strong>Ошибка:</strong> {tgError}
+                    </div>
+                  </div>
+                )}
+
+                <ParserAccountsTable
+                  accounts={tgAccounts}
+                  platform="TELEGRAM"
+                  loading={tgLoading}
+                  hasMore={tgHasMore}
+                  onLoadMore={() => loadMoreTgAccounts({ isAuthorized: false })}
+                  onDelete={handleDeleteTelegram}
+                  onLogout={handleLogoutTelegram}
+                  onReauth={handleReauthTelegram}
+                  totalCount={tgTotalCount}
+                />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* YouTube Tab */}
-          <TabsContent value="YOUTUBE">
-            <PlatformNotAvailableMessage platform="YOUTUBE" />
+          <TabsContent value="YOUTUBE" className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="text-sm text-muted-foreground flex-1 min-w-0">
+                <p className="hidden sm:block">
+                  Управление YouTube API сессиями для парсинга данных. 
+                  Добавление и удаление сессий с YouTube API ключами.
+                </p>
+                <p className="sm:hidden">
+                  Управление YouTube сессиями для парсинга данных.
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <AddYouTubeAccountDialog
+                  onAddAccount={handleAddYouTube}
+                  disabled={isProcessing}
+                />
+              </div>
+            </div>
+
+            {ytError && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="text-sm text-red-600">
+                  <strong>Ошибка:</strong> {ytError}
+                </div>
+              </div>
+            )}
+
+            <ParserAccountsTable
+              accounts={ytAccounts}
+              platform="YOUTUBE"
+              loading={ytLoading}
+              hasMore={ytHasMore}
+              onLoadMore={loadMoreYtAccounts}
+              onDelete={handleDeleteYouTube}
+              totalCount={ytTotalCount}
+            />
           </TabsContent>
 
           {/* TikTok Tab */}

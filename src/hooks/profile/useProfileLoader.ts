@@ -10,10 +10,11 @@
  * Следует принципу Single Responsibility - только загрузка данных.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { getBloggerById } from "@/api/endpoints/blogger";
 import { mapApiDetailBloggerToLocal } from "@/utils/api/mappers";
 import type { Influencer, PlatformData, EditData } from "@/types/profile";
+import type { PublicGetBloggerByIdOutputDto } from "@/api/types";
 import { useProfileData } from "./useProfileData";
 import { useProfileDrafts } from "./useProfileDrafts";
 import { ALL_PLATFORMS } from "@/types/platform";
@@ -78,21 +79,32 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
   const [topics, setTopics] = useState<number[]>([]);
   const [bannedTopics, setBannedTopics] = useState<number[]>([]);
   const [loadingTopics, setLoadingTopics] = useState(false);
+  
+  // Флаг для предотвращения параллельных запросов fetchProfileData
+  const isFetchingRef = useRef(false);
 
   /**
-   * Загружает темы и запрещенные темы блогера через API
+   * Загружает темы и запрещенные темы блогера
+   * Использует уже загруженные данные из rawApiResponse, если они доступны
    */
   const loadTopics = useCallback(
     async (
       profileId: string,
+      apiResponse?: PublicGetBloggerByIdOutputDto,
     ): Promise<{ topics: number[]; bannedTopics: number[] }> => {
       setLoadingTopics(true);
 
       try {
-        const endTimer = () => {};
+        let apiProfile: PublicGetBloggerByIdOutputDto;
 
-        // Загружаем профиль через API, который содержит актуальные темы
-        const apiProfile = await getBloggerById(Number(profileId));
+        // Используем уже загруженные данные, если они есть
+        if (apiResponse) {
+          apiProfile = apiResponse;
+        } else {
+          // Делаем запрос только если данных нет
+          apiProfile = await getBloggerById(Number(profileId));
+        }
+
         const localProfile = mapApiDetailBloggerToLocal(apiProfile);
 
         // Получаем темы из профиля (они уже в правильном формате)
@@ -103,8 +115,6 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
 
         setTopics(loadedTopics);
         setBannedTopics(loadedBannedTopics);
-
-        endTimer();
 
         return { topics: loadedTopics, bannedTopics: loadedBannedTopics };
       } catch (err) {
@@ -174,17 +184,42 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
    */
   const loadProfileWithDrafts =
     useCallback(async (): Promise<EditData | null> => {
-      if (!profile || !availablePlatforms) {
-        await fetchProfileData();
+      // Если данные уже загружаются через useProfileData, ждем завершения загрузки
+      // Это предотвращает дублирование запросов
+      if (dataLoading || isFetchingRef.current) {
+        // Данные уже загружаются через useProfileData, ждем их завершения
+        // useProfileEditor будет вызван снова когда данные загрузятся (через изменение profile?.id)
+        return null;
       }
 
+      // Если данных нет, но загрузка не идет - значит они еще не начали загружаться
+      // В этом случае вызываем fetchProfileData, но только если еще не идет загрузка
+      if (!profile || !availablePlatforms) {
+        // Предотвращаем параллельные запросы
+        if (!dataLoading && !isFetchingRef.current) {
+          isFetchingRef.current = true;
+          try {
+            await fetchProfileData();
+          } finally {
+            isFetchingRef.current = false;
+          }
+        }
+        
+        // После попытки загрузки проверяем результат
+        // Если данных все еще нет, значит загрузка не завершилась или произошла ошибка
+        if (!profile || !availablePlatforms || !rawApiResponse) {
+          return null;
+        }
+      }
+
+      // Финальная проверка наличия всех необходимых данных
       if (!profile || !availablePlatforms || !rawApiResponse) {
         return null;
       }
 
-      // Загружаем темы
+      // Загружаем темы, используя уже загруженные данные
       const { topics: loadedTopics, bannedTopics: loadedBannedTopics } =
-        await loadTopics(profile.id);
+        await loadTopics(profile.id, rawApiResponse);
 
       // Пытаемся загрузить черновики
       const draftFormData = await loadDrafts(
@@ -210,6 +245,7 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
       profile,
       rawApiResponse,
       availablePlatforms,
+      dataLoading,
       fetchProfileData,
       loadTopics,
       loadDrafts,
@@ -220,12 +256,17 @@ export const useProfileLoader = (): ProfileLoaderReturn => {
    * Обновляет данные профиля
    */
   const refetch = useCallback(async () => {
+    // Обновляем данные профиля
     await fetchProfileData();
-
+    
+    // После обновления используем свежие данные для тем
+    // rawApiResponse обновится после fetchProfileData завершится
+    // Для надежности, если rawApiResponse есть - используем его, иначе делаем запрос
     if (profile) {
-      await loadTopics(profile.id);
+      // Используем обновленные данные если они есть, иначе делаем запрос
+      await loadTopics(profile.id, rawApiResponse || undefined);
     }
-  }, [fetchProfileData, loadTopics, profile]);
+  }, [fetchProfileData, loadTopics, profile, rawApiResponse]);
 
   return {
     profile,

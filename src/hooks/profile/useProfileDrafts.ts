@@ -150,7 +150,10 @@ export const useProfileDrafts = (profileId?: string) => {
           profileDraftFields.mart_registry ??
           apiResponse.isMartRegistry ??
           false,
-        cooperation_conditions: "", // Нет в API
+        cooperation_conditions:
+          profileDraftFields.cooperation_conditions ||
+          apiResponse.cooperation ||
+          "",
 
         // Instagram данные
         instagram_username: instagram.username,

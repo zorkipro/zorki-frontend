@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Blogger } from "@/types/blogger";
 import { getAllBloggers, getBloggerById } from "@/api/endpoints/blogger";
 import {
@@ -22,6 +22,9 @@ export const useBloggerProfile = (username?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Отслеживаем предыдущий username для предотвращения лишних запросов
+  const previousUsernameRef = useRef<string | undefined>(undefined);
+
   const fetchBloggerProfile = useCallback(async () => {
     if (!username) {
       setError("Username не указан");
@@ -35,6 +38,16 @@ export const useBloggerProfile = (username?: string) => {
       // Нормализуем username - убираем @ если есть
       const normalizedUsername = normalizeUsername(username);
 
+      // ⚠️ ОПТИМИЗАЦИЯ: Используем поиск по списку, затем детальный запрос
+      // Это необходимо, т.к.:
+      // 1. API списка возвращает только одну платформу (не все)
+      // 2. API списка не возвращает topics, restrictedTopics, множественные платформы
+      // 3. API списка не возвращает полную информацию (drafts, statsFiles и т.д.)
+      // 
+      // РЕКОМЕНДАЦИЯ БЭКЕНДУ:
+      // Добавить endpoint GET /blogger/public/by-username/:username для прямого получения
+      // детальной информации по username без предварительного поиска.
+      
       // Сначала ищем блогера по username в списке
       const searchResponse = await getAllBloggers({
         username: normalizedUsername,
@@ -49,7 +62,23 @@ export const useBloggerProfile = (username?: string) => {
 
       const bloggerData = searchResponse.items[0];
 
+      // ВАЖНО: Проверяем точное совпадение username
+      // API может делать частичный поиск (LIKE), поэтому нужно проверить точное совпадение
+      if (!bloggerData.social?.username) {
+        // Нет социального аккаунта или username
+        setError("Блогер не найден");
+        return;
+      }
+
+      const foundUsername = bloggerData.social.username;
+      if (foundUsername.toLowerCase() !== normalizedUsername.toLowerCase()) {
+        // Username не совпадает точно - это не тот блогер, который был запрошен
+        setError("Блогер не найден");
+        return;
+      }
+
       // Получаем детальную информацию о блогере по ID
+      // Это необходимо для получения полной информации (все платформы, topics, drafts и т.д.)
       const detailedResponse = await getBloggerById(bloggerData.id);
 
       // Преобразуем данные в локальный формат
@@ -70,9 +99,20 @@ export const useBloggerProfile = (username?: string) => {
     }
   }, [username, handleError]);
 
+  // Используем прямые зависимости вместо функции для предотвращения лишних запросов
   useEffect(() => {
-    fetchBloggerProfile();
-  }, [fetchBloggerProfile]);
+    // Нормализуем username для сравнения
+    const normalizedUsername = username ? normalizeUsername(username) : undefined;
+    
+    // Загружаем только если username изменился (предотвращаем дублирование)
+    if (normalizedUsername && previousUsernameRef.current !== normalizedUsername) {
+      previousUsernameRef.current = normalizedUsername;
+      fetchBloggerProfile();
+    } else if (!normalizedUsername) {
+      // Сбрасываем ref если username стал undefined
+      previousUsernameRef.current = undefined;
+    }
+  }, [username, fetchBloggerProfile]);
 
   return {
     blogger,

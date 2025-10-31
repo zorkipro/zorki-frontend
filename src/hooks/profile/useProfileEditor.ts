@@ -66,6 +66,17 @@ export const useProfileEditor = () => {
 
   // Загружаем данные профиля и черновики при монтировании
   useEffect(() => {
+    // Пропускаем если еще идет загрузка данных профиля
+    // useProfileData уже загружает данные автоматически, ждем завершения
+    if (loaderLoading) {
+      return;
+    }
+
+    // Пропускаем если нет ID профиля (данные еще не загружены)
+    if (!profile?.id) {
+      return;
+    }
+
     const initializeForm = async () => {
       const loadedData = await loadProfileWithDrafts();
 
@@ -76,7 +87,7 @@ export const useProfileEditor = () => {
 
     initializeForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.id]); // Запускаем только при изменении ID профиля
+  }, [profile?.id, loaderLoading]); // Запускаем только при изменении ID профиля и когда загрузка завершена
 
   // Объединяем все в единый интерфейс (фасад)
   return {

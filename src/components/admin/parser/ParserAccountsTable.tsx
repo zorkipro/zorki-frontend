@@ -16,6 +16,8 @@ import {
   Loader2,
   AlertCircle 
 } from "lucide-react";
+import { ReauthInstagramAccountDialog } from "./ReauthInstagramAccountDialog";
+import { ReauthTelegramAccountDialog } from "./ReauthTelegramAccountDialog";
 import type { ParserAccount, ParserPlatform } from "@/api/types";
 
 interface ParserAccountsTableProps {
@@ -26,6 +28,7 @@ interface ParserAccountsTableProps {
   onLoadMore?: () => void;
   onDelete?: (id: number) => void;
   onLogout?: (id: number) => void;
+  onReauth?: (id: number, username: string, password: string) => Promise<void> | ((id: number, phone: string, apiHash: string, apiId: number, code: string) => Promise<void>) | ((id: number, phoneOrUsername: string, apiHashOrPassword: string, apiId?: number, code?: string) => Promise<void>);
   totalCount?: number;
 }
 
@@ -37,6 +40,7 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
   onLoadMore,
   onDelete,
   onLogout,
+  onReauth,
   totalCount = 0,
 }) => {
   const formatDate = (dateString: string) => {
@@ -206,7 +210,23 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-1">
-                    {platform === "INSTAGRAM" && onLogout && (
+                    {platform === "INSTAGRAM" && !account.isAuthorized && onReauth && (
+                      <ReauthInstagramAccountDialog
+                        accountId={account.id}
+                        username={account.identifier}
+                        onReauth={onReauth as (id: number, username: string, password: string) => Promise<void>}
+                        disabled={loading}
+                      />
+                    )}
+                    {platform === "TELEGRAM" && !account.isAuthorized && onReauth && (
+                      <ReauthTelegramAccountDialog
+                        accountId={account.id}
+                        phone={account.identifier}
+                        onReauth={onReauth as (id: number, phone: string, code: string) => Promise<void>}
+                        disabled={loading}
+                      />
+                    )}
+                    {(platform === "INSTAGRAM" || platform === "TELEGRAM") && onLogout && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -255,7 +275,23 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
                 </div>
               </div>
               <div className="flex items-center space-x-1">
-                {platform === "INSTAGRAM" && onLogout && (
+                {platform === "INSTAGRAM" && !account.isAuthorized && onReauth && (
+                  <ReauthInstagramAccountDialog
+                    accountId={account.id}
+                    username={account.identifier}
+                    onReauth={onReauth as (id: number, username: string, password: string) => Promise<void>}
+                    disabled={loading}
+                  />
+                )}
+                {platform === "TELEGRAM" && !account.isAuthorized && onReauth && (
+                  <ReauthTelegramAccountDialog
+                    accountId={account.id}
+                    phone={account.identifier}
+                    onReauth={onReauth as (id: number, phone: string, apiHash: string, apiId: number, code: string) => Promise<void>}
+                    disabled={loading}
+                  />
+                )}
+                {(platform === "INSTAGRAM" || platform === "TELEGRAM") && onLogout && (
                   <Button
                     variant="ghost"
                     size="sm"

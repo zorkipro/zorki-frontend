@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   getAllCategories,
   getAllRestrictedTopics,
@@ -19,43 +19,134 @@ interface UseTopicsReturn {
   topicReverseLookup: Record<number, string>;
 }
 
+// Глобальный кэш для topics (модульный уровень)
+// Это предотвращает дублирование запросов при множественном использовании useTopics
+interface TopicsCache {
+  categories: TopicsOutputDto[] | null;
+  restrictedTopics: TopicsOutputDto[] | null;
+  loading: boolean;
+  error: string | null;
+  promise: Promise<void> | null;
+}
+
+const topicsCache: TopicsCache = {
+  categories: null,
+  restrictedTopics: null,
+  loading: false,
+  error: null,
+  promise: null,
+};
+
 /**
  * Хук для работы с тематиками
  * Предоставляет методы для получения ID по названию и наоборот
+ * 
+ * Использует глобальный кэш для предотвращения дублирования запросов
+ * при множественном использовании хука в разных компонентах
  */
 export const useTopics = (): UseTopicsReturn => {
-  const [categories, setCategories] = useState<TopicsOutputDto[]>([]);
-  const [restrictedTopics, setRestrictedTopics] = useState<TopicsOutputDto[]>(
-    [],
+  const [categories, setCategories] = useState<TopicsOutputDto[]>(
+    topicsCache.categories || []
   );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [restrictedTopics, setRestrictedTopics] = useState<TopicsOutputDto[]>(
+    topicsCache.restrictedTopics || []
+  );
+  const [loading, setLoading] = useState(topicsCache.loading);
+  const [error, setError] = useState<string | null>(topicsCache.error);
+  
+  // Используем ref для отслеживания первого рендера
+  const isMountedRef = useRef(false);
 
   // Загружаем тематики при инициализации
   useEffect(() => {
-    const loadTopics = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    isMountedRef.current = true;
 
-        const [categoriesData, restrictedTopicsData] = await Promise.all([
-          getAllCategories(),
-          getAllRestrictedTopics(),
-        ]);
+    // Если данные уже есть в кэше, используем их сразу
+    if (topicsCache.categories && topicsCache.restrictedTopics) {
+      setCategories(topicsCache.categories);
+      setRestrictedTopics(topicsCache.restrictedTopics);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
-        setCategories(categoriesData);
-        setRestrictedTopics(restrictedTopicsData);
-      } catch (err) {
-        logError("Error loading topics:", err);
-        setError("Ошибка загрузки тематик");
-        setCategories([]);
-        setRestrictedTopics([]);
-      } finally {
-        setLoading(false);
-      }
+    // Если уже идет загрузка, присоединяемся к существующему промису
+    if (topicsCache.promise) {
+      setLoading(true);
+      topicsCache.promise
+        .then(() => {
+          if (isMountedRef.current) {
+            setCategories(topicsCache.categories || []);
+            setRestrictedTopics(topicsCache.restrictedTopics || []);
+            setLoading(false);
+            setError(topicsCache.error);
+          }
+        })
+        .catch(() => {
+          if (isMountedRef.current) {
+            setLoading(false);
+            setError(topicsCache.error);
+            setCategories([]);
+            setRestrictedTopics([]);
+          }
+        });
+      return;
+    }
+
+    // Начинаем новую загрузку только если она еще не началась
+    if (!topicsCache.promise) {
+      setLoading(true);
+      const loadTopicsPromise = (async () => {
+        try {
+          topicsCache.loading = true;
+          topicsCache.error = null;
+
+          const [categoriesData, restrictedTopicsData] = await Promise.all([
+            getAllCategories(),
+            getAllRestrictedTopics(),
+          ]);
+
+          // Сохраняем в кэш
+          topicsCache.categories = categoriesData;
+          topicsCache.restrictedTopics = restrictedTopicsData;
+          topicsCache.loading = false;
+          topicsCache.error = null;
+        } catch (err) {
+          logError("Error loading topics:", err);
+          const errorMessage = "Ошибка загрузки тематик";
+          topicsCache.error = errorMessage;
+          topicsCache.loading = false;
+          throw err;
+        } finally {
+          topicsCache.promise = null;
+        }
+      })();
+
+      topicsCache.promise = loadTopicsPromise;
+      
+      loadTopicsPromise
+        .then(() => {
+          if (isMountedRef.current) {
+            setCategories(topicsCache.categories || []);
+            setRestrictedTopics(topicsCache.restrictedTopics || []);
+            setLoading(false);
+            setError(null);
+          }
+        })
+        .catch(() => {
+          if (isMountedRef.current) {
+            setError(topicsCache.error);
+            setCategories([]);
+            setRestrictedTopics([]);
+            setLoading(false);
+          }
+        });
+    }
+    
+    // Cleanup
+    return () => {
+      isMountedRef.current = false;
     };
-
-    loadTopics();
   }, []);
 
   // Получить ID категории по названию

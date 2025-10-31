@@ -23,6 +23,7 @@ import type {
   BloggerUpdateProfileInputDto,
   BloggerUpdateSocialPriceInputDto,
   ApiSocialType,
+  ApiGender,
   AdminBloggerWithGender,
   PublicGetBloggerByIdOutputDto,
   // Parser Accounts types
@@ -35,6 +36,8 @@ import type {
   TgClientConfirmOutputDto,
   GetIgSessionsParams,
   IgSessionsResponse,
+  BloggerLinkMediaTgRequestInputDto,
+  BloggerLinkMediaYtRequestInputDto,
 } from "../types";
 
 // ====== POST /auth/admin/login - Логин админа ======
@@ -732,8 +735,47 @@ export async function adminGetBloggerGenderInfo(
   );
 }
 
+// Кэш для genderType по ID блогера для предотвращения повторных запросов
+const genderTypeCache = new Map<number, ApiGender | null>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 минут
+const cacheTimestamps = new Map<number, number>();
+
+/**
+ * Получить genderType из кэша или null если отсутствует/истек
+ */
+function getCachedGenderType(bloggerId: number): ApiGender | null | undefined {
+  const timestamp = cacheTimestamps.get(bloggerId);
+  if (timestamp && Date.now() - timestamp < CACHE_TTL) {
+    return genderTypeCache.get(bloggerId);
+  }
+  // Кэш истек, очищаем
+  genderTypeCache.delete(bloggerId);
+  cacheTimestamps.delete(bloggerId);
+  return undefined;
+}
+
+/**
+ * Сохранить genderType в кэш
+ */
+function setCachedGenderType(bloggerId: number, genderType: ApiGender | null): void {
+  genderTypeCache.set(bloggerId, genderType);
+  cacheTimestamps.set(bloggerId, Date.now());
+}
+
 /**
  * Обогащение списка блогеров информацией о поле
+ * 
+ * ⚠️ ПРОБЛЕМА N+1 ЗАПРОСОВ:
+ * Для каждого блогера делается отдельный запрос к /blogger/public/${bloggerId}
+ * только для получения поля genderType.
+ * 
+ * РЕКОМЕНДАЦИЯ БЭКЕНДУ:
+ * Добавить поле genderType в ответ /admin/blogger, чтобы исключить N+1 запросов.
+ * 
+ * ТЕКУЩАЯ ОПТИМИЗАЦИЯ:
+ * - Используется кэширование genderType для предотвращения повторных запросов
+ * - Батчинг запросов (по 5 одновременно)
+ * - Параллельная обработка батчей
  * 
  * @param bloggers - Список блогеров из админского API
  * @returns Promise с обогащенным списком блогеров
@@ -748,20 +790,49 @@ export async function adminEnrichBloggersWithGender(
 ): Promise<AdminBloggerWithGender[]> {
   const enrichedBloggers: AdminBloggerWithGender[] = [];
   
-  // Обрабатываем блогеров параллельно, но с ограничением
+  // Разделяем блогеров на те, у кого есть кэш и те, кому нужен запрос
+  const cachedBloggers: AdminBloggerWithGender[] = [];
+  const bloggersToFetch: typeof bloggers = [];
+  
+  for (const blogger of bloggers) {
+    const cachedGenderType = getCachedGenderType(blogger.id);
+    if (cachedGenderType !== undefined) {
+      // Используем кэшированное значение
+      cachedBloggers.push({
+        ...blogger,
+        genderType: cachedGenderType,
+      } as AdminBloggerWithGender);
+    } else {
+      // Нужно загрузить
+      bloggersToFetch.push(blogger);
+    }
+  }
+  
+  // Если все есть в кэше, возвращаем сразу
+  if (bloggersToFetch.length === 0) {
+    return [...cachedBloggers];
+  }
+  
+  // Обрабатываем блогеров, которым нужны запросы, параллельно с ограничением
   const batchSize = 5; // Обрабатываем по 5 блогеров одновременно
-  for (let i = 0; i < bloggers.length; i += batchSize) {
-    const batch = bloggers.slice(i, i + batchSize);
+  for (let i = 0; i < bloggersToFetch.length; i += batchSize) {
+    const batch = bloggersToFetch.slice(i, i + batchSize);
     
     const batchPromises = batch.map(async (blogger) => {
       try {
         const genderInfo = await adminGetBloggerGenderInfo(blogger.id);
+        const genderType = genderInfo.genderType;
+        
+        // Сохраняем в кэш
+        setCachedGenderType(blogger.id, genderType);
+        
         return {
           ...blogger,
-          genderType: genderInfo.genderType,
+          genderType,
         } as AdminBloggerWithGender;
       } catch (error) {
-        // Если не удалось получить информацию о поле, используем null
+        // Если не удалось получить информацию о поле, используем null и тоже кэшируем
+        setCachedGenderType(blogger.id, null);
         return {
           ...blogger,
           genderType: null,
@@ -773,7 +844,79 @@ export async function adminEnrichBloggersWithGender(
     enrichedBloggers.push(...batchResults);
   }
   
-  return enrichedBloggers;
+  // Объединяем кэшированные и загруженные результаты
+  // Сохраняем порядок из исходного массива
+  const resultMap = new Map<number, AdminBloggerWithGender>();
+  [...cachedBloggers, ...enrichedBloggers].forEach(blogger => {
+    resultMap.set(blogger.id, blogger);
+  });
+  
+  // Возвращаем в исходном порядке
+  return bloggers.map(blogger => resultMap.get(blogger.id)!);
+}
+
+/**
+ * Связывание Telegram канала с блогером (админ)
+ * POST /admin/blogger/link/TG/{bloggerId}
+ *
+ * @param bloggerId - ID блогера
+ * @param data - Данные Telegram канала (username)
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data или channel already linked или parsing error
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 403 - The operation is not possible
+ * @throws APIError 404 - Blogger not found
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * await adminLinkTgChannelToBlogger(123, {
+ *   username: 'my_telegram_channel'
+ * });
+ * ```
+ */
+export async function adminLinkTgChannelToBlogger(
+  bloggerId: number,
+  data: BloggerLinkMediaTgRequestInputDto,
+): Promise<void> {
+  return apiRequest<void>(`/admin/blogger/link/TG/${bloggerId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Связывание YouTube канала с блогером (админ)
+ * POST /admin/blogger/link/YT/{bloggerId}
+ *
+ * @param bloggerId - ID блогера
+ * @param data - Данные YouTube канала (channel URL или handle)
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data или channel already linked или parsing error
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 403 - The operation is not possible
+ * @throws APIError 404 - Blogger not found
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * await adminLinkYtChannelToBlogger(123, {
+ *   channel: 'https://youtube.com/@my_channel'
+ * });
+ * ```
+ */
+export async function adminLinkYtChannelToBlogger(
+  bloggerId: number,
+  data: BloggerLinkMediaYtRequestInputDto,
+): Promise<void> {
+  return apiRequest<void>(`/admin/blogger/link/YT/${bloggerId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 /**

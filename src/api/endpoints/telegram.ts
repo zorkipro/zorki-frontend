@@ -11,6 +11,7 @@ import type {
   TgClientLoginOutputDto,
   TgClientConfirmInputDto,
   TgClientConfirmOutputDto,
+  TgClientSessionsOutputDto,
 } from "../types";
 
 // ====== POST /tg-client/login - Логин Telegram аккаунта ======
@@ -78,5 +79,109 @@ export async function tgClientConfirm(
   return apiRequest<TgClientConfirmOutputDto>("/tg-client/confirm", {
     method: "POST",
     body: JSON.stringify(data),
+  });
+}
+
+// ====== GET /tg-client - Получение списка Telegram сессий ======
+
+export interface GetTgSessionsParams {
+  page?: number; // default: 1
+  size?: number; // default: 50
+  isAuthorized?: boolean; // default: true
+}
+
+export interface TgSessionsResponse {
+  totalCount: number;
+  pagesCount: number;
+  page: number;
+  size: number;
+  items: TgClientSessionsOutputDto[];
+}
+
+/**
+ * Получение списка Telegram сессий с пагинацией и фильтрацией
+ *
+ * @param params - Параметры пагинации и фильтрации
+ * @returns Promise с пагинированным списком Telegram сессий
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * const sessions = await getTgSessions({
+ *   page: 1,
+ *   size: 20,
+ *   isAuthorized: true
+ * });
+ * ```
+ */
+export async function getTgSessions(
+  params: GetTgSessionsParams = {},
+): Promise<TgSessionsResponse> {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (typeof value === "boolean") {
+        query.append(key, value ? "true" : "false");
+      } else {
+        query.append(key, String(value));
+      }
+    }
+  });
+
+  return apiRequest<TgSessionsResponse>(`/tg-client?${query}`);
+}
+
+// ====== POST /tg-client/logout/{sessionId} - Выход из Telegram сессии ======
+
+/**
+ * Выход из Telegram сессии
+ *
+ * @param sessionId - ID сессии для выхода
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Session not found
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * await logoutTgSession(123);
+ * ```
+ */
+export async function logoutTgSession(sessionId: number): Promise<void> {
+  return apiRequest<void>(`/tg-client/logout/${sessionId}`, {
+    method: "POST",
+  });
+}
+
+// ====== DELETE /tg-client/{sessionId} - Удаление Telegram сессии ======
+
+/**
+ * Удаление Telegram сессии
+ *
+ * @param sessionId - ID сессии для удаления
+ * @returns Promise<void> (204 No Content)
+ *
+ * @throws APIError 400 - Incorrect input data
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ * @throws APIError 404 - Session not found
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * await deleteTgSession(123);
+ * ```
+ */
+export async function deleteTgSession(sessionId: number): Promise<void> {
+  return apiRequest<void>(`/tg-client/${sessionId}`, {
+    method: "DELETE",
   });
 }

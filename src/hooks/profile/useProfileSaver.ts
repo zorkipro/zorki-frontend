@@ -8,7 +8,6 @@ import {
 import { mapLocalToApiUpdate } from "@/utils/api/mappers";
 import {
   mapProfileChangesToBloggerFields,
-  logProfileChanges,
 } from "@/utils/profile-update-mapper";
 import { APIError } from "@/api/client";
 import { useToast } from "@/hooks/use-toast";
@@ -171,7 +170,6 @@ export const useProfileSaver = (
 
         // Селективно обновляем только измененные поля в BloggerContext
         try {
-          logProfileChanges(data, "useProfileSaver");
           const bloggerFields = mapProfileChangesToBloggerFields(data);
 
           if (Object.keys(bloggerFields).length > 0) {

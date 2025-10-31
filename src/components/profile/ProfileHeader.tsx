@@ -12,7 +12,7 @@ import {
 import { Input } from "@/ui-kit";
 import { Label } from "@/ui-kit";
 import { Textarea } from "@/ui-kit";
-import { Edit, ArrowLeft, MessageCircle } from "lucide-react";
+import { Edit, ArrowLeft, MessageCircle, Copy, Check, AlertTriangle } from "lucide-react";
 import { Instagram } from "lucide-react";
 import { type Blogger } from "@/types/blogger";
 import { SafeAvatar } from "@/components/ui/SafeAvatar";
@@ -63,6 +63,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
     const [editDescription, setEditDescription] = useState(
       formData?.description || "",
     );
+    // Состояние для копирования ссылки
+    const [isCopied, setIsCopied] = useState(false);
+    // Состояние для модального окна предупреждения
+    const [showWarningDialog, setShowWarningDialog] = useState(false);
+    // Ref для хранения ID таймаута
+    const copyTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // Мемоизированные значения для предотвращения ненужных перерисовок
     const displayName = useMemo(() => {
@@ -90,6 +96,59 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
       setEditName(formData?.full_name || "");
       setEditDescription(formData?.description || "");
     }, [formData?.full_name, formData?.description]);
+
+    // Очищаем таймаут при размонтировании
+    React.useEffect(() => {
+      return () => {
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    // Функция для копирования ссылки на медиа-кит
+    const copyMediaKitLink = React.useCallback(async () => {
+      const username = basicInfo?.username || profile.handle;
+      if (!username) {
+        return;
+      }
+
+      const normalizedUsername = normalizeUsername(username);
+      const mediaKitUrl = `${window.location.origin}/_${normalizedUsername}`;
+
+      try {
+        await navigator.clipboard.writeText(mediaKitUrl);
+        setIsCopied(true);
+        setShowWarningDialog(false); // Закрываем диалог после копирования
+        
+        // Очищаем предыдущий таймаут, если он есть
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current);
+        }
+        
+        // Возвращаем кнопку в исходное состояние через 2 секунды
+        copyTimeoutRef.current = setTimeout(() => {
+          setIsCopied(false);
+          copyTimeoutRef.current = null;
+        }, 2000);
+      } catch (error) {
+        // В случае ошибки можно показать ошибку, но пока просто игнорируем
+      }
+    }, [basicInfo?.username, profile.handle]);
+
+    // Функция-обработчик клика на кнопку
+    const handleCopyMediaKitLink = React.useCallback(() => {
+      // Проверяем статус верификации
+      const isVerified = verificationStatus?.isVerified;
+      
+      if (!isVerified) {
+        // Если не верифицирован - показываем предупреждение
+        setShowWarningDialog(true);
+      } else {
+        // Если верифицирован - копируем сразу
+        copyMediaKitLink();
+      }
+    }, [verificationStatus?.isVerified, copyMediaKitLink]);
 
     return (
       <div className="bg-card border-b border-border-light">
@@ -267,6 +326,25 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                   </DialogContent>
                 </Dialog>
 
+                {/* Предупреждение о неверификации */}
+                {profile.verificationStatus && profile.verificationStatus !== "APPROVED" && (
+                  <div className="mb-3 flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800">
+                      Ваш профиль не верифицирован.{" "}
+                      <a
+                        href="https://www.instagram.com/zorki.pro"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-yellow-900 underline hover:text-yellow-950 transition-colors"
+                      >
+                        Напишите администратору
+                      </a>
+                      , чтобы ваша страница стала видна публично.
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex flex-wrap justify-center md:justify-start gap-2">
                   {basicInfo?.username && (
                     <Badge variant="secondary">
@@ -301,26 +379,87 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
               </div>
             </div>
 
-            {/* Contact Button */}
-            {formData?.contact_link ? (
-              <Button
-                className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto mx-auto md:mx-0"
-                onClick={() => {
-                  window.open(formData.contact_link!, "_blank");
-                }}
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Связаться
-              </Button>
-            ) : (
-              <Button
-                className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto mx-auto md:mx-0 opacity-50 cursor-not-allowed"
-                disabled
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Нет контакта
-              </Button>
-            )}
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 w-full md:w-auto">
+              {/* Copy Media Kit Link Button */}
+              {(basicInfo?.username || profile.handle) && (
+                <>
+                  <Button
+                    variant={isCopied ? "default" : "outline"}
+                    className={`w-full md:w-auto ${
+                      isCopied ? "bg-green-500 hover:bg-green-600" : ""
+                    } ${!verificationStatus?.isVerified ? "relative" : ""}`}
+                    onClick={handleCopyMediaKitLink}
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Ссылка скопирована!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Скопировать ссылку на медиа-кит
+                        {!verificationStatus?.isVerified && (
+                          <AlertTriangle className="w-3 h-3 ml-2 text-yellow-500" />
+                        )}
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Предупреждающий диалог для неверифицированных блогеров */}
+                  <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                          Ваш профиль еще не виден публично
+                        </DialogTitle>
+                        <DialogDescription>
+                          Ваш профиль находится на модерации и пока не доступен для просмотра неавторизованным пользователям.
+                          <br />
+                          <br />
+                          Вы можете скопировать ссылку на медиа-кит заранее, но она будет доступна только после одобрения администратором.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowWarningDialog(false)}
+                        >
+                          Отмена
+                        </Button>
+                        <Button onClick={copyMediaKitLink}>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Все равно скопировать
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              )}
+
+              {/* Contact Button */}
+              {formData?.contact_link ? (
+                <Button
+                  className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto"
+                  onClick={() => {
+                    window.open(formData.contact_link!, "_blank");
+                  }}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Связаться
+                </Button>
+              ) : (
+                <Button
+                  className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto opacity-50 cursor-not-allowed"
+                  disabled
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Нет контакта
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

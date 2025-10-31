@@ -9,14 +9,11 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ProfileChecker } from "./components/ProfileChecker";
 import { AuthRedirectHandler } from "./components/AuthRedirectHandler";
 import { AdminRoutes } from "./components/AdminRoutes";
+import { BloggerProfileRoute } from "./components/BloggerProfileRoute";
 
 // Lazy load all page components
 const Index = lazy(() => import("./pages/Index"));
-const BloggerProfile = lazy(() =>
-  import("./pages/BloggerProfile").then((module) => ({
-    default: module.BloggerProfile,
-  })),
-);
+// BloggerProfile теперь используется через BloggerProfileRoute
 const ProfileEditor = lazy(() =>
   import("./pages/ProfileEditor").then((module) => ({
     default: module.ProfileEditor,
@@ -135,10 +132,11 @@ const App = () => (
                     </ErrorBoundary>
                   }
                 />
-                <Route path="/:username" element={<BloggerProfile />} />
                 <Route path="/dev-tools" element={<DevTools />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
+                {/* Маршрут для профилей блогеров - должен быть после всех специфичных маршрутов */}
+                <Route path="/:username" element={<BloggerProfileRoute />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
