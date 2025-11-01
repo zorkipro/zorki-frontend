@@ -5,7 +5,6 @@ export const Login = () => {
   const { loading, error, handleSubmit, handleGoogleAuth } = useAuthForm({
     mode: "login",
   });
-
   return (
     <AuthForm
       mode="login"

@@ -16,7 +16,7 @@ export const BloggerProfileHeader = ({
   blogger,
   onBack,
 }: BloggerProfileHeaderProps) => {
-  const { getCategoryNameById, loading: topicsLoading } = useTopics();
+  const { getCategoryNameById } = useTopics();
 
   return (
     <div className="bg-card border-b border-border-light">
@@ -27,7 +27,6 @@ export const BloggerProfileHeader = ({
 
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between space-y-4 md:space-y-0 md:space-x-8">
           <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8 flex-1">
-            {/* Используем SafeAvatar для обработки CORS ошибок и прокси */}
             <SafeAvatar
               src={blogger.avatar}
               alt={blogger.name}
@@ -54,36 +53,18 @@ export const BloggerProfileHeader = ({
               </p>
 
               <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                <Badge variant="secondary">
-                  @{normalizeUsername(blogger.handle)}
-                </Badge>
-                {blogger.topics && blogger.topics.length > 0
-                  ? blogger.topics.map((topic, index) => {
-                      // Конвертируем ID в название, если это число
-                      const topicName =
-                        typeof topic === "number"
-                          ? topicsLoading
-                            ? `Загрузка...`
-                            : getCategoryNameById(topic) || `Тематика ${topic}`
-                          : topic;
-
-                      return (
-                        <Badge key={index} variant="secondary">
-                          {topicName}
-                        </Badge>
-                      );
-                    })
-                  : blogger.category && (
-                      <Badge variant="secondary">{blogger.category}</Badge>
-                    )}
-                {blogger.allowsBarter && (
-                  <Badge variant="secondary">Бартер возможен</Badge>
+                <Badge variant="secondary">@{normalizeUsername(blogger.handle)}</Badge>
+                {blogger.topics?.map((topicId) => (
+                  <Badge key={topicId} variant="secondary">
+                    {getCategoryNameById(topicId) ?? `Тематика ${topicId}`}
+                  </Badge>
+                ))}
+                {!blogger.topics?.length && blogger.category && (
+                  <Badge variant="secondary">{blogger.category}</Badge>
                 )}
-                {blogger.inMartRegistry === true && (
-                  <Badge
-                    variant="secondary"
-                    className="text-success border-success"
-                  >
+                {blogger.allowsBarter && <Badge variant="secondary">Бартер возможен</Badge>}
+                {blogger.inMartRegistry && (
+                  <Badge variant="secondary" className="text-success border-success">
                     В реестре МАРТ
                   </Badge>
                 )}
@@ -91,23 +72,13 @@ export const BloggerProfileHeader = ({
             </div>
           </div>
 
-          {blogger.contact_url ? (
+          {blogger.contact_url && (
             <Button
               className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto mx-auto md:mx-0"
-              onClick={() => {
-                window.open(blogger.contact_url!, "_blank");
-              }}
+              onClick={() => window.open(blogger.contact_url, "_blank")}
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Связаться
-            </Button>
-          ) : (
-            <Button
-              className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto mx-auto md:mx-0 opacity-50 cursor-not-allowed"
-              disabled
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Нет контакта
             </Button>
           )}
         </div>

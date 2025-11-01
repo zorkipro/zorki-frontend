@@ -30,99 +30,55 @@ interface BloggerProfileStatsProps {
   stats: PlatformData;
 }
 
-export const BloggerProfileStats = ({
-  platform,
-  stats,
-}: BloggerProfileStatsProps) => {
+type StatConfig = {
+  icon: React.ReactNode;
+  getValue: (stats: PlatformData) => string | number;
+  label: string;
+  color: string;
+};
+
+const getPlatformStatsConfig = (platform: string): StatConfig[] => {
+  const base: StatConfig = {
+    icon: <Users className="w-6 h-6" />,
+    getValue: (s) => formatNumber(s.subscribers),
+    label: "Подписчиков",
+    color: "text-primary",
+  };
+
   if (platform === "instagram") {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <StatsCard
-          icon={<Users className="w-6 h-6" />}
-          value={formatNumber(stats.subscribers)}
-          label="Подписчиков"
-          color="text-primary"
-        />
-        <StatsCard
-          icon={<TrendingUp className="w-6 h-6" />}
-          value={`${stats.er}%`}
-          label="ER"
-          color="text-success"
-        />
-        <StatsCard
-          icon={<Eye className="w-6 h-6" />}
-          value={formatNumber(stats.reach)}
-          label="Охват публикаций"
-          color="text-warning"
-        />
-        <StatsCard
-          icon={<Eye className="w-6 h-6" />}
-          value={formatNumber(stats.storyReach)}
-          label="Охват сторис"
-          color="text-warning"
-        />
-        <StatsCard
-          icon={<Wallet className="w-6 h-6" />}
-          value={`${stats.price} BYN`}
-          label="Цена публикации"
-          color="text-primary"
-        />
-        <StatsCard
-          icon={<Wallet className="w-6 h-6" />}
-          value={`${stats.storyPrice} BYN`}
-          label="Цена сторис"
-          color="text-primary"
-        />
-      </div>
-    );
+    return [
+      base,
+      { icon: <TrendingUp className="w-6 h-6" />, getValue: (s) => `${s.er}%`, label: "ER", color: "text-success" },
+      { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.reach), label: "Охват публикаций", color: "text-warning" },
+      { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.storyReach), label: "Охват сторис", color: "text-warning" },
+      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price} BYN`, label: "Цена публикации", color: "text-primary" },
+      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.storyPrice} BYN`, label: "Цена сторис", color: "text-primary" },
+    ];
   }
-
+  
   if (platform === "youtube") {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <StatsCard
-          icon={<Users className="w-6 h-6" />}
-          value={formatNumber(stats.subscribers)}
-          label="Подписчиков"
-          color="text-primary"
-        />
-        <StatsCard
-          icon={<Eye className="w-6 h-6" />}
-          value={formatNumber(stats.views || 0)}
-          label="Просмотров"
-          color="text-warning"
-        />
-        <StatsCard
-          icon={<Wallet className="w-6 h-6" />}
-          value={`${stats.price || 0} BYN`}
-          label="Цена интеграции"
-          color="text-primary"
-        />
-      </div>
-    );
+    return [
+      base,
+      { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.views || 0), label: "Просмотров", color: "text-warning" },
+      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price || 0} BYN`, label: "Цена интеграции", color: "text-primary" },
+    ];
   }
 
-  // TikTok и Telegram — без ER
+  return [
+    base,
+    { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.reach), label: "Охват публикаций", color: "text-warning" },
+    { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price || 0} BYN`, label: "Цена публикации", color: "text-primary" },
+  ];
+};
+
+export const BloggerProfileStats = ({ platform, stats }: BloggerProfileStatsProps) => {
+  const config = getPlatformStatsConfig(platform);
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-      <StatsCard
-        icon={<Users className="w-6 h-6" />}
-        value={formatNumber(stats.subscribers)}
-        label="Подписчиков"
-        color="text-primary"
-      />
-      <StatsCard
-        icon={<Eye className="w-6 h-6" />}
-        value={formatNumber(stats.reach)}
-        label="Охват публикаций"
-        color="text-warning"
-      />
-      <StatsCard
-        icon={<Wallet className="w-6 h-6" />}
-        value={`${stats.price || 0} BYN`}
-        label="Цена публикации"
-        color="text-primary"
-      />
+      {config.map((item, index) => (
+        <StatsCard key={index} icon={item.icon} value={item.getValue(stats)} label={item.label} color={item.color} />
+      ))}
     </div>
   );
 };

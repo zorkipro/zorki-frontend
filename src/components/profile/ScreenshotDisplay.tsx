@@ -73,23 +73,25 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
     return (
       <>
         <Card className="mt-6 border-0 shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center space-x-3 text-lg">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex flex-wrap items-center gap-2 sm:gap-3 text-base sm:text-lg">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 {platformIcon}
               </div>
-              <span>Скриншоты статистики {platformName}</span>
-              <div className="ml-auto flex items-center space-x-2">
+              <span className="flex-1 min-w-0">
+                <span className="hidden sm:inline">Скриншоты статистики {platformName}</span>
+                <span className="sm:hidden">Скриншоты {platformName}</span>
+              </span>
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 {screenshots.length > 0 && (
-                  <span className="text-sm font-normal text-muted-foreground">
-                    {screenshots.length}{" "}
-                    {screenshots.length === 1 ? "скриншот" : "скриншотов"}
+                  <span className="text-xs sm:text-sm font-normal text-muted-foreground whitespace-nowrap">
+                    {screenshots.length} {screenshots.length === 1 ? "фото" : "фото"}
                   </span>
                 )}
                 {screenshots.length >= FILE_VALIDATION.MAX_STATS_FILES && (
                   <div className="flex items-center space-x-1 text-amber-600">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="text-xs">Лимит достигнут</span>
+                    <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs">Лимит</span>
                   </div>
                 )}
               </div>
@@ -114,11 +116,11 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 />
                 <label htmlFor={`screenshot-upload-${platform}`}>
                   <div
-                    className={`w-full h-12 border-dashed border-2 border-muted-foreground/25 rounded-md hover:border-primary hover:bg-primary/5 transition-all duration-200 flex items-center justify-center space-x-3 cursor-pointer ${uploadingScreenshot ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`w-full h-12 sm:h-14 border-dashed border-2 border-muted-foreground/25 rounded-md hover:border-primary hover:bg-primary/5 transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 cursor-pointer ${uploadingScreenshot ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    <span className="flex items-center space-x-3">
+                    <span className="flex items-center space-x-2 sm:space-x-3 px-2">
                       <svg
-                        className="w-5 h-5"
+                        className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -130,20 +132,25 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                         />
                       </svg>
-                      <span className="font-medium">
+                      <span className="font-medium text-sm sm:text-base text-center">
                         {uploadingScreenshot
                           ? "Загрузка..."
                           : `Загрузить скриншоты статистики ${platformName}`}
                       </span>
                       {uploadingScreenshot && (
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin flex-shrink-0" />
                       )}
                     </span>
                   </div>
                 </label>
                 {/* File format and size info */}
-                <div className="mt-2 text-xs text-muted-foreground text-center">
-                  Поддерживаемые форматы: JPEG, PNG, GIF, WebP, PDF • Максимальный размер: 10MB • До {FILE_VALIDATION.MAX_STATS_FILES} файлов для {platformName}
+                <div className="mt-2 text-[10px] sm:text-xs text-muted-foreground text-center px-2">
+                  <span className="hidden sm:inline">
+                    Поддерживаемые форматы: JPEG, PNG, GIF, WebP, PDF • Максимальный размер: 10MB • До {FILE_VALIDATION.MAX_STATS_FILES} файлов для {platformName}
+                  </span>
+                  <span className="sm:hidden">
+                    JPEG, PNG, WebP, PDF • До 10MB • До {FILE_VALIDATION.MAX_STATS_FILES} файлов
+                  </span>
                   {screenshots.length > 0 && (
                     <span className="block mt-1">
                       Загружено: {screenshots.length} из {FILE_VALIDATION.MAX_STATS_FILES}
@@ -156,10 +163,10 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
             {/* Screenshots Grid */}
             {loading ? (
               // Skeleton loading state
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(3)].map((_, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+                {[...Array(6)].map((_, index) => (
                   <div key={index} className="relative group">
-                    <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                    <div className="w-full aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden">
                       <div className="w-full h-full relative">
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_1.5s_ease-in-out_infinite]" />
                         <div className="w-full h-full bg-gray-200" />
@@ -169,11 +176,11 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                 ))}
               </div>
             ) : screenshots.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                 {screenshots.map((screenshot, index) => (
                   <div key={`screenshot-${screenshot.id}-${index}`} className="relative group">
                     <div
-                      className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-all duration-200 border hover:shadow-lg"
+                      className="w-full aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-all duration-200 border hover:shadow-lg hover:scale-[1.02]"
                       onClick={() => setLightboxIndex(index)}
                     >
                       <img
@@ -189,14 +196,15 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                     {/* Delete button - only show if onDeleteScreenshot is provided */}
                     {onDeleteScreenshot && (
                       <button
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200 h-8 w-8 p-0 bg-red-500/90 hover:bg-red-600 backdrop-blur-sm rounded-md flex items-center justify-center"
+                        className="absolute top-1 right-1 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-all duration-200 h-6 w-6 sm:h-8 sm:w-8 p-0 bg-red-500/90 hover:bg-red-600 backdrop-blur-sm rounded sm:rounded-md flex items-center justify-center z-10"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeleteScreenshot(screenshot);
                         }}
+                        aria-label="Удалить скриншот"
                       >
                         <svg
-                          className="w-4 h-4 text-white"
+                          className="w-3 h-3 sm:w-4 sm:h-4 text-white"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -210,8 +218,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = React.memo(
                         </svg>
                       </button>
                     )}
-                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      {index + 1} из {screenshots.length}
+                    <div className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 bg-black/70 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm">
+                      {index + 1}/{screenshots.length}
                     </div>
                   </div>
                 ))}

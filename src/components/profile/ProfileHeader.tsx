@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/ui-kit";
 import { Button } from "@/ui-kit";
 import {
@@ -12,7 +12,7 @@ import {
 import { Input } from "@/ui-kit";
 import { Label } from "@/ui-kit";
 import { Textarea } from "@/ui-kit";
-import { Edit, ArrowLeft, MessageCircle, Copy, Check, AlertTriangle } from "lucide-react";
+import { Edit, ArrowLeft, Copy, Check, AlertTriangle } from "lucide-react";
 import { Instagram } from "lucide-react";
 import { type Blogger } from "@/types/blogger";
 import { SafeAvatar } from "@/components/ui/SafeAvatar";
@@ -70,26 +70,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
     // Ref для хранения ID таймаута
     const copyTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    // Мемоизированные значения для предотвращения ненужных перерисовок
-    const displayName = useMemo(() => {
-      return basicInfo
-        ? `${basicInfo.name || ""} ${basicInfo.lastName || ""}`.trim() ||
-            basicInfo.username
-        : profile.name;
-    }, [
-      basicInfo?.name,
-      basicInfo?.lastName,
-      basicInfo?.username,
-      profile.name,
-    ]);
+    const displayName = basicInfo
+      ? `${basicInfo.name || ""} ${basicInfo.lastName || ""}`.trim() || basicInfo.username
+      : profile.name;
 
-    const avatarUrl = useMemo(() => {
-      return profile.avatar; // Используем данные из profile, так как basicInfo не содержит avatar
-    }, [profile.avatar]);
-
-    const description = useMemo(() => {
-      return profile.promoText; // Используем данные из profile, так как basicInfo не содержит description
-    }, [profile.promoText]);
+    const avatarUrl = profile.avatar;
+    const description = profile.promoText;
 
     // Обновляем состояние при изменении formData
     React.useEffect(() => {
@@ -152,28 +138,28 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
     return (
       <div className="bg-card border-b border-border-light">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
           {/* Back Button */}
           {onBack && (
-            <Button variant="ghost" onClick={onBack} className="mb-6">
+            <Button variant="ghost" onClick={onBack} className="mb-4 sm:mb-6">
               <ArrowLeft className="w-4 h-4 mr-2" />К списку блогеров
             </Button>
           )}
 
-          <div className="flex flex-col md:flex-row items-center md:items-start justify-between space-y-4 md:space-y-0 md:space-x-8">
-            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8 flex-1">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-4 lg:gap-8">
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 lg:gap-8 flex-1 w-full">
               {/* Avatar */}
               <SafeAvatar
                 src={avatarUrl}
                 alt={displayName}
-                className="w-32 h-32 border-4 border-border-light aspect-square"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 border-4 border-border-light aspect-square shrink-0"
                 fallbackIcon={
-                  <Instagram className="w-16 h-16 text-muted-foreground" />
+                  <Instagram className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-muted-foreground" />
                 }
               />
 
-              <div className="text-center md:text-left flex-1">
-                <div className="flex items-center justify-center md:justify-start space-x-3 mb-3">
+              <div className="text-center md:text-left flex-1 w-full">
+                <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-3 max-[630px]:flex-col max-[630px]:items-center max-[630px]:gap-2">
                   {/* Editable Name */}
                   <Dialog
                     open={editingSection === "fullName"}
@@ -185,12 +171,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                     <DialogTrigger asChild>
                       <div className="flex items-center space-x-2 cursor-pointer hover:bg-muted/50 rounded px-2 py-1">
                         <h1
-                          className="text-3xl md:text-4xl font-bold text-foreground"
+                          className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground"
                           title={formData?.full_name || displayName}
                         >
                           {truncateName(formData?.full_name || displayName, 40)}
                         </h1>
-                        <Edit className="w-5 h-5 text-muted-foreground" />
+                        <Edit className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground shrink-0" />
                       </div>
                     </DialogTrigger>
                     <DialogContent>
@@ -241,24 +227,25 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                     </DialogContent>
                   </Dialog>
 
-                  {verificationStatus && (
-                    <Badge
-                      variant={
-                        verificationStatus.isVerified
-                          ? "default"
-                          : "destructive"
-                      }
-                      className={
-                        verificationStatus.isVerified
-                          ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-100"
-                          : "bg-red-100 text-red-800 border-red-200"
-                      }
-                    >
-                      {verificationStatus.isVerified
-                        ? "Верифицирован"
-                        : "Не верифицирован"}
-                    </Badge>
-                  )}
+                {/* Verification Badge - справа от имени на ≥630px, ниже на <630px */}
+                {verificationStatus && (
+                  <Badge
+                    variant={
+                      verificationStatus.isVerified
+                        ? "default"
+                        : "destructive"
+                    }
+                    className={
+                      verificationStatus.isVerified
+                        ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-100"
+                        : "bg-red-100 text-red-800 border-red-200"
+                    }
+                  >
+                    {verificationStatus.isVerified
+                      ? "Верифицирован"
+                      : "Не верифицирован"}
+                  </Badge>
+                )}
                 </div>
 
                 {/* Editable Bio */}
@@ -270,13 +257,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                   }}
                 >
                   <DialogTrigger asChild>
-                    <div className="flex items-start space-x-2 cursor-pointer hover:bg-muted/50 rounded px-2 py-1 mb-4">
-                      <p className="text-lg text-muted-foreground max-w-2xl">
+                    <div className="flex items-start gap-2 cursor-pointer hover:bg-muted/50 rounded px-2 py-1 mb-3 sm:mb-4">
+                      <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl">
                         {formData?.description ||
                           description ||
                           "Нажмите, чтобы добавить описание профиля..."}
                       </p>
-                      <Edit className="w-4 h-4 text-muted-foreground mt-1" />
+                      <Edit className="w-5 h-5 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 shrink-0" />
                     </div>
                   </DialogTrigger>
                   <DialogContent>
@@ -328,9 +315,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
                 {/* Предупреждение о неверификации */}
                 {profile.verificationStatus && profile.verificationStatus !== "APPROVED" && (
-                  <div className="mb-3 flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div className="mb-3 sm:mb-4 flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
                     <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-yellow-800">
+                    <p className="text-xs sm:text-sm text-yellow-800">
                       Ваш профиль не верифицирован.{" "}
                       <a
                         href="https://www.instagram.com/zorki.pro"
@@ -345,7 +332,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                   </div>
                 )}
 
-                <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                <div className="flex flex-wrap justify-center md:justify-start gap-2 sm:gap-3">
                   {basicInfo?.username && (
                     <Badge variant="secondary">
                       @{normalizeUsername(basicInfo.username)}
@@ -380,28 +367,30 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-2 w-full md:w-auto">
+            <div className="flex flex-col gap-3 w-full lg:w-auto shrink-0">
               {/* Copy Media Kit Link Button */}
               {(basicInfo?.username || profile.handle) && (
                 <>
                   <Button
-                    variant={isCopied ? "default" : "outline"}
-                    className={`w-full md:w-auto ${
+                    className={`bg-gradient-primary hover:bg-primary-hover w-full lg:w-auto text-sm sm:text-base ${
                       isCopied ? "bg-green-500 hover:bg-green-600" : ""
                     } ${!verificationStatus?.isVerified ? "relative" : ""}`}
                     onClick={handleCopyMediaKitLink}
+                    size="sm"
                   >
                     {isCopied ? (
                       <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Ссылка скопирована!
+                        <Check className="w-5 h-5 sm:w-5 sm:h-5 mr-2 shrink-0" />
+                        <span className="hidden sm:inline">Ссылка скопирована!</span>
+                        <span className="sm:hidden">Скопировано</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Скопировать ссылку на медиа-кит
+                        <Copy className="w-5 h-5 sm:w-5 sm:h-5 mr-2 shrink-0" />
+                        <span className="hidden sm:inline">Скопировать ссылку на медиа-кит</span>
+                        <span className="sm:hidden">Скопировать ссылку</span>
                         {!verificationStatus?.isVerified && (
-                          <AlertTriangle className="w-3 h-3 ml-2 text-yellow-500" />
+                          <AlertTriangle className="w-4 h-4 sm:w-4 sm:h-4 ml-2 text-yellow-500 shrink-0" />
                         )}
                       </>
                     )}
@@ -437,27 +426,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                     </DialogContent>
                   </Dialog>
                 </>
-              )}
-
-              {/* Contact Button */}
-              {formData?.contact_link ? (
-                <Button
-                  className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto"
-                  onClick={() => {
-                    window.open(formData.contact_link!, "_blank");
-                  }}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Связаться
-                </Button>
-              ) : (
-                <Button
-                  className="bg-gradient-primary hover:bg-primary-hover w-full md:w-auto opacity-50 cursor-not-allowed"
-                  disabled
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Нет контакта
-                </Button>
               )}
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   mergePlatformDrafts,
   extractInstagramAccount,
 } from "@/utils/draft-helpers";
+import { ALL_PLATFORMS } from "@/types/platform";
 
 // Локальный интерфейс для совместимости с существующим кодом
 interface EditData {
@@ -125,133 +126,53 @@ export const useProfileDrafts = (profileId?: string) => {
         coverageDrafts,
       );
 
-      // Получаем Instagram данные
       const instagram = extractInstagramAccount(apiResponse);
+      
+      const getPrice = (platform: string, field: 'post_price' | 'story_price' | 'integration_price') => {
+        const priceDraft = priceDrafts[platform]?.[field];
+        const platformData = updatedPlatformsData[platform];
+        if (priceDraft !== undefined) return priceDraft.toString();
+        if (field === 'post_price') return platformData?.price?.toString() || "";
+        if (field === 'story_price') return platformData?.storyPrice?.toString() || "";
+        return platformData?.integrationPrice?.toString() || "";
+      };
 
-      // Объединяем все данные в EditData формат
       const mergedData: EditData = {
-        // Основные данные профиля (приоритет черновикам)
-        full_name:
-          profileDraftFields.full_name ||
-          (apiResponse.name
-            ? `${apiResponse.name}${apiResponse.lastName ? " " + apiResponse.lastName : ""}`
-            : ""),
-        description: "", // Нет в API
-        avatar_url: instagram.avatar, // Берём из Instagram аккаунта
-        contact_link:
-          profileDraftFields.contact_link || apiResponse.contactLink || "",
+        full_name: profileDraftFields.full_name ||
+          (apiResponse.name ? `${apiResponse.name}${apiResponse.lastName ? " " + apiResponse.lastName : ""}` : ""),
+        description: "",
+        avatar_url: instagram.avatar,
+        contact_link: profileDraftFields.contact_link || apiResponse.contactLink || "",
         work_format: profileDraftFields.work_format || "ИП",
         gender_type: profileDraftFields.gender_type || "женщина",
-        barter_available:
-          profileDraftFields.barter_available ??
-          apiResponse.isBarterAvailable ??
-          false,
-        mart_registry:
-          profileDraftFields.mart_registry ??
-          apiResponse.isMartRegistry ??
-          false,
-        cooperation_conditions:
-          profileDraftFields.cooperation_conditions ||
-          apiResponse.cooperation ||
-          "",
-
-        // Instagram данные
-        instagram_username: instagram.username,
-        instagram_profile_url: "", // Нет в текущем API
-        instagram_followers: instagram.subscribers.toString(),
-        instagram_engagement_rate: instagram.engagementRate.toString(),
-        instagram_post_reach:
-          updatedPlatformsData.instagram?.reach?.toString() || "",
-        instagram_story_reach:
-          updatedPlatformsData.instagram?.storyReach?.toString() || "",
-        instagram_post_price:
-          priceDrafts.instagram?.post_price !== undefined 
-            ? priceDrafts.instagram.post_price.toString() 
-            : (updatedPlatformsData.instagram?.price?.toString() || ""),
-        instagram_story_price:
-          priceDrafts.instagram?.story_price !== undefined 
-            ? priceDrafts.instagram.story_price.toString() 
-            : (updatedPlatformsData.instagram?.storyPrice?.toString() || ""),
-        instagram_integration_price:
-          priceDrafts.instagram?.integration_price !== undefined 
-            ? priceDrafts.instagram.integration_price.toString() 
-            : (updatedPlatformsData.instagram?.integrationPrice?.toString() || ""),
-
-        // TikTok данные
-        tiktok_username: updatedPlatformsData.tiktok?.username || "",
-        tiktok_profile_url: updatedPlatformsData.tiktok?.profile_url || "",
-        tiktok_followers:
-          updatedPlatformsData.tiktok?.subscribers?.toString() || "",
-        tiktok_engagement_rate:
-          updatedPlatformsData.tiktok?.er?.toString() || "",
-        tiktok_post_reach: updatedPlatformsData.tiktok?.reach?.toString() || "",
-        tiktok_story_reach:
-          updatedPlatformsData.tiktok?.storyReach?.toString() || "",
-        tiktok_post_price:
-          priceDrafts.tiktok?.post_price !== undefined 
-            ? priceDrafts.tiktok.post_price.toString() 
-            : (updatedPlatformsData.tiktok?.price?.toString() || ""),
-        tiktok_story_price:
-          priceDrafts.tiktok?.story_price !== undefined 
-            ? priceDrafts.tiktok.story_price.toString() 
-            : (updatedPlatformsData.tiktok?.storyPrice?.toString() || ""),
-        tiktok_integration_price:
-          priceDrafts.tiktok?.integration_price !== undefined 
-            ? priceDrafts.tiktok.integration_price.toString() 
-            : (updatedPlatformsData.tiktok?.integrationPrice?.toString() || ""),
-
-        // YouTube данные
-        youtube_username: updatedPlatformsData.youtube?.username || "",
-        youtube_profile_url: updatedPlatformsData.youtube?.profile_url || "",
-        youtube_followers:
-          updatedPlatformsData.youtube?.subscribers?.toString() || "",
-        youtube_engagement_rate:
-          updatedPlatformsData.youtube?.er?.toString() || "",
-        youtube_post_reach:
-          updatedPlatformsData.youtube?.reach?.toString() || "",
-        youtube_story_reach:
-          updatedPlatformsData.youtube?.storyReach?.toString() || "",
-        youtube_post_price:
-          priceDrafts.youtube?.post_price !== undefined 
-            ? priceDrafts.youtube.post_price.toString() 
-            : (updatedPlatformsData.youtube?.price?.toString() || ""),
-        youtube_story_price:
-          priceDrafts.youtube?.story_price !== undefined 
-            ? priceDrafts.youtube.story_price.toString() 
-            : (updatedPlatformsData.youtube?.storyPrice?.toString() || ""),
-        youtube_integration_price:
-          priceDrafts.youtube?.integration_price !== undefined 
-            ? priceDrafts.youtube.integration_price.toString() 
-            : (updatedPlatformsData.youtube?.integrationPrice?.toString() || ""),
-
-        // Telegram данные
-        telegram_username: updatedPlatformsData.telegram?.username || "",
-        telegram_profile_url: updatedPlatformsData.telegram?.profile_url || "",
-        telegram_followers:
-          updatedPlatformsData.telegram?.subscribers?.toString() || "",
-        telegram_engagement_rate:
-          updatedPlatformsData.telegram?.er?.toString() || "",
-        telegram_post_reach:
-          updatedPlatformsData.telegram?.reach?.toString() || "",
-        telegram_story_reach:
-          updatedPlatformsData.telegram?.storyReach?.toString() || "",
-        telegram_post_price:
-          priceDrafts.telegram?.post_price !== undefined 
-            ? priceDrafts.telegram.post_price.toString() 
-            : (updatedPlatformsData.telegram?.price?.toString() || ""),
-        telegram_story_price:
-          priceDrafts.telegram?.story_price !== undefined 
-            ? priceDrafts.telegram.story_price.toString() 
-            : (updatedPlatformsData.telegram?.storyPrice?.toString() || ""),
-        telegram_integration_price:
-          priceDrafts.telegram?.integration_price !== undefined 
-            ? priceDrafts.telegram.integration_price.toString() 
-            : (updatedPlatformsData.telegram?.integrationPrice?.toString() || ""),
-
-        // Темы
+        barter_available: profileDraftFields.barter_available ?? apiResponse.isBarterAvailable ?? false,
+        mart_registry: profileDraftFields.mart_registry ?? apiResponse.isMartRegistry ?? false,
+        cooperation_conditions: profileDraftFields.cooperation_conditions || apiResponse.cooperation || "",
         topics: topics.map(t => t.toString()),
         banned_topics: bannedTopics.map(t => t.toString()),
-      };
+      } as EditData;
+
+      // Заполняем данные для всех платформ циклом
+      ALL_PLATFORMS.forEach((platform) => {
+        const platformData = updatedPlatformsData[platform];
+        const isInstagram = platform === "instagram";
+        
+        mergedData[`${platform}_username` as keyof EditData] = 
+          (isInstagram ? instagram.username : platformData?.username) || "";
+        mergedData[`${platform}_profile_url` as keyof EditData] = 
+          (isInstagram ? "" : platformData?.profile_url) || "";
+        mergedData[`${platform}_followers` as keyof EditData] = 
+          (isInstagram ? instagram.subscribers.toString() : platformData?.subscribers?.toString()) || "";
+        mergedData[`${platform}_engagement_rate` as keyof EditData] = 
+          (isInstagram ? instagram.engagementRate.toString() : platformData?.er?.toString()) || "";
+        mergedData[`${platform}_post_reach` as keyof EditData] = 
+          platformData?.reach?.toString() || "";
+        mergedData[`${platform}_story_reach` as keyof EditData] = 
+          platformData?.storyReach?.toString() || "";
+        mergedData[`${platform}_post_price` as keyof EditData] = getPrice(platform, 'post_price');
+        mergedData[`${platform}_story_price` as keyof EditData] = getPrice(platform, 'story_price');
+        mergedData[`${platform}_integration_price` as keyof EditData] = getPrice(platform, 'integration_price');
+      });
 
       return mergedData;
     },

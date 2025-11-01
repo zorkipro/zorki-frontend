@@ -1,16 +1,6 @@
-import React, { useState } from "react";
-import { Button } from "@/ui-kit";
-import { Input } from "@/ui-kit";
-import { Label } from "@/ui-kit";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/ui-kit";
+import React, { useState, useEffect } from "react";
+import { Button, Input, Label } from "@/ui-kit";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/ui-kit";
 import { RefreshCw, Loader2 } from "lucide-react";
 
 interface ReauthTelegramAccountDialogProps {
@@ -28,76 +18,57 @@ export const ReauthTelegramAccountDialog: React.FC<ReauthTelegramAccountDialogPr
 }) => {
   const [open, setOpen] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState("");
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [codeSent, setCodeSent] = useState(false);
 
-  // Automatically trigger login request when dialog opens
-  React.useEffect(() => {
-    if (open && !codeSent) {
-      const triggerLogin = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          
-          // Step 1: Delete old session and trigger login (code is empty)
-          await onReauth(accountId, phone, "");
-          
-          setCodeSent(true);
-        } catch (error) {
-          // Error is handled by the parent component via toast
-          setError("Не удалось отправить запрос на переавторизацию");
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      triggerLogin();
-    }
+  useEffect(() => {
+    if (!open || codeSent) return;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        await onReauth(accountId, phone, "");
+        setCodeSent(true);
+      } catch {
+        setError("Не удалось отправить запрос на переавторизацию");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [open, accountId, phone, onReauth, codeSent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!confirmationCode.trim()) {
       setError("Введите код подтверждения");
       return;
     }
-
     if (!codeSent) {
       setError("Сначала нужно отправить запрос на переавторизацию");
       return;
     }
-
     try {
       setLoading(true);
       setError(null);
-      
-      // Step 2: Confirm with code
       await onReauth(accountId, phone, confirmationCode.trim());
-      
-      // Reset form and close dialog on success
       setConfirmationCode("");
       setCodeSent(false);
       setOpen(false);
-      
-    } catch (error) {
-      // Error is handled by the parent component via toast
+    } catch {
+      // Error handled by parent via toast
     } finally {
       setLoading(false);
     }
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!loading) {
-      setOpen(newOpen);
-      if (!newOpen) {
-        // Reset form when closing
-        setConfirmationCode("");
-        setCodeSent(false);
-        setError(null);
-      }
+    if (loading) return;
+    setOpen(newOpen);
+    if (!newOpen) {
+      setConfirmationCode("");
+      setCodeSent(false);
+      setError(null);
     }
   };
 

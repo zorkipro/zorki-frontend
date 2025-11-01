@@ -1,23 +1,7 @@
-/**
- * Хук для управления состоянием формы редактирования профиля
- *
- * Отвечает за:
- * - Хранение данных формы (formData)
- * - Обновление данных формы
- * - Состояние UI (activeTab, editingSection)
- * - Валидацию изменений
- *
- * Следует принципу Single Responsibility - только управление состоянием формы.
- */
-
-import { useState, useCallback, useMemo } from "react";
-import type { EditData, PlatformData } from "@/types/profile";
+import { useState } from "react";
+import type { EditData } from "@/types/profile";
 import type { PlatformType } from "@/types/platform";
-import { ALL_PLATFORMS } from "@/types/platform";
 
-/**
- * Начальные данные формы (пустые значения)
- */
 export const INITIAL_FORM_DATA: EditData = {
   full_name: "",
   description: "",
@@ -65,111 +49,29 @@ export const INITIAL_FORM_DATA: EditData = {
 };
 
 export interface ProfileFormReturn {
-  /** Данные формы */
   formData: EditData;
-  /** Активная вкладка платформы */
   activeTab: PlatformType | string;
-  /** Редактируемая секция */
   editingSection: string | null;
-  /** Обновить данные формы (partial update) */
   updateFormData: (data: Partial<EditData>) => void;
-  /** Установить данные формы полностью */
   setFormData: (data: EditData) => void;
-  /** Сбросить форму к начальному состоянию */
-  resetForm: () => void;
-  /** Установить активную вкладку */
   setActiveTab: (tab: PlatformType | string) => void;
-  /** Установить редактируемую секцию */
   setEditingSection: (section: string | null) => void;
-  /** Проверить, есть ли несохраненные изменения */
-  hasUnsavedChanges: (originalData: EditData) => boolean;
 }
 
-/**
- * Хук для управления состоянием формы редактирования профиля
- *
- * @param initialData - Начальные данные формы (опционально)
- * @returns Состояние формы и функции управления
- *
- * @example
- * const { formData, updateFormData, resetForm } = useProfileForm(loadedData);
- *
- * // Обновить одно поле
- * updateFormData({ full_name: 'Новое имя' });
- *
- * // Сбросить форму
- * resetForm();
- */
 export const useProfileForm = (initialData?: EditData): ProfileFormReturn => {
   const [formData, setFormDataState] = useState<EditData>(
     initialData || INITIAL_FORM_DATA,
   );
-  const [activeTab, setActiveTab] = useState<PlatformType | string>(
-    "instagram",
-  );
+  const [activeTab, setActiveTab] = useState<PlatformType | string>("instagram");
   const [editingSection, setEditingSection] = useState<string | null>(null);
 
-  /**
-   * Обновляет данные формы (partial update)
-   * Логирует изменения в режиме отладки
-   */
-  const updateFormData = useCallback((data: Partial<EditData>) => {
-    setFormDataState((prev) => {
-      const updated = { ...prev, ...data };
+  const updateFormData = (data: Partial<EditData>) => {
+    setFormDataState((prev) => ({ ...prev, ...data }));
+  };
 
-      return updated;
-    });
-  }, []);
-
-  /**
-   * Устанавливает данные формы полностью
-   */
-  const setFormData = useCallback((data: EditData) => {
-    setFormDataState(data);
-  }, []);
-
-  /**
-   * Сбрасывает форму к начальному состоянию
-   */
-  const resetForm = useCallback(() => {
-    setFormDataState(initialData || INITIAL_FORM_DATA);
-    setEditingSection(null);
-  }, [initialData]);
-
-  /**
-   * Проверяет, есть ли несохраненные изменения
-   * Сравнивает текущие данные формы с оригинальными
-   */
-  const hasUnsavedChanges = useCallback(
-    (originalData: EditData): boolean => {
-      // Сравниваем все поля
-      const keys = Object.keys(formData) as (keyof EditData)[];
-
-      for (const key of keys) {
-        const current = formData[key];
-        const original = originalData[key];
-
-        // Специальная обработка для массивов
-        if (Array.isArray(current) && Array.isArray(original)) {
-          if (current.length !== original.length) {
-            return true;
-          }
-          if (current.some((item, index) => item !== original[index])) {
-            return true;
-          }
-          continue;
-        }
-
-        // Сравнение примитивов
-        if (current !== original) {
-          return true;
-        }
-      }
-
-      return false;
-    },
-    [formData],
-  );
+  const setFormData = (data: EditData) => {
+    setFormDataState({ ...data });
+  };
 
   return {
     formData,
@@ -177,9 +79,7 @@ export const useProfileForm = (initialData?: EditData): ProfileFormReturn => {
     editingSection,
     updateFormData,
     setFormData,
-    resetForm,
     setActiveTab,
     setEditingSection,
-    hasUnsavedChanges,
   };
 };

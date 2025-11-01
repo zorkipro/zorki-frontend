@@ -174,33 +174,22 @@ export function mapLocalToApiUpdate(
   topicsLookup: Record<string, number>,
 ): BloggerUpdateProfileInputDto {
   const { name, lastName } = splitFullName(local.full_name);
-
-  // Конвертируем topics/banned_topics: названия -> ID, ID -> ID (без изменений)
   const topicIds = convertTopicsToIds(local.topics, topicsLookup);
-  const restrictedTopicIds = convertTopicsToIds(
-    local.banned_topics,
-    topicsLookup,
+  const restrictedTopicIds = convertTopicsToIds(local.banned_topics, topicsLookup);
+
+  const coveragePlatforms: Array<{ key: keyof EditData; type: ApiSocialType }> = [
+    { key: "instagram_story_reach", type: "INSTAGRAM" },
+    { key: "tiktok_story_reach", type: "TIKTOK" },
+    { key: "youtube_story_reach", type: "YOUTUBE" },
+    { key: "telegram_story_reach", type: "TELEGRAM" },
+  ];
+
+  const coverageData = coveragePlatforms.find(
+    ({ key }) => local[key] && local[key] !== ""
   );
-
-  // Определяем coverageSocialType и coverage для обновления охвата
-  // Приоритет: Instagram > TikTok > YouTube > Telegram
-  let coverageSocialType: ApiSocialType | undefined;
-  let coverage: number | undefined;
-
-  // Проверяем поля охвата сториз для всех платформ (в порядке приоритета)
-  if (local.instagram_story_reach && local.instagram_story_reach !== "") {
-    coverageSocialType = "INSTAGRAM";
-    coverage = parseFloat(local.instagram_story_reach);
-  } else if (local.tiktok_story_reach && local.tiktok_story_reach !== "") {
-    coverageSocialType = "TIKTOK";
-    coverage = parseFloat(local.tiktok_story_reach);
-  } else if (local.youtube_story_reach && local.youtube_story_reach !== "") {
-    coverageSocialType = "YOUTUBE";
-    coverage = parseFloat(local.youtube_story_reach);
-  } else if (local.telegram_story_reach && local.telegram_story_reach !== "") {
-    coverageSocialType = "TELEGRAM";
-    coverage = parseFloat(local.telegram_story_reach);
-  }
+  
+  const coverageSocialType = coverageData?.type;
+  const coverage = coverageData ? parseFloat(String(local[coverageData.key])) : undefined;
 
   const result: BloggerUpdateProfileInputDto = {
     name: name || undefined,
@@ -216,16 +205,14 @@ export function mapLocalToApiUpdate(
       : undefined,
     isBarterAvailable: local.barter_available,
     isMartRegistry: local.mart_registry,
-    // coverageSocialType и coverage - для обновления охвата платформы
     coverageSocialType,
     coverage,
   };
 
-  // Добавляем topics и restrictedTopics только если они не пустые
-  if (topicIds.length > 0) {
+  if (local.topics !== undefined) {
     result.topics = topicIds;
   }
-  if (restrictedTopicIds.length > 0) {
+  if (local.banned_topics !== undefined) {
     result.restrictedTopics = restrictedTopicIds;
   }
 

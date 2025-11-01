@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
 import { LoadingSpinner } from "@/ui-kit/components";
@@ -11,41 +11,29 @@ export const AuthRedirectHandler = () => {
   const navigate = useNavigate();
   const { user, loading, determineRedirectPath } = useSession();
   const hasRedirectedRef = useRef(false);
-  const [isDeterminingRedirect, setIsDeterminingRedirect] = useState(false);
 
   useEffect(() => {
+    if (!user) {
+      hasRedirectedRef.current = false;
+      return;
+    }
+
+    if (loading || hasRedirectedRef.current) return;
+
     const handleAuthRedirect = async () => {
-      // Если пользователь авторизован и еще не делали редирект
-      if (user && !loading && !hasRedirectedRef.current) {
-        setIsDeterminingRedirect(true);
-        hasRedirectedRef.current = true;
-        
-        try {
-          const redirectPath = await determineRedirectPath();
-          
-          navigate(redirectPath);
-        } catch (error) {
-          // В случае ошибки редиректим на главную
-          navigate('/');
-        } finally {
-          setIsDeterminingRedirect(false);
-        }
+      hasRedirectedRef.current = true;
+      try {
+        const redirectPath = await determineRedirectPath();
+        navigate(redirectPath);
+      } catch (error) {
+        navigate('/');
       }
     };
 
     handleAuthRedirect();
   }, [user, loading, determineRedirectPath, navigate]);
 
-  // Сбрасываем флаг при выходе пользователя
-  useEffect(() => {
-    if (!user) {
-      hasRedirectedRef.current = false;
-      setIsDeterminingRedirect(false);
-    }
-  }, [user]);
-
-  // Показываем лоадинг пока загружается сессия или определяем куда редиректить
-  if (loading || isDeterminingRedirect) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" />
@@ -53,6 +41,5 @@ export const AuthRedirectHandler = () => {
     );
   }
 
-  // Этот компонент не рендерит ничего в обычном состоянии
   return null;
 };

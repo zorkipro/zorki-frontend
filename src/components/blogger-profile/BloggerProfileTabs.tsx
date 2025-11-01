@@ -10,52 +10,53 @@ import {
 import { ScreenshotDisplay } from "@/components/profile/ScreenshotDisplay";
 import { BloggerProfileStats } from "./BloggerProfileStats";
 import { Blogger } from "@/types/blogger";
-import { Screenshot } from "@/types/profile";
 import { normalizeUsername } from "@/utils/username";
+import { sortPlatforms } from "@/utils/platform-field-helpers";
 
 interface BloggerProfileTabsProps {
   blogger: Blogger;
 }
 
+const buildPlatformUrl = (platform: string, stats: any, bloggerHandle: string): string | null => {
+  if (stats.url) return stats.url;
+  const username = normalizeUsername(stats.username || bloggerHandle);
+  if (!username) return null;
+  
+  const urls: Record<string, string> = {
+    instagram: `https://www.instagram.com/${username}/`,
+    tiktok: `https://www.tiktok.com/@${username}`,
+    youtube: `https://www.youtube.com/@${username}`,
+    telegram: `https://t.me/${username}`,
+  };
+  return urls[platform] || null;
+};
+
 export const BloggerProfileTabs = ({
   blogger,
 }: BloggerProfileTabsProps) => {
-  const [activeTab, setActiveTab] = useState("instagram");
+  const sortedPlatforms = Object.entries(blogger.platforms).sort(sortPlatforms);
+  const [activeTab, setActiveTab] = useState(sortedPlatforms[0]?.[0] || "instagram");
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="flex w-full overflow-x-auto whitespace-nowrap gap-1 mb-8 md:grid md:grid-cols-4 md:gap-0">
-        {Object.entries(blogger.platforms)
-          .sort(([a], [b]) => {
-            // Instagram всегда первый
-            if (a === "instagram") return -1;
-            if (b === "instagram") return 1;
-            // Остальные в алфавитном порядке
-            return a.localeCompare(b);
-          })
-          .map(([platform, stats]) => (
-            <TabsTrigger
-              key={platform}
-              value={platform}
-              className="flex items-center space-x-2 shrink-0 px-6 md:px-3 flex-1 md:flex-initial"
-            >
-              {getPlatformIcon(platform)}
-              <span className="hidden sm:inline">
-                {getPlatformName(platform)}
-              </span>
-            </TabsTrigger>
-          ))}
+        {sortedPlatforms.map(([platform, stats]) => (
+          <TabsTrigger
+            key={platform}
+            value={platform}
+            className="flex items-center space-x-2 shrink-0 px-6 md:px-3 flex-1 md:flex-initial"
+          >
+            {getPlatformIcon(platform)}
+            <span className="hidden sm:inline">
+              {getPlatformName(platform)}
+            </span>
+          </TabsTrigger>
+        ))}
       </TabsList>
 
-      {Object.entries(blogger.platforms)
-        .sort(([a], [b]) => {
-          // Instagram всегда первый
-          if (a === "instagram") return -1;
-          if (b === "instagram") return 1;
-          // Остальные в алфавитном порядке
-          return a.localeCompare(b);
-        })
-        .map(([platform, stats]) => (
+      {sortedPlatforms.map(([platform, stats]) => {
+        const url = buildPlatformUrl(platform, stats, blogger.handle);
+        return (
           <TabsContent key={platform} value={platform}>
             <Card>
               <CardHeader>
@@ -64,39 +65,11 @@ export const BloggerProfileTabs = ({
                     {getPlatformIcon(platform)}
                     <span>Статистика {getPlatformName(platform)}</span>
                   </div>
-                  {(stats.url ||
-                    platform === "instagram" ||
-                    platform === "tiktok" ||
-                    platform === "youtube" ||
-                    platform === "telegram") && (
+                  {url && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        let url = stats.url;
-
-                        // Формируем ссылки для всех платформ
-                        if (platform === "instagram") {
-                          const username = normalizeUsername(blogger.handle);
-                          url = `https://www.instagram.com/${username}/`;
-                        } else if (platform === "tiktok") {
-                          const username =
-                            normalizeUsername(stats.username) || normalizeUsername(blogger.handle);
-                          url = `https://www.tiktok.com/@${username}`;
-                        } else if (platform === "youtube") {
-                          const username =
-                            normalizeUsername(stats.username) || normalizeUsername(blogger.handle);
-                          url = `https://www.youtube.com/@${username}`;
-                        } else if (platform === "telegram") {
-                          const username =
-                            normalizeUsername(stats.username) || normalizeUsername(blogger.handle);
-                          url = `https://t.me/${username}`;
-                        }
-
-                        if (url) {
-                          window.open(url, "_blank");
-                        }
-                      }}
+                      onClick={() => window.open(url, "_blank")}
                       className="flex items-center space-x-1"
                     >
                       <span>Перейти</span>
@@ -107,20 +80,19 @@ export const BloggerProfileTabs = ({
               </CardHeader>
               <CardContent>
                 <BloggerProfileStats platform={platform} stats={stats} />
-
-                {/* Screenshots Section */}
                 <ScreenshotDisplay
                   platform={platform}
-                  screenshots={stats.screenshots || []}
-                  loading={false} // Скриншоты уже загружены с данными платформы
+                  screenshots={stats.screenshots ?? []}
+                  loading={false}
                   showUploadButton={false}
-                  isVerified={true} // Для публичной страницы блогера всегда показываем скриншоты
-                  createdBy="admin" // Публичные страницы созданы админом
+                  isVerified={true}
+                  createdBy="admin"
                 />
               </CardContent>
             </Card>
           </TabsContent>
-        ))}
+        );
+      })}
     </Tabs>
   );
 };

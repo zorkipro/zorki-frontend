@@ -1,26 +1,16 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBlogger } from "@/contexts/BloggerContext";
-import {
-  updateBloggerProfile,
-  updateBloggerSocialPrice,
-} from "@/api/endpoints/blogger";
+import { updateBloggerProfile, updateBloggerSocialPrice } from "@/api/endpoints/blogger";
 import { mapLocalToApiUpdate } from "@/utils/api/mappers";
-import {
-  mapProfileChangesToBloggerFields,
-} from "@/utils/profile-update-mapper";
+import { mapProfileChangesToBloggerFields } from "@/utils/profile-update-mapper";
 import { APIError } from "@/api/client";
 import { useToast } from "@/hooks/use-toast";
-import { useTopics } from "@/hooks/useTopics";
+import { getPlatformPrices, getPlatformField, safeParseFloatOrUndefined, safeParseFloat } from "@/utils/platform-field-helpers";
 import type { Influencer, PlatformData } from "@/types/profile";
 import type { EditData } from "@/types/profile";
-import type { PlatformType } from "@/types/platform";
 import { ALL_PLATFORMS, platformToApi } from "@/types/platform";
 
-
-/**
- * Hook for saving profile changes
- */
 export const useProfileSaver = (
   profile: Influencer | null,
   formData: EditData,
@@ -29,188 +19,107 @@ export const useProfileSaver = (
   ) => void,
   topicLookup: Record<string, number>,
   updateFormData?: (data: Partial<EditData>) => void,
+  refetch?: () => Promise<void>,
+  loadProfileWithDrafts?: () => Promise<EditData | null>,
+  setFormData?: (data: EditData) => void,
 ) => {
   const { user } = useAuth();
   const { updateBloggerFields } = useBlogger();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
+  const savePlatformPrices = useCallback(
+    async (data: Partial<EditData>, profileId: number) => {
+      for (const platform of ALL_PLATFORMS) {
+        const { postPrice, storyPrice, integrationPrice } = getPlatformPrices(data, platform);
+        if (!postPrice && !storyPrice && !integrationPrice) continue;
+
+        const priceUpdateData: any = { type: platformToApi(platform) };
+        if (postPrice !== undefined) priceUpdateData.postPrice = safeParseFloatOrUndefined(String(postPrice));
+        if (storyPrice !== undefined && platform === 'instagram') {
+          priceUpdateData.storiesPrice = safeParseFloatOrUndefined(String(storyPrice));
+        }
+        if (integrationPrice !== undefined) {
+          priceUpdateData.integrationPrice = safeParseFloatOrUndefined(String(integrationPrice));
+        }
+
+        if (priceUpdateData.postPrice ?? priceUpdateData.storiesPrice ?? priceUpdateData.integrationPrice) {
+          await updateBloggerSocialPrice(profileId, priceUpdateData);
+        }
+      }
+    },
+    [],
+  );
+
+  const updatePlatformsState = useCallback(
+    (data: Partial<EditData>, prev: Record<string, PlatformData>) => {
+      const getValue = (key: keyof EditData) => data[key] ?? formData[key];
+      const result = { ...prev };
+      
+      ALL_PLATFORMS.forEach((platform) => {
+        if (!prev[platform]) return;
+
+        const update: Partial<PlatformData> = {};
+        const postPrice = getValue(getPlatformField(platform, "post_price"));
+        const storyPrice = getValue(getPlatformField(platform, "story_price"));
+        const integrationPrice = getValue(getPlatformField(platform, "integration_price"));
+        const postReach = getValue(getPlatformField(platform, "post_reach"));
+        const storyReach = getValue(getPlatformField(platform, "story_reach"));
+
+        if (postPrice !== undefined) update.price = safeParseFloat(String(postPrice), prev[platform].price);
+        if (storyPrice !== undefined) update.storyPrice = safeParseFloat(String(storyPrice), prev[platform].storyPrice);
+        if (integrationPrice !== undefined) update.integrationPrice = safeParseFloat(String(integrationPrice), prev[platform].integrationPrice);
+        if (postReach !== undefined) update.reach = safeParseFloat(String(postReach), prev[platform].reach);
+        if (storyReach !== undefined) update.storyReach = safeParseFloat(String(storyReach), prev[platform].storyReach);
+
+        if (Object.keys(update).length > 0) {
+          result[platform] = { ...prev[platform], ...update };
+        }
+      });
+
+      return result;
+    },
+    [formData],
+  );
+
   const handleSave = useCallback(
     async (data: Partial<EditData>) => {
-      
       if (!user || !profile) return;
 
       try {
         setSaving(true);
 
-        // Используем mapLocalToApiUpdate для корректного преобразования данных
-        const mergedData = { ...formData, ...data };
-        const profileUpdateData = mapLocalToApiUpdate(mergedData, topicLookup);
-
+        const profileUpdateData = mapLocalToApiUpdate({ ...formData, ...data }, topicLookup);
         await updateBloggerProfile(Number(profile.id), profileUpdateData);
 
-        // Сохранение цен платформ последовательно (чтобы избежать deadlock)
+        await savePlatformPrices(data, Number(profile.id));
+        setAvailablePlatforms((prev) => updatePlatformsState(data, prev));
+
+        const bloggerFields = mapProfileChangesToBloggerFields(data);
+        if (Object.keys(bloggerFields).length > 0) {
+          updateBloggerFields(bloggerFields);
+        }
+
+        updateFormData?.(data);
+        toast({ title: "Успешно", description: "Профиль обновлен" });
         
-        // Фильтруем только платформы с изменениями (как в админке)
-        const platformsWithChanges = ALL_PLATFORMS.filter((platform) => {
-          const postPriceKey = `${platform}_post_price` as keyof EditData;
-          const storyPriceKey = `${platform}_story_price` as keyof EditData;
-          const integrationPriceKey = `${platform}_integration_price` as keyof EditData;
-
-          // Проверяем ТОЛЬКО data (новые изменения), не formData
-          return data[postPriceKey] !== undefined || 
-                 data[storyPriceKey] !== undefined || 
-                 data[integrationPriceKey] !== undefined;
-        });
-
-        const platformPriceUpdates = platformsWithChanges.map((platform) => {
-          
-          const postPriceKey = `${platform}_post_price` as keyof EditData;
-          const storyPriceKey = `${platform}_story_price` as keyof EditData;
-          const integrationPriceKey =
-            `${platform}_integration_price` as keyof EditData;
-
-          // Берем значения ТОЛЬКО из data (новые изменения), как в админке
-          const postPrice = data[postPriceKey];
-          const storyPrice = data[storyPriceKey];
-          const integrationPrice = data[integrationPriceKey];
-
-          if (postPrice || storyPrice || integrationPrice) {
-            const priceUpdateData: any = {
-              type: platformToApi(platform),
-            };
-
-            // Используем логику как в админке: проверяем !== undefined
-            if (postPrice !== undefined) {
-              priceUpdateData.postPrice = parseFloat(String(postPrice)) || undefined;
-            }
-            // Для YouTube не передаем storiesPrice, так как YouTube не имеет сторис
-            if (storyPrice !== undefined && platform !== 'youtube') {
-              priceUpdateData.storiesPrice = parseFloat(String(storyPrice)) || undefined;
-            }
-            if (integrationPrice !== undefined) {
-              priceUpdateData.integrationPrice = parseFloat(String(integrationPrice)) || undefined;
-            }
-
-            // Проверяем, что есть хотя бы одно валидное значение для отправки
-            const hasValidData = priceUpdateData.postPrice !== undefined || 
-                               priceUpdateData.storiesPrice !== undefined || 
-                               priceUpdateData.integrationPrice !== undefined;
-
-            if (!hasValidData) {
-              return Promise.resolve();
-            }
-
-            return updateBloggerSocialPrice(
-              Number(profile.id),
-              priceUpdateData,
-            );
-          }
-
-          return Promise.resolve();
-        });
-
-        // Выполняем обновления последовательно (как в админке)
-        for (const updatePromise of platformPriceUpdates) {
-          await updatePromise;
+        if (refetch && loadProfileWithDrafts && setFormData) {
+          await refetch();
+          const freshData = await loadProfileWithDrafts();
+          freshData && setFormData(freshData);
         }
-
-        setAvailablePlatforms((prev) => {
-          const updated = { ...prev };
-          ALL_PLATFORMS.forEach((platform) => {
-            const postPriceKey = `${platform}_post_price` as keyof EditData;
-            const storyPriceKey = `${platform}_story_price` as keyof EditData;
-            const integrationPriceKey =
-              `${platform}_integration_price` as keyof EditData;
-            const postReachKey = `${platform}_post_reach` as keyof EditData;
-            const storyReachKey = `${platform}_story_reach` as keyof EditData;
-
-            // Для обновления состояния используем новые значения из data, если есть, иначе старые из formData
-            const postPrice = data[postPriceKey] !== undefined ? data[postPriceKey] : formData[postPriceKey];
-            const storyPrice = data[storyPriceKey] !== undefined ? data[storyPriceKey] : formData[storyPriceKey];
-            const integrationPrice = data[integrationPriceKey] !== undefined ? data[integrationPriceKey] : formData[integrationPriceKey];
-            const postReach = data[postReachKey] !== undefined ? data[postReachKey] : formData[postReachKey];
-            const storyReach = data[storyReachKey] !== undefined ? data[storyReachKey] : formData[storyReachKey];
-
-            if (
-              updated[platform] &&
-              (postPrice ||
-                storyPrice ||
-                integrationPrice ||
-                postReach ||
-                storyReach)
-            ) {
-              updated[platform] = {
-                ...updated[platform],
-                price: postPrice
-                  ? parseFloat(postPrice as string)
-                  : updated[platform].price,
-                storyPrice: storyPrice
-                  ? parseFloat(storyPrice as string)
-                  : updated[platform].storyPrice,
-                integrationPrice: integrationPrice
-                  ? parseFloat(integrationPrice as string)
-                  : updated[platform].integrationPrice,
-                reach: postReach
-                  ? parseFloat(postReach as string)
-                  : updated[platform].reach,
-                storyReach: storyReach
-                  ? parseFloat(storyReach as string)
-                  : updated[platform].storyReach,
-              };
-            }
-          });
-          return updated;
-        });
-
-        // Обновляем локальное состояние formData для немедленного отображения изменений
-        if (updateFormData) {
-          updateFormData(data);
-        }
-
-        // Селективно обновляем только измененные поля в BloggerContext
-        try {
-          const bloggerFields = mapProfileChangesToBloggerFields(data);
-
-          if (Object.keys(bloggerFields).length > 0) {
-            updateBloggerFields(bloggerFields);
-          } else {
-          }
-        } catch (updateError) {
-          // Не прерываем выполнение, так как основное сохранение прошло успешно
-        }
-
-        toast({
-          title: "Успешно",
-          description: "Профиль обновлен",
-        });
       } catch (err: unknown) {
-        if (err instanceof APIError) {
-          toast({
-            title: "Ошибка API",
-            description: err.message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Ошибка",
-            description: "Не удалось сохранить изменения",
-            variant: "destructive",
-          });
-        }
+        const message = err instanceof APIError ? err.message : "Не удалось сохранить изменения";
+        toast({
+          title: "Ошибка",
+          description: message,
+          variant: "destructive",
+        });
       } finally {
         setSaving(false);
       }
     },
-    [
-      user,
-      profile,
-      formData,
-      setAvailablePlatforms,
-      topicLookup,
-      updateBloggerFields,
-      updateFormData,
-    ],
+    [user, profile, formData, topicLookup, savePlatformPrices, updatePlatformsState, setAvailablePlatforms, updateBloggerFields, toast, updateFormData, refetch, loadProfileWithDrafts, setFormData],
   );
 
   return {

@@ -50,11 +50,6 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
   const { toast } = useToast();
   const [updatingBloggerId, setUpdatingBloggerId] = useState<number | null>(null);
 
-  // Фильтруем блогеров без пола или с неопределенным полом
-  const bloggersWithoutGender = bloggers.filter(
-    (blogger) => !blogger.genderType || blogger.genderType === null
-  );
-
   // Функция для обновления пола блогера
   const handleGenderUpdate = async (
     bloggerId: number,
@@ -94,8 +89,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
     }
   };
 
-  // Если все блогеры имеют пол, показываем сообщение
-  if (bloggersWithoutGender.length === 0) {
+  if (bloggers.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -121,7 +115,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
             <CardTitle>Выбор пола блогеров</CardTitle>
             <CardDescription>
               Быстрый выбор пола для блогеров без указанного пола. 
-              Показано: {bloggersWithoutGender.length} из {totalCount} блогеров
+              Показано: {bloggers.length} из {totalCount} блогеров
             </CardDescription>
           </div>
           {onClearCache && (
@@ -154,7 +148,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bloggersWithoutGender.map((blogger) => {
+                  {bloggers.map((blogger) => {
                     const { mainSocial, displayName, username, subscribers } =
                       prepareBloggerData(blogger);
 
@@ -220,7 +214,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
 
             {/* Mobile Cards */}
             <div className="md:hidden">
-              {bloggersWithoutGender.map((blogger) => {
+              {bloggers.map((blogger) => {
                 const { mainSocial, displayName, username, subscribers } =
                   prepareBloggerData(blogger);
 

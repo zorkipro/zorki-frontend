@@ -4,24 +4,66 @@
 
 Zorki7 использует NestJS backend с RESTful API архитектурой для управления блогерами, аутентификации и админ-панели.
 
+---
+
+## ⚡ Быстрый старт (5 минут до первого API запроса)
+
+### Шаг 1: Импорт API клиента
+
+```typescript
+import { apiRequest } from '@/api/client';
+```
+
+### Шаг 2: Первый GET запрос
+
+```typescript
+// Получить список блогеров
+const bloggers = await apiRequest<Blogger[]>('/blogger/public');
+console.log(bloggers); // { items: [...], total: 100, page: 1, ... }
+```
+
+### Шаг 3: POST запрос с данными
+
+```typescript
+// Обновить профиль блогера
+const result = await apiRequest('/blogger/:id', {
+  method: 'PUT',
+  body: JSON.stringify({ name: 'Новое имя' })
+});
+```
+
+### Шаг 4: Обработка ошибок
+
+```typescript
+import { APIError } from '@/api/core/ApiErrorHandler';
+
+try {
+  const data = await apiRequest('/endpoint');
+} catch (error) {
+  if (error instanceof APIError) {
+    if (error.isValidationError()) {
+      const fieldErrors = error.getValidationErrors();
+      // { email: 'Invalid email', password: 'Too short' }
+    }
+  }
+}
+```
+
+---
+
 ## 🌐 Базовые настройки
 
 ### URL и окружение
 
-```
-Development: http://localhost:4000
-Production: VITE_API_BASE_URL
-Swagger: http://localhost:4000/swagger
-```
+**Production API** работает через proxy:
+- Все запросы к `/api/*` автоматически перенаправляются на `https://zorki.pro/api`
+- Настроено в `vite.config.ts`
 
 ### Переменные окружения
 
 ```typescript
-VITE_API_URL=http://localhost:4000
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_CURRENCY=RUB
-VITE_REDIRECT_URL=http://localhost:5173
 ```
 
 ### Аутентификация
@@ -45,170 +87,124 @@ const headers = {
 
 ## 📊 Основные эндпоинты
 
-### GET /blogger/public
+### ⭐ Самые важные (используются чаще всего)
 
-Получить список блогеров с пагинацией.
+#### 1. GET /blogger/public - Список блогеров
 
-**Параметры:**
-
+**Использование:**
 ```typescript
-interface BloggerQueryParams {
-  page?: number; // номер страницы (default: 1)
-  size?: number; // размер страницы (default: 50)
-  search?: string; // поиск по имени
-  gender?: ApiGender; // фильтр по полу
-  platform?: ApiSocialType; // фильтр по платформе
-}
+import { getAllBloggers } from '@/api/endpoints/blogger';
+
+const response = await getAllBloggers({
+  page: 1,
+  size: 50,
+  search: 'имя',
+  gender: 'FEMALE',
+  platform: 'INSTAGRAM'
+});
+
+// response.items - массив блогеров
+// response.total - общее количество
+// response.hasMore - есть ли еще страницы
 ```
 
-**Ответ:**
+#### 2. GET /blogger/public/:id - Профиль блогера
 
+**Использование:**
 ```typescript
-interface PaginatedBloggerResponse {
-  items: PublicGetAllBloggersOutputDto[];
-  total: number;
-  page: number;
-  size: number;
-  hasMore: boolean;
-}
+import { getBloggerById } from '@/api/endpoints/blogger';
+
+const blogger = await getBloggerById(bloggerId);
+// blogger.social - аккаунты в соцсетях
+// blogger.price - цены по платформам
+// blogger.topics - тематики блогера
 ```
 
-### GET /blogger/public/:id
-
-Получить детальную информацию о блогере.
-
-**Ответ:**
-
-```typescript
-interface PublicGetBloggerByIdOutputDto {
-  id: number;
-  name: string | null;
-  lastName: string | null;
-  contactLink: string | null;
-  genderType: ApiGender | null;
-  workFormat: ApiWorkFormat | null;
-  verificationStatus: ApiVerificationStatus | null;
-  social: PublicGetAllBloggersSocialAccOutputDto[] | null;
-  price: PublicGetAllBloggersSocialPriceOutputDto[];
-  topics: PublicGetBloggerByIdTopicOutputDto[] | null;
-}
-```
-
-### PUT /blogger/:id
-
-Обновить профиль блогера.
+#### 3. PUT /blogger/:id - Обновить профиль
 
 **Авторизация:** Bearer Token (Client JWT)
 
-**Тело запроса:**
-
+**Использование:**
 ```typescript
-interface BloggerUpdateProfileInputDto {
-  name?: string; // 1-30 chars
-  lastName?: string; // 1-30 chars
-  contactLink?: string; // URI
-  workFormat?: ApiWorkFormat;
-  genderType?: ApiGender;
-  topics?: number[]; // массив ID тематик
-  restrictedTopics?: number[]; // массив ID запрещенных тем
-  isBarterAvailable?: boolean;
-  isMartRegistry?: boolean;
-}
+import { updateBloggerProfile } from '@/api/endpoints/blogger';
+
+await updateBloggerProfile(bloggerId, {
+  name: 'Новое имя',
+  topics: [1, 2, 3], // ID тематик
+  isBarterAvailable: true
+});
 ```
 
 ## 🔐 Аутентификация
 
-### POST /auth/signup
+### Регистрация и вход
 
-Регистрация нового пользователя.
-
-**Тело запроса:**
-
+**Регистрация:**
 ```typescript
-interface SignUpInputDto {
-  email: string;
-  password: string; // 6-128 chars
-  confirmPassword: string;
-}
+// Используется через Supabase Auth (не API endpoint)
+// См. компоненты в src/components/auth/
 ```
 
-### POST /auth/signin
-
-Вход пользователя.
-
-**Тело запроса:**
-
+**Вход:**
 ```typescript
-interface SignInInputDto {
-  email: string;
-  password: string;
-}
+// Используется через Supabase Auth
+// См. src/components/auth/AuthForm.tsx
 ```
 
-### GET /auth/client/me
+### Получение информации о пользователе
 
-Получение информации о текущем пользователе.
-
-**Авторизация:** Bearer Token (Client JWT)
-
-**Ответ:**
+**GET /auth/client/me**
 
 ```typescript
-interface ClientAuthMeOutputDto {
-  iss: string; // Issuer
-  sub: string; // Subject (user ID)
-  email: string;
-  phone: string;
-  blogger: {
-    id: number;
-    name: string | null;
-    lastName: string | null;
-    verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
-  } | null;
-}
+import { getClientMe } from '@/api/endpoints/client';
+
+const userInfo = await getClientMe();
+// userInfo.email - email пользователя
+// userInfo.blogger - информация о блогере (если связан)
+// userInfo.blogger.verificationStatus - статус верификации
 ```
+
+**Авторизация:** Bearer Token (Client JWT) - добавляется автоматически
 
 ## 🛠️ Админ API
 
-### GET /admin/bloggers
+### ⭐ Самые важные админские эндпоинты
 
-Получить список всех блогеров для админа.
-
-**Авторизация:** Bearer Token (Admin JWT)
-
-**Параметры:**
+#### 1. GET /admin/bloggers - Список блогеров для админа
 
 ```typescript
-interface AdminBloggerQueryParams {
-  page?: number;
-  size?: number;
-  search?: string;
-  status?: ApiVerificationStatus;
-  sortField?: 'createdAt' | 'name' | 'followers';
-  sortDirection?: 'asc' | 'desc';
-}
+import { adminGetBloggers } from '@/api/endpoints/admin';
+
+const response = await adminGetBloggers({
+  page: 1,
+  size: 50,
+  search: 'имя',
+  status: 'APPROVED',
+  sortField: 'createdAt',
+  sortDirection: 'desc'
+});
 ```
 
-### POST /admin/bloggers
-
-Создать нового блогера.
-
-**Авторизация:** Bearer Token (Admin JWT)
-
-**Тело запроса:**
+#### 2. POST /admin/bloggers - Создать блогера
 
 ```typescript
-interface AdminCreateBloggerInputDto {
-  name: string;
-  lastName: string;
-  email?: string;
-  genderType?: ApiGender;
-  workFormat?: ApiWorkFormat;
-  socialAccounts?: SocialAccountInputDto[];
-  topics?: number[];
-  restrictedTopics?: number[];
-}
+import { adminCreateBlogger } from '@/api/endpoints/admin';
+
+await adminCreateBlogger('instagram_username');
 ```
+
+#### 3. GET /admin/link/blogger-client - Запросы на связывание
+
+```typescript
+import { getAdminLinkRequests } from '@/api/endpoints/admin';
+
+const requests = await getAdminLinkRequests({
+  page: 1,
+  status: 'MODERATION'
+});
+```
+
+**Авторизация:** Bearer Token (Admin JWT) - добавляется автоматически через TokenManager
 
 ### GET /admin/link/blogger-client
 
@@ -373,13 +369,204 @@ const ERROR_CODES = {
 };
 ```
 
-## 📚 Swagger документация
+## 📚 Дополнительная информация
 
-### Доступ к Swagger
+### Модульная архитектура API
 
-- **URL:** http://localhost:4000/swagger
-- **Описание:** Автоматически генерируемая документация API
-- **Интерактивность:** Возможность тестирования эндпоинтов
+API клиент разбит на модули:
+- **TokenManager** - управление токенами
+- **ResponseHandler** - обработка ответов
+- **ApiErrorHandler** - обработка ошибок
+
+Подробнее: [API_ARCHITECTURE.md](API_ARCHITECTURE.md)
+
+### Все эндпоинты по модулям
+
+- **admin.ts** - 26 функций (админские операции)
+- **blogger.ts** - 6 функций (публичный API)
+- **client.ts** - 2 функции (клиентские запросы)
+- **topics.ts** - 7 функций (тематики)
+- **social-linking.ts** - 6 функций (связывание соцсетей)
+- **telegram.ts** - 5 функций (Telegram клиент)
+- **youtube.ts** - 3 функции (YouTube клиент)
+- **instagram.ts** - 1 функция (Instagram клиент)
+
+**Всего: 56 функций в 8 модулях**
+
+## 📚 Topics API (Тематики)
+
+### GET /topic/public
+
+Получить список топиков с пагинацией и фильтрацией.
+
+**Параметры:**
+
+```typescript
+interface GetTopicsParams {
+  page?: number; // default: 1
+  size?: number; // default: 50
+  isRestricted?: boolean; // default: false - фильтр по типу топика
+}
+```
+
+**Ответ:**
+
+```typescript
+interface PaginationUtil<TopicsOutputDto[]> {
+  items: TopicsOutputDto[];
+  total: number;
+  page: number;
+  size: number;
+  hasMore: boolean;
+}
+
+interface TopicsOutputDto {
+  id: number;
+  name: string;
+  isRestricted: boolean;
+  createdAt: string;
+}
+```
+
+**Пример использования:**
+
+```typescript
+// Обычные топики (категории)
+const categories = await getTopics({ isRestricted: false });
+
+// Запрещенные топики
+const restricted = await getTopics({ isRestricted: true });
+
+// С пагинацией
+const page2 = await getTopics({ page: 2, size: 20, isRestricted: false });
+```
+
+### POST /admin/topic
+
+Создать новый топик (только для администраторов).
+
+**Авторизация:** Bearer Token (Admin JWT)
+
+**Тело запроса:**
+
+```typescript
+interface AdminCreateTopicInputDto {
+  name: string; // Название топика
+  isRestricted: boolean; // true - запрещенная тема, false - обычная категория
+}
+```
+
+### PUT /admin/topic/:topicId
+
+Обновить существующий топик (только для администраторов).
+
+**Авторизация:** Bearer Token (Admin JWT)
+
+**Тело запроса:**
+
+```typescript
+interface AdminUpdateTopicInputDto {
+  name?: string;
+  isRestricted?: boolean;
+}
+```
+
+### DELETE /admin/topic/:topicId
+
+Удалить топик (только для администраторов).
+
+**Авторизация:** Bearer Token (Admin JWT)
+
+## 🔗 Social Linking API
+
+### POST /blogger/link/social/tg/:bloggerId
+
+Отправить запрос на связывание Telegram канала с блогером.
+
+**Авторизация:** Bearer Token (Client JWT)
+
+**Тело запроса:**
+
+```typescript
+interface BloggerLinkMediaTgRequestInputDto {
+  username: string; // Telegram username канала
+}
+```
+
+### POST /blogger/link/social/yt/:bloggerId
+
+Отправить запрос на связывание YouTube канала с блогером.
+
+**Авторизация:** Bearer Token (Client JWT)
+
+**Тело запроса:**
+
+```typescript
+interface BloggerLinkMediaYtRequestInputDto {
+  channel: string; // YouTube URL или handle
+}
+```
+
+### POST /blogger/link/social/ig/:bloggerId
+
+Отправить запрос на связывание Instagram аккаунта с блогером.
+
+**Авторизация:** Bearer Token (Client JWT)
+
+**Тело запроса:**
+
+```typescript
+interface BloggerLinkMediaIgRequestInputDto {
+  username: string; // Instagram username
+}
+```
+
+**Админские endpoints для одобрения:**
+
+- `POST /blogger/link/social/tg/:bloggerId/:requestId` - одобрить Telegram
+- `POST /blogger/link/social/yt/:bloggerId/:requestId` - одобрить YouTube
+- `POST /blogger/link/social/ig/:bloggerId/:requestId` - одобрить Instagram
+
+## 👤 Client API
+
+### POST /client/blogger/link
+
+Связать текущего клиента с блогером по Instagram username.
+
+**Авторизация:** Bearer Token (Client JWT)
+
+**Тело запроса:**
+
+```typescript
+interface ClientLinkToBloggerInputDto {
+  username: string; // Instagram username блогера (без @)
+}
+```
+
+**Примечание:** Создает запрос на модерацию. Админ должен одобрить через `/admin/link/blogger-client/approve/:requestId`.
+
+### GET /auth/client/me
+
+Получение информации о текущем авторизованном клиенте.
+
+**Авторизация:** Bearer Token (Client JWT)
+
+**Ответ:**
+
+```typescript
+interface ClientAuthMeOutputDto {
+  iss: string;
+  sub: string;
+  email: string;
+  phone: string;
+  blogger: {
+    id: number;
+    name: string | null;
+    lastName: string | null;
+    verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  } | null;
+}
+```
 
 ## ⚠️ Нереализованные эндпоинты
 
@@ -387,10 +574,6 @@ const ERROR_CODES = {
 
 - `POST /yt-client/login` - авторизация YouTube клиента
 - `POST /yt-client/confirm` - подтверждение YouTube клиента
-
-### Topics API
-
-- `GET /topics` - получение списка тематик (используется только mock)
 
 ## 🎯 Готовность API
 
@@ -401,6 +584,57 @@ const ERROR_CODES = {
 ✅ **Обработка ошибок** централизована  
 ✅ **Маппинги** между API и frontend настроены
 
+## 📦 API Модули
+
+Все endpoints организованы в модули в `src/api/endpoints/`:
+
+- **admin.ts** - 26+ функций: админская аутентификация, управление блогерами, парсер-аккаунты, связывание соцсетей
+- **blogger.ts** - 6 функций: публичный API блогеров, обновление профилей, цены
+- **client.ts** - 2 функции: связывание клиента с блогером, получение информации о клиенте
+- **instagram.ts** - 1 функция: управление Instagram клиентом
+- **social-linking.ts** - 6 функций: запросы и одобрения связывания соцсетей (от пользователей)
+- **telegram.ts** - 5+ функций: управление Telegram клиентом и сессиями
+- **topics.ts** - 7 функций: публичный и админский API тематик (категории и запрещенные темы)
+- **youtube.ts** - 3 функции: управление YouTube каналами и сессиями
+
+**Всего:** **56 функций** в 8 модулях.
+
+### API Core модули (`src/api/core/`)
+
+Модульная архитектура API клиента:
+
+- **TokenManager.ts** - управление токенами с приоритетами (adminToken → accessToken → supabaseToken)
+- **ResponseHandler.ts** - централизованная обработка HTTP ответов
+- **ApiErrorHandler.ts** - обработка и классификация ошибок API
+- **types.ts** - типы для API Core
+
+Все модули используют Singleton pattern.
+
 ---
 
-_Последнее обновление: Октябрь 2025_
+## 🔐 Система аутентификации
+
+### Приоритет токенов
+
+API клиент использует следующую систему приоритетов токенов:
+
+1. **adminToken** (sessionStorage) - для админских операций
+2. **adminTempToken** (sessionStorage) - для подтверждения 2FA
+3. **accessToken** (sessionStorage) - основной токен для пользователей
+4. **supabaseToken** (session) - fallback из Supabase сессии
+
+**Реализация:** `src/api/core/TokenManager.ts`
+
+---
+
+## 📊 Статистика API
+
+- **8 модулей endpoints** - основные API модули
+- **56 функций** - все доступные API функции
+- **4 core модуля** - базовая инфраструктура API клиента
+- **REST API** - все эндпоинты используют REST архитектуру
+- **JWT аутентификация** - для админов и пользователей
+
+---
+
+_Последнее обновление: Январь 2025_

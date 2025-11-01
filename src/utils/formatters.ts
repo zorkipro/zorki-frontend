@@ -107,48 +107,27 @@ export const formatSubscribers = (subscribers: string | null): string => {
   return num.toLocaleString("ru-RU");
 };
 
-/**
- * Get avatar URL with fallback for missing avatars
- * Priority order:
- * 1. profile_picture_url from influencer_profiles table (Instagram avatar)
- * 2. avatar_url from influencers table (manual upload)
- * 3. Fallback based on username mapping
- * 4. Gender-appropriate default
- */
 export const getAvatarUrl = (profile: {
   avatar_url: string | null;
   profile_picture_url?: string | null;
   username: string;
   gender_type?: string;
 }): string => {
-  // First check if profile_picture_url is provided (from influencer_profiles table)
-  if (profile.profile_picture_url) {
-    return profile.profile_picture_url;
-  }
+  if (profile.profile_picture_url) return profile.profile_picture_url;
+  if (profile.avatar_url) return profile.avatar_url;
 
-  // Then check if avatar_url is directly provided in the profile (from influencers table)
-  if (profile.avatar_url) {
-    return profile.avatar_url;
-  }
-
-  // Gender-specific avatar mappings to ensure uniqueness and appropriateness
   const avatarMappings: Record<string, string> = {
-    // Women - unique avatars
     anna_petrova_beauty: "/blogger-anna.jpg",
     elena_fitness_coach: "/blogger-elena.jpg",
     maria_family_blog: "/blogger-fashion.jpg",
     natalia_psychologist: "/blogger-olga.jpg",
     olga_cooking_master: "/blogger-elena.jpg",
-    _agentgirl_: "/blogger-anna.jpg", // Agent Girl - женский аватар
-
-    // Men - unique avatars
+    _agentgirl_: "/blogger-anna.jpg",
     dmitry_tech_review: "/blogger-dmitry.jpg",
     igor_travel_guide: "/blogger-igor.jpg",
     sergey_business_guru: "/blogger-andrey.jpg",
     alexey_car_review: "/blogger-dmitry.jpg",
     andrey_bodybuilding: "/blogger-andrey.jpg",
-
-    // Legacy mappings for backward compatibility
     anna_lifestyle: "/blogger-anna.jpg",
     dmitry_tech: "/blogger-dmitry.jpg",
     travel_couple_by: "/blogger-couple.jpg",
@@ -159,18 +138,9 @@ export const getAvatarUrl = (profile: {
     fashion_belarus: "/blogger-fashion.jpg",
   };
 
-  // Return mapped avatar or gender-appropriate default
-  if (avatarMappings[profile.username]) {
-    return avatarMappings[profile.username];
-  }
-
-  // Gender-appropriate default fallback
-  if (profile.gender_type === "мужчина") {
-    return "/blogger-dmitry.jpg"; // Default male avatar
-  } else if (profile.gender_type === "женщина") {
-    return "/blogger-anna.jpg"; // Default female avatar
-  }
-
+  if (avatarMappings[profile.username]) return avatarMappings[profile.username];
+  if (profile.gender_type === "мужчина") return "/blogger-dmitry.jpg";
+  if (profile.gender_type === "женщина") return "/blogger-anna.jpg";
   return "/blogger-default.svg";
 };
 

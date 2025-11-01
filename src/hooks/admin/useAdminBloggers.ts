@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import { getAllBloggers } from "@/api/endpoints/blogger";
-import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { APIError } from "@/api/client";
 import { useToast } from "@/hooks/use-toast";
 import { logError } from "@/utils/logger";
@@ -11,49 +9,29 @@ import {
   rejectLinkRequest,
   adminGetBloggers,
   adminGetBloggersStats,
-  adminEnrichBloggersWithGender,
   adminGetBloggersWithoutGender,
 } from "../../api/endpoints/admin";
+import { mapLinkRequestToTableFormat } from "@/utils/admin/mappers";
 import type {
   AdminGetLinkBloggerClientRequestOutputDto,
-  LinkRequestStatus,
-  AdminGetBloggerOutputDto,
   AdminGetBloggersStatsOutputDto,
   AdminBloggerWithGender,
+  AdminGetBloggerOutputDto,
   ApiGender,
 } from "../../api/types";
 
-interface BloggerStats {
-  totalBloggersCount: number;
-  totalApprovedBloggersCount: number;
-  totalVisibleBloggersCount: number;
-  totalModerationLinkRequestsCount: number;
-}
-
-interface GetLinkRequestsParams {
-  page?: number;
-  size?: number;
-  sortDirection?: "asc" | "desc";
-  sortField?: "createdAt";
-  status?: LinkRequestStatus;
-}
-
 export const useAdminBloggers = () => {
   const { toast } = useToast();
-  const [allBloggers, setAllBloggers] = useState<AdminBloggerWithGender[]>(
-    [],
-  );
+  const [allBloggers, setAllBloggers] = useState<AdminGetBloggerOutputDto[]>([]);
   const [bloggersWithoutGender, setBloggersWithoutGender] = useState<AdminBloggerWithGender[]>([]);
   const [loadingGenderBloggers, setLoadingGenderBloggers] = useState(false);
   const [genderBloggersPage, setGenderBloggersPage] = useState(1);
   const [hasMoreGenderBloggers, setHasMoreGenderBloggers] = useState(true);
   const [totalGenderBloggersCount, setTotalGenderBloggersCount] = useState(0);
   const [genderPagesCache, setGenderPagesCache] = useState<Map<number, AdminBloggerWithGender[]>>(new Map());
-  const [linkRequests, setLinkRequests] = useState<
-    AdminGetLinkBloggerClientRequestOutputDto[]
-  >([]);
+  const [linkRequests, setLinkRequests] = useState<AdminGetLinkBloggerClientRequestOutputDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchLoading, setSearchLoading] = useState(false); // Отдельное состояние для поиска
+  const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -62,7 +40,8 @@ export const useAdminBloggers = () => {
   const [totalBloggersCount, setTotalBloggersCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showHidden, setShowHidden] = useState(false);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms задержка
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const isFetchingRef = useRef(false);
   const [stats, setStats] = useState<AdminGetBloggersStatsOutputDto>({
     totalBloggersCount: 0,
     totalApprovedBloggersCount: 0,
@@ -71,319 +50,212 @@ export const useAdminBloggers = () => {
   });
 
   const fetchBloggers = useCallback(
-    async (
-      page: number = 1,
-      append: boolean = false,
-      isSearch: boolean = false,
-    ) => {
+    async (page: number = 1, append: boolean = false, isSearch: boolean = false) => {
+      if (isFetchingRef.current) return;
+
+      const isFirstPage = page === 1;
+      isFetchingRef.current = true;
+
       try {
-        if (page === 1) {
-          if (isSearch) {
-            setSearchLoading(true); // Для поиска используем отдельное состояние
-          } else {
-            setLoading(true); // Для обычной загрузки используем основное состояние
-          }
+        if (isFirstPage) {
+          isSearch ? setSearchLoading(true) : setLoading(true);
         } else {
           setIsLoadingMore(true);
         }
         setError(null);
 
-        // ============================================
-        // ✅ ИСПОЛЬЗУЕМ АДМИНСКИЕ ЭНДПОИНТЫ
-        // ============================================
-
-        // 1. Загружаем блогеров через админский API
         const bloggersResponse = await adminGetBloggers({
-          page: page,
+          page,
           size: 50,
           sortDirection: "desc",
           sortField: "createdAt",
-          username: debouncedSearchTerm || undefined, // Используем debounced поиск
+          username: debouncedSearchTerm || undefined,
         });
 
-        // 1.5. Обогащаем блогеров информацией о поле
-        const enrichedBloggers = await adminEnrichBloggersWithGender(bloggersResponse.items);
-
-        // Обновляем состояние блогеров
-        if (page === 1) {
-          setAllBloggers(enrichedBloggers);
-        } else {
-          setAllBloggers((prev) => [...prev, ...enrichedBloggers]);
-        }
-
-        // Обновляем информацию о пагинации
+        setAllBloggers((prev) => (isFirstPage ? bloggersResponse.items : [...prev, ...bloggersResponse.items]));
         setTotalBloggersCount(bloggersResponse.totalCount);
-        setHasMoreBloggers(
-          bloggersResponse.items.length === 50 &&
-            page * 50 < bloggersResponse.totalCount,
-        );
+        setHasMoreBloggers(bloggersResponse.items.length === 50 && page * 50 < bloggersResponse.totalCount);
         setCurrentPage(page);
 
-        // 2. Загружаем статистику (только для первой страницы)
-        if (page === 1) {
-          const statsResponse = await adminGetBloggersStats();
-          setStats(statsResponse);
-        }
-
-        // 3. Загружаем запросы на связывание (только для первой страницы)
-        if (page === 1) {
-          const linkRequestsResponse = await getAdminLinkRequests({
-            status: "MODERATION",
-            page: 1,
-            size: 50,
-            sortDirection: "desc",
-            sortField: "createdAt",
-          });
-
-          setLinkRequests(linkRequestsResponse.items);
-        }
-      } catch (error: unknown) {
-        logError("Error fetching data:", error);
-        setError(error instanceof Error ? error.message : "Неизвестная ошибка");
-
-        if (error instanceof APIError) {
-          toast({
-            title: "Ошибка API",
-            description: error.message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Ошибка",
-            description: "Не удалось загрузить данные",
-            variant: "destructive",
-          });
-        }
-      } finally {
-        if (page === 1) {
-          if (isSearch) {
-            setSearchLoading(false);
+        if (isFirstPage) {
+          const [statsResponse, linkRequestsResponse] = await Promise.allSettled([
+            adminGetBloggersStats(),
+            getAdminLinkRequests({
+              status: "MODERATION",
+              page: 1,
+              size: 50,
+              sortDirection: "desc",
+              sortField: "createdAt",
+            }),
+          ]);
+          
+          if (statsResponse.status === "fulfilled") {
+            setStats(statsResponse.value);
           } else {
-            setLoading(false);
+            logError("Error fetching stats:", statsResponse.reason);
           }
+          
+          if (linkRequestsResponse.status === "fulfilled") {
+            setLinkRequests(linkRequestsResponse.value.items);
+          } else {
+            logError("Error fetching link requests:", linkRequestsResponse.reason);
+          }
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Не удалось загрузить данные";
+        setError(message);
+        toast({
+          title: "Ошибка",
+          description: message,
+          variant: "destructive",
+        });
+        logError("Error fetching data:", err);
+      } finally {
+        if (isFirstPage) {
+          isSearch ? setSearchLoading(false) : setLoading(false);
         } else {
           setIsLoadingMore(false);
         }
+        isFetchingRef.current = false;
       }
     },
-    [debouncedSearchTerm],
-  ); // Используем debounced значение
+    [debouncedSearchTerm, toast],
+  );
 
-  // Объединенный эффект для загрузки и поиска (предотвращает дублирование запросов)
   useEffect(() => {
-    if (debouncedSearchTerm) {
-      fetchBloggers(1, false, true);
-    } else {
-      fetchBloggers(1, false, false);
-    }
-  }, [debouncedSearchTerm, fetchBloggers]);
+    fetchBloggers(1, false, !!debouncedSearchTerm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm]);
 
-  const loadMoreBloggers = useCallback(async () => {
-    if (!hasMoreBloggers || isLoadingMore) return;
-    await fetchBloggers(currentPage + 1, true);
+  const loadMoreBloggers = useCallback(() => {
+    if (hasMoreBloggers && !isLoadingMore) {
+      fetchBloggers(currentPage + 1, true);
+    }
   }, [hasMoreBloggers, isLoadingMore, currentPage, fetchBloggers]);
 
   const approveRequest = useCallback(async (requestId: number) => {
+    setIsProcessing(true);
+    setError(null);
     try {
-      setIsProcessing(true);
-      setError(null);
-
-      // Отправляем запрос к API без проверки локального состояния
       await approveLinkRequest(requestId);
-
-      // Обновляем локальное состояние запросов на связывание
-      setLinkRequests((prev) => {
-        const filtered = prev.filter(
-          (req) => Number(req.id) !== Number(requestId),
-        );
-        return filtered;
-      });
-
-      // Обновляем статистику
+      setLinkRequests((prev) => prev.filter((req) => Number(req.id) !== Number(requestId)));
       setStats((prev) => ({
         ...prev,
-        totalModerationLinkRequestsCount:
-          prev.totalModerationLinkRequestsCount - 1,
+        totalModerationLinkRequestsCount: prev.totalModerationLinkRequestsCount - 1,
         totalApprovedBloggersCount: prev.totalApprovedBloggersCount + 1,
       }));
-    } catch (err: unknown) {
-      logError("❌ Ошибка при одобрении запроса:", err);
-
-      // Дополнительная диагностика
-      if (err instanceof Error) {
-        logError("❌ Детали ошибки:", {
-          message: err.message,
-          name: err.name,
-          stack: err.stack,
-        });
-      }
-
-      // Обрабатываем API ошибки
-      if (err instanceof APIError) {
-        setError(err.message);
-        throw err; // Пробрасываем APIError для обработки в UI
-      }
-
-      // Обрабатываем обычные ошибки
-      const errorMessage =
-        err instanceof Error ? err.message : "Ошибка при одобрении запроса";
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Ошибка при одобрении запроса";
       setError(errorMessage);
-      throw new Error(errorMessage); // Создаем новую ошибку для проброса
+      logError("Ошибка при одобрении запроса:", err);
+      throw err instanceof APIError ? err : new Error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
   }, []);
 
   const rejectRequest = useCallback(async (requestId: number) => {
+    setIsProcessing(true);
+    setError(null);
     try {
-      setIsProcessing(true);
-      setError(null);
-
-      // Отправляем запрос к API без проверки локального состояния
       await rejectLinkRequest(requestId);
-
-      // Обновляем локальное состояние запросов на связывание
-      setLinkRequests((prev) => {
-        const filtered = prev.filter(
-          (req) => Number(req.id) !== Number(requestId),
-        );
-        return filtered;
-      });
-
-      // Обновляем статистику
+      setLinkRequests((prev) => prev.filter((req) => Number(req.id) !== Number(requestId)));
       setStats((prev) => ({
         ...prev,
-        totalModerationLinkRequestsCount:
-          prev.totalModerationLinkRequestsCount - 1,
+        totalModerationLinkRequestsCount: prev.totalModerationLinkRequestsCount - 1,
       }));
-    } catch (err: unknown) {
-      logError("❌ Ошибка при отклонении запроса:", err);
-
-      // Обрабатываем API ошибки
-      if (err instanceof APIError) {
-        setError(err.message);
-        throw err; // Пробрасываем APIError для обработки в UI
-      }
-
-      // Обрабатываем обычные ошибки
-      const errorMessage =
-        err instanceof Error ? err.message : "Ошибка при отклонении запроса";
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Ошибка при отклонении запроса";
       setError(errorMessage);
-      throw new Error(errorMessage); // Создаем новую ошибку для проброса
+      logError("Ошибка при отклонении запроса:", err);
+      throw err instanceof APIError ? err : new Error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
   }, []);
 
-  // Функция для обновления видимости блогера в локальном состоянии
-  const updateBloggerVisibility = useCallback(
-    (bloggerId: number, isHidden: boolean) => {
-      setAllBloggers((prev) =>
-        prev.map((blogger) =>
-          blogger.id === bloggerId ? { ...blogger, isHidden } : blogger,
-        ),
-      );
-
-      // Обновляем статистику видимых блогеров
-      setStats((prev) => ({
-        ...prev,
-        totalVisibleBloggersCount: isHidden
-          ? prev.totalVisibleBloggersCount - 1
-          : prev.totalVisibleBloggersCount + 1,
-      }));
-    },
-    [],
-  );
-
-  // Фильтруем блогеров в зависимости от настройки показа скрытых
-  const filteredBloggers = showHidden 
-    ? allBloggers 
-    : allBloggers.filter(blogger => !blogger.isHidden);
-
-  // Локальное обновление пола блогера без перезагрузки
-  const updateBloggerGenderLocally = useCallback((bloggerId: number, genderType: ApiGender) => {
-    setAllBloggers(prevBloggers => 
-      prevBloggers.map(blogger => 
-        blogger.id === bloggerId 
-          ? { ...blogger, genderType }
-          : blogger
-      )
+  const updateBloggerVisibility = (bloggerId: number, isHidden: boolean) => {
+    setAllBloggers((prev) =>
+      prev.map((blogger) => (blogger.id === bloggerId ? { ...blogger, isHidden } : blogger))
     );
-    
-    // Удаляем блогера из списка без пола
-    setBloggersWithoutGender(prevBloggers => 
-      prevBloggers.filter(blogger => blogger.id !== bloggerId)
-    );
-    
-    // Обновляем кэш - удаляем этого блогера из всех страниц в кэше
-    setGenderPagesCache(prevCache => {
+    setStats((prev) => ({
+      ...prev,
+      totalVisibleBloggersCount: isHidden ? prev.totalVisibleBloggersCount - 1 : prev.totalVisibleBloggersCount + 1,
+    }));
+  };
+
+  const updateBloggerGenderLocally = (bloggerId: number, genderType: ApiGender) => {
+    setBloggersWithoutGender((prev) => prev.filter((blogger) => blogger.id !== bloggerId));
+    setGenderPagesCache((prevCache) => {
       const newCache = new Map(prevCache);
       newCache.forEach((bloggers, pageNumber) => {
-        const updatedBloggers = bloggers.filter(blogger => blogger.id !== bloggerId);
-        newCache.set(pageNumber, updatedBloggers);
+        newCache.set(pageNumber, bloggers.filter((blogger) => blogger.id !== bloggerId));
       });
       return newCache;
     });
-    
-    // Уменьшаем общий счетчик
-    setTotalGenderBloggersCount(prev => Math.max(0, prev - 1));
-  }, []);
+    setTotalGenderBloggersCount((prev) => Math.max(0, prev - 1));
+  };
 
-  // Загрузка блогеров без пола
-  const fetchBloggersWithoutGender = useCallback(async (page: number = 1, append: boolean = false) => {
-    try {
-      setLoadingGenderBloggers(true);
-      
-      const result = await adminGetBloggersWithoutGender(page, 50, genderPagesCache);
-      
-      // Дополнительно фильтруем результат, чтобы исключить блогеров с уже выбранным полом
-      const filteredBloggers = result.bloggers.filter(blogger => 
-        !blogger.genderType || blogger.genderType === null
-      );
-      
-      if (append) {
-        setBloggersWithoutGender(prev => [...prev, ...filteredBloggers]);
-      } else {
-        setBloggersWithoutGender(filteredBloggers);
+  const fetchBloggersWithoutGender = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      try {
+        setLoadingGenderBloggers(true);
+        const result = await adminGetBloggersWithoutGender(page, 50, genderPagesCache);
+        if (append) {
+          setBloggersWithoutGender((prev) => [...prev, ...result.bloggers]);
+        } else {
+          setBloggersWithoutGender(result.bloggers);
+        }
+        setHasMoreGenderBloggers(result.hasMore);
+        setTotalGenderBloggersCount(result.totalCount);
+        setGenderBloggersPage(page);
+        setGenderPagesCache(result.cachedPages);
+      } catch (err) {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить блогеров без пола",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingGenderBloggers(false);
       }
-      
-      setHasMoreGenderBloggers(result.hasMore);
-      setTotalGenderBloggersCount(result.totalCount);
-      setGenderBloggersPage(page);
-      
-      // Обновляем кэш
-      setGenderPagesCache(result.cachedPages);
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить блогеров без пола",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingGenderBloggers(false);
-    }
-  }, [toast, genderPagesCache]);
+    },
+    [genderPagesCache, toast],
+  );
 
-  // Загрузка следующей пачки блогеров без пола
   const loadMoreGenderBloggers = useCallback(() => {
     if (!loadingGenderBloggers && hasMoreGenderBloggers) {
       fetchBloggersWithoutGender(genderBloggersPage + 1, true);
     }
   }, [loadingGenderBloggers, hasMoreGenderBloggers, genderBloggersPage, fetchBloggersWithoutGender]);
 
-  // Очистка кэша блогеров без пола (например, при обновлении данных)
-  const clearGenderCache = useCallback(() => {
+  const clearGenderCache = () => {
     setGenderPagesCache(new Map());
     setBloggersWithoutGender([]);
     setGenderBloggersPage(1);
     setHasMoreGenderBloggers(true);
     setTotalGenderBloggersCount(0);
-  }, []);
+  };
+
+  const filteredBloggers = showHidden ? allBloggers : allBloggers.filter((blogger) => !blogger.isHidden);
+
+  const filteredLinkRequests = useMemo(() => {
+    return linkRequests
+      .map(mapLinkRequestToTableFormat)
+      .filter((mapped) => {
+        if (!searchTerm) return true;
+        const search = searchTerm.toLowerCase();
+        const name = `${mapped.name} ${mapped.lastName}`.trim().toLowerCase();
+        const username = (mapped.username || "").toLowerCase();
+        const email = (mapped.user_email || "").toLowerCase();
+        return name.includes(search) || username.includes(search) || email.includes(search);
+      });
+  }, [linkRequests, searchTerm]);
 
   return {
     allBloggers: filteredBloggers,
     bloggersWithoutGender,
-    linkRequests,
+    linkRequests: filteredLinkRequests,
     loading,
     searchLoading,
     isLoadingMore,
@@ -396,14 +268,10 @@ export const useAdminBloggers = () => {
     setShowHidden,
     fetchBloggers,
     loadMoreBloggers,
-    // Дополнительные функции для работы с запросами на связывание
     approveRequest,
     rejectRequest,
-    // Функция для обновления видимости блогера
     updateBloggerVisibility,
-    // Функция для локального обновления пола блогера
     updateBloggerGenderLocally,
-    // Функции для работы с блогерами без пола
     fetchBloggersWithoutGender,
     loadMoreGenderBloggers,
     loadingGenderBloggers,

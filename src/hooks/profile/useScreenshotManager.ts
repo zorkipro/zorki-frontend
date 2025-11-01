@@ -7,10 +7,6 @@ import { useScreenshotUploader } from "./useScreenshotUploader";
 import { useStatsFileManagement } from "./useStatsFileManagement";
 import type { Screenshot } from "@/types/profile";
 
-/**
- * Главный хук для управления скриншотами
- * Объединяет загрузку, удаление и кеширование
- */
 export const useScreenshotManager = (
   profileId?: string,
   platform: string = "instagram",
@@ -19,16 +15,13 @@ export const useScreenshotManager = (
 ) => {
   const { toast } = useToast();
 
-  // Загрузка скриншотов
   const { screenshots, loading, error, fetchScreenshots, setScreenshots } =
     useScreenshotLoader(profileId, platform, isEditorPage);
 
-  // Синхронизируем скриншоты с availablePlatforms при загрузке
   useEffect(() => {
-    if (screenshots.length > 0 && onScreenshotsUpdate) {
-      onScreenshotsUpdate(platform, screenshots);
-    }
-  }, [screenshots, platform, onScreenshotsUpdate]);
+    if (!onScreenshotsUpdate || loading) return;
+    onScreenshotsUpdate(platform, screenshots);
+  }, [loading, platform, screenshots, onScreenshotsUpdate]);
 
   // Загрузка новых скриншотов
   const {
@@ -39,42 +32,36 @@ export const useScreenshotManager = (
   } = useScreenshotUploader(profileId, platform, screenshots);
 
   // Управление удалением файлов
-  const { deleting, confirmDelete } = useStatsFileManagement();
+  const { deleting, deleteFile } = useStatsFileManagement();
 
-  // Upload with cache update
+  const updateScreenshots = useCallback(
+    (newScreenshots: Screenshot[]) => {
+      setScreenshots(newScreenshots);
+      onScreenshotsUpdate?.(platform, newScreenshots);
+    },
+    [setScreenshots, onScreenshotsUpdate, platform],
+  );
+
   const uploadScreenshot = useCallback(
     async (file: File, userId: string) => {
       const result = await upload(file, userId);
       if (result && profileId) {
-        const newScreenshots = [result, ...screenshots];
-        setScreenshots(newScreenshots);
-        
-        // Обновляем availablePlatforms если есть callback
-        if (onScreenshotsUpdate) {
-          onScreenshotsUpdate(platform, newScreenshots);
-        }
+        updateScreenshots([result, ...screenshots]);
       }
     },
-    [upload, profileId, setScreenshots, screenshots, onScreenshotsUpdate, platform],
+    [upload, profileId, screenshots, updateScreenshots],
   );
 
   const uploadMultipleScreenshots = useCallback(
     async (files: File[], userId: string) => {
       const results = await uploadMultiple(files, userId);
       if (results.length > 0 && profileId) {
-        const newScreenshots = [...results, ...screenshots];
-        setScreenshots(newScreenshots);
-        
-        // Обновляем availablePlatforms если есть callback
-        if (onScreenshotsUpdate) {
-          onScreenshotsUpdate(platform, newScreenshots);
-        }
+        updateScreenshots([...results, ...screenshots]);
       }
     },
-    [uploadMultiple, profileId, setScreenshots, screenshots, onScreenshotsUpdate, platform],
+    [uploadMultiple, profileId, screenshots, updateScreenshots],
   );
 
-  // Удаление скриншота с обновлением кеша
   const deleteScreenshot = useCallback(
     async (screenshot: Screenshot) => {
       if (!profileId) {
@@ -87,29 +74,20 @@ export const useScreenshotManager = (
       }
 
       try {
-        await confirmDelete(
-          Number(profileId),
-          screenshot.id,
-          screenshot.file_name,
-        );
-
-        // Обновляем кеш - удаляем скриншот из списка
-        const newScreenshots = screenshots.filter((s) => s.id !== screenshot.id);
-        setScreenshots(newScreenshots);
-        
-        // Обновляем availablePlatforms если есть callback
-        if (onScreenshotsUpdate) {
-          onScreenshotsUpdate(platform, newScreenshots);
-        }
+        await deleteFile(Number(profileId), screenshot.id);
+        updateScreenshots(screenshots.filter((s) => s.id !== screenshot.id));
       } catch (error) {
-        // Ошибка уже обработана в confirmDelete
+        toast({
+          title: "Ошибка удаления",
+          description: "Не удалось удалить скриншот",
+          variant: "destructive",
+        });
         logError("Error deleting screenshot:", error);
       }
     },
-    [profileId, confirmDelete, setScreenshots, screenshots, onScreenshotsUpdate, platform, toast],
+    [profileId, deleteFile, screenshots, updateScreenshots, toast],
   );
 
-  // Cache management
   return {
     screenshots,
     uploading: uploading || deleting,

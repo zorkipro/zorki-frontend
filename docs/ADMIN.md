@@ -4,6 +4,25 @@
 
 Админ-панель Zorki7 предоставляет полный контроль над платформой для администраторов. Включает управление блогерами, модерацию контента, управление клиентами и интеграцию с социальными сетями.
 
+---
+
+## ⚡ Быстрый старт для админов
+
+### Шаг 1: Вход в админ-панель
+
+1. Откройте `/admin/login`
+2. Введите учетные данные администратора
+3. При наличии 2FA - подтвердите код
+
+### Шаг 2: Основные действия
+
+- **Управление блогерами** → `/admin/dashboard`
+- **Управление тематиками** → `/admin/topics`
+- **Парсер-аккаунты** → `/admin/parser`
+- **Редактирование блогера** → `/admin/blogger/:id/edit`
+
+---
+
 ## Доступ и аутентификация
 
 ### Доступ к админ-панели
@@ -238,6 +257,67 @@ const AdminDashboard = () => {
 - Настройки цен и тарифов
 - Управления тематиками
 - Загрузки аватарок и скриншотов
+
+### AdminTopicsManagement
+
+Управление тематиками (категориями и запрещенными темами):
+
+- Создание новых топиков
+- Редактирование существующих топиков
+- Удаление топиков
+- Разделение на обычные категории и запрещенные темы
+- Пагинация и фильтрация списка
+
+```typescript
+const AdminTopicsManagement = () => {
+  const { loading, createTopicAction, updateTopicAction, deleteTopicAction } = useAdminTopics();
+  
+  return (
+    <div className="topics-management">
+      <Tabs>
+        <TabsList>
+          <TabsTrigger value="normal">Категории</TabsTrigger>
+          <TabsTrigger value="restricted">Запрещенные темы</TabsTrigger>
+        </TabsList>
+        {/* ... */}
+      </Tabs>
+    </div>
+  );
+};
+```
+
+### ParserAccountsManagement
+
+Управление парсер-аккаунтами для Instagram, Telegram и YouTube:
+
+- Просмотр всех подключенных аккаунтов
+- Добавление новых аккаунтов
+- Переавторизация аккаунтов
+- Управление статусом авторизации (активные/неактивные)
+- Удаление аккаунтов
+- Проверка статуса клиентов платформ
+
+```typescript
+const ParserAccountsManagement = () => {
+  const {
+    instagramAccounts,
+    telegramAccounts,
+    youtubeAccounts,
+    loading,
+    // ... другие функции
+  } = useParserAccounts();
+  
+  return (
+    <div className="parser-accounts">
+      <Tabs>
+        <TabsTrigger value="instagram">Instagram</TabsTrigger>
+        <TabsTrigger value="telegram">Telegram</TabsTrigger>
+        <TabsTrigger value="youtube">YouTube</TabsTrigger>
+      </Tabs>
+    </div>
+  );
+};
+```
 
 ```typescript
 const AdminBloggerEditor = ({ bloggerId }: { bloggerId: string }) => {
@@ -572,6 +652,79 @@ const useAdminLinkRequests = () => {
 };
 ```
 
+### useAdminTopics
+
+Управление тематиками:
+
+```typescript
+const useAdminTopics = () => {
+  const loadTopics = useCallback(async (params: GetTopicsParams) => {
+    return await getTopics(params);
+  }, []);
+
+  const createTopicAction = useCallback(async (data: AdminCreateTopicInputDto) => {
+    await createTopic(data);
+    toast.success('Топик создан');
+  }, []);
+
+  const updateTopicAction = useCallback(async (id: number, data: AdminUpdateTopicInputDto) => {
+    await updateTopic(id, data);
+    toast.success('Топик обновлен');
+  }, []);
+
+  const deleteTopicAction = useCallback(async (id: number) => {
+    await deleteTopic(id);
+    toast.success('Топик удален');
+  }, []);
+
+  return { loading, createTopicAction, updateTopicAction, deleteTopicAction, loadTopics };
+};
+```
+
+### useParserAccounts
+
+Управление парсер-аккаунтами:
+
+```typescript
+const useParserAccounts = () => {
+  // Instagram аккаунты
+  const [instagramAccounts, setInstagramAccounts] = useState([]);
+  const [instagramLoading, setInstagramLoading] = useState(false);
+  
+  // Telegram аккаунты
+  const [telegramAccounts, setTelegramAccounts] = useState([]);
+  const [telegramLoading, setTelegramLoading] = useState(false);
+  
+  // YouTube аккаунты (пока не реализовано)
+  const [youtubeAccounts, setYoutubeAccounts] = useState([]);
+
+  const loadInstagramAccounts = useCallback(async (isAuthorized: boolean) => {
+    setInstagramLoading(true);
+    try {
+      const response = await getIgSessions({ isAuthorized });
+      setInstagramAccounts(response.items);
+    } finally {
+      setInstagramLoading(false);
+    }
+  }, []);
+
+  const addInstagramAccount = useCallback(async (data: IgClientLoginInputDto) => {
+    await igClientLogin(data);
+    await loadInstagramAccounts(true);
+  }, [loadInstagramAccounts]);
+
+  // Аналогично для Telegram и YouTube...
+
+  return {
+    instagramAccounts,
+    telegramAccounts,
+    youtubeAccounts,
+    loading: instagramLoading || telegramLoading,
+    // ... другие функции
+  };
+};
+```
+
 ## Права доступа и безопасность
 
 ### Роли администраторов
@@ -776,6 +929,8 @@ const useCriticalAlerts = () => {
 - ✅ Управление блогерами функционально
 - ✅ Модерация контента настроена
 - ✅ Управление клиентами работает
+- ✅ Управление тематиками реализовано
+- ✅ Парсер-аккаунты интегрированы
 - ✅ Социальные клиенты интегрированы
 - ✅ Статистика и аналитика доступны
 - ✅ Безопасность настроена
@@ -788,6 +943,39 @@ const useCriticalAlerts = () => {
 4. **Уведомления** - push-уведомления и email рассылки
 5. **API для внешних систем** - интеграция с CRM и другими системами
 
+## 📄 Страницы админ-панели
+
+### Основные страницы:
+
+1. **AdminLogin** (`/admin/login`) - вход администратора
+2. **AdminTwoFactor** (`/admin/2fa`) - двухфакторная аутентификация
+3. **AdminDashboard** (`/admin/dashboard`) - главная панель с общей статистикой
+4. **AdminBloggerEditor** (`/admin/blogger/:id/edit`) - редактор профилей блогеров
+
+### Новые страницы:
+
+5. **AdminTopicsManagement** (`/admin/topics`) - управление тематиками
+   - Создание, редактирование и удаление категорий
+   - Управление запрещенными темами
+   - Разделение по вкладкам для удобной навигации
+
+6. **ParserAccountsManagement** (`/admin/parser`) - управление парсер-аккаунтами
+   - Просмотр Instagram, Telegram, YouTube аккаунтов
+   - Добавление и удаление аккаунтов
+   - Переавторизация аккаунтов
+   - Управление статусом авторизации
+
 ---
 
-_Документация админ-панели регулярно обновляется. Последнее обновление: Октябрь 2025_
+## 📊 Актуальная информация
+
+- **Версия проекта:** 2.0.3
+- **Админских страниц:** 6 страниц
+  - AdminLogin, AdminTwoFactor, AdminDashboard
+  - AdminBloggerEditor, AdminTopicsManagement, ParserAccountsManagement
+- **Компонентов админ-панели:** 15+ компонентов
+- **Админских хуков:** 12+ хуков
+
+---
+
+_Документация админ-панели регулярно обновляется. Последнее обновление: Январь 2025_

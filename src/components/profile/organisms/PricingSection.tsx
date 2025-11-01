@@ -1,22 +1,10 @@
-import { memo, useCallback, useState, useEffect } from "react";
-import { Card, CardContent } from "@/ui-kit";
-import { Button } from "@/ui-kit";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/ui-kit";
-import { Input } from "@/ui-kit";
-import { Label } from "@/ui-kit";
+import { useCallback, useState } from "react";
+import { Card, CardContent, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Input, Label } from "@/ui-kit";
 import { Edit } from "lucide-react";
-import {
-  getPlatformIcon,
-  getPlatformName,
-} from "@/components/icons/PlatformIcons";
+import { getPlatformIcon, getPlatformName } from "@/components/icons/PlatformIcons";
+import { getPlatformField, safeParseFloat } from "@/utils/platform-field-helpers";
 import type { EditData, PlatformData } from "@/types/profile";
+import type { PlatformType } from "@/types/platform";
 
 interface PricingSectionProps {
   availablePlatforms: Record<string, PlatformData>;
@@ -37,114 +25,69 @@ const PricingSectionComponent = ({
   saving,
   setAvailablePlatforms,
 }: PricingSectionProps) => {
-  // Состояние для полей редактирования цен
   const [priceStates, setPriceStates] = useState<
     Record<string, { postPrice: string; storyPrice: string }>
   >({});
 
-  // Инициализируем состояние при изменении formData
-  useEffect(() => {
-    const newStates: Record<string, { postPrice: string; storyPrice: string }> =
-      {};
-    Object.keys(availablePlatforms).forEach((platform) => {
-      if (platform === 'youtube') {
-        const integrationPriceField = `${platform}_integration_price` as keyof EditData;
-        newStates[platform] = {
-          postPrice: (formData[integrationPriceField] as string) || "",
-          storyPrice: "", // Для YouTube stories не используется
-        };
-      } else {
-        const postPriceField = `${platform}_post_price` as keyof EditData;
-        const storyPriceField = `${platform}_story_price` as keyof EditData;
-        newStates[platform] = {
-          postPrice: (formData[postPriceField] as string) || "",
-          storyPrice: (formData[storyPriceField] as string) || "",
-        };
-      }
-    });
-    setPriceStates(newStates);
-  }, [formData, availablePlatforms]);
+  const getPriceState = (platform: string) => {
+    if (priceStates[platform]) return priceStates[platform];
+    
+    const platformKey = platform as PlatformType;
+    const priceField = platform === 'youtube' ? "integration_price" : "post_price";
+    return {
+      postPrice: (formData[getPlatformField(platformKey, priceField)] as string) || "",
+      storyPrice: platform === 'instagram' ? (formData[getPlatformField(platformKey, "story_price")] as string) || "" : "",
+    };
+  };
 
   const handlePriceEdit = useCallback(
     async (platform: string) => {
-      if (platform === 'youtube') {
-        const integrationPriceField = `${platform}_integration_price` as keyof EditData;
-        const newPrice = priceStates[platform]?.postPrice || "";
-        
-        try {
-          await onSave({
-            [integrationPriceField]: newPrice,
-          });
-          
-          // Обновляем локальное состояние availablePlatforms
-          if (setAvailablePlatforms) {
-            setAvailablePlatforms((prev) => ({
-              ...prev,
-              [platform]: {
-                ...prev[platform],
-                integrationPrice: parseFloat(newPrice) || 0,
-                price: parseFloat(newPrice) || 0, // Для YouTube price и integrationPrice одинаковые
-              },
-            }));
-          }
-          
-          onEditingSectionChange(null);
-        } catch (error) {
-          // Error already handled by onSave
-        }
-      } else {
-        const postPriceField = `${platform}_post_price` as keyof EditData;
-        const storyPriceField = `${platform}_story_price` as keyof EditData;
-        const newPostPrice = priceStates[platform]?.postPrice || "";
-        const newStoryPrice = priceStates[platform]?.storyPrice || "";
+      const platformKey = platform as PlatformType;
+      const state = priceStates[platform] || getPriceState(platform);
 
-        try {
-          await onSave({
-            [postPriceField]: newPostPrice,
-            [storyPriceField]: newStoryPrice,
-          });
-          
-          // Обновляем локальное состояние availablePlatforms
-          if (setAvailablePlatforms) {
-            setAvailablePlatforms((prev) => ({
-              ...prev,
-              [platform]: {
-                ...prev[platform],
-                price: parseFloat(newPostPrice) || 0,
-                storyPrice: parseFloat(newStoryPrice) || 0,
-              },
-            }));
-          }
-          
-          onEditingSectionChange(null);
-        } catch (error) {
-          // Error already handled by onSave
+      const saveData: Partial<EditData> = {};
+      if (platform === 'youtube') {
+        saveData[getPlatformField(platformKey, "integration_price")] = state.postPrice;
+      } else {
+        saveData[getPlatformField(platformKey, "post_price")] = state.postPrice;
+        if (platform === 'instagram' && state.storyPrice) {
+          saveData[getPlatformField(platformKey, "story_price")] = state.storyPrice;
         }
       }
+      
+      await onSave(saveData);
+      setPriceStates({});
+      onEditingSectionChange(null);
     },
-    [onSave, onEditingSectionChange, priceStates, setAvailablePlatforms],
+    [onSave, onEditingSectionChange, priceStates],
   );
 
   return (
     <Card className="relative">
-      <CardContent className="p-4">
-        <h3 className="font-semibold mb-4 flex items-center space-x-2">
-          <span>Цены</span>
-        </h3>
-        <div className="space-y-4">
-          {Object.entries(availablePlatforms).map(([platform, stats]) => (
-            <div key={platform} className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                {getPlatformIcon(platform)}
-                <span className="text-sm">{getPlatformName(platform)}</span>
+      <CardContent className="p-4 sm:p-5">
+        <h3 className="font-semibold mb-4 sm:mb-5 text-sm sm:text-base">Цены</h3>
+        <div className="space-y-3 sm:space-y-4">
+          {Object.entries(availablePlatforms)
+            .sort(([a], [b]) => {
+              if (a === "instagram") return -1;
+              if (b === "instagram") return 1;
+              return a.localeCompare(b);
+            })
+            .map(([platform, stats]) => (
+            <div key={platform} className="flex items-center justify-between gap-2">
+              <div className="flex items-center space-x-2 min-w-0 flex-1">
+                <span className="w-5 h-5 shrink-0 flex items-center justify-center">
+                  {getPlatformIcon(platform)}
+                </span>
+                <span className="text-xs sm:text-sm truncate">{getPlatformName(platform)}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="text-right">
-                  <div className="text-sm font-medium">
+              <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+                  <div className="text-right">
+                  <div className="text-xs sm:text-sm font-medium whitespace-nowrap">
                     {platform === 'youtube' ? (stats.integrationPrice || 0) : (stats.price || 0)} BYN
                   </div>
-                  {stats.storyPrice > 0 && (
-                    <div className="text-xs text-muted-foreground">
+                  {stats.storyPrice > 0 && platform === 'instagram' && (
+                    <div className="text-xs text-muted-foreground whitespace-nowrap">
                       Stories: {stats.storyPrice} BYN
                     </div>
                   )}
@@ -156,8 +99,8 @@ const PricingSectionComponent = ({
                   }
                 >
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Edit className="w-3 h-3" />
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0">
+                      <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -178,14 +121,11 @@ const PricingSectionComponent = ({
                           <Input
                             id={`${platform}_integration_price`}
                             type="number"
-                            value={priceStates[platform]?.postPrice || ""}
+                            value={getPriceState(platform).postPrice}
                             onChange={(e) =>
                               setPriceStates((prev) => ({
                                 ...prev,
-                                [platform]: {
-                                  ...prev[platform],
-                                  postPrice: e.target.value,
-                                },
+                                [platform]: { ...getPriceState(platform), postPrice: e.target.value },
                               }))
                             }
                             placeholder="Введите цену"
@@ -200,39 +140,35 @@ const PricingSectionComponent = ({
                             <Input
                               id={`${platform}_post_price`}
                               type="number"
-                              value={priceStates[platform]?.postPrice || ""}
+                              value={getPriceState(platform).postPrice}
                               onChange={(e) =>
                                 setPriceStates((prev) => ({
                                   ...prev,
-                                  [platform]: {
-                                    ...prev[platform],
-                                    postPrice: e.target.value,
-                                  },
+                                  [platform]: { ...getPriceState(platform), postPrice: e.target.value },
                                 }))
                               }
                               placeholder="Введите цену"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor={`${platform}_story_price`}>
-                              Цена за stories (BYN)
-                            </Label>
-                            <Input
-                              id={`${platform}_story_price`}
-                              type="number"
-                              value={priceStates[platform]?.storyPrice || ""}
-                              onChange={(e) =>
-                                setPriceStates((prev) => ({
-                                  ...prev,
-                                  [platform]: {
-                                    ...prev[platform],
-                                    storyPrice: e.target.value,
-                                  },
-                                }))
-                              }
-                              placeholder="Введите цену"
-                            />
-                          </div>
+                          {platform === 'instagram' && (
+                            <div>
+                              <Label htmlFor={`${platform}_story_price`}>
+                                Цена за stories (BYN)
+                              </Label>
+                              <Input
+                                id={`${platform}_story_price`}
+                                type="number"
+                                value={getPriceState(platform).storyPrice}
+                                onChange={(e) =>
+                                  setPriceStates((prev) => ({
+                                    ...prev,
+                                    [platform]: { ...getPriceState(platform), storyPrice: e.target.value },
+                                  }))
+                                }
+                                placeholder="Введите цену"
+                              />
+                            </div>
+                          )}
                         </>
                       )}
                       <div className="flex justify-end space-x-2">
@@ -261,4 +197,4 @@ const PricingSectionComponent = ({
   );
 };
 
-export const PricingSection = memo(PricingSectionComponent);
+export const PricingSection = PricingSectionComponent;

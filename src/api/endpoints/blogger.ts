@@ -103,10 +103,22 @@ export async function getAllBloggers(
  */
 export async function getBloggerById(
   bloggerId: number,
+  options?: { bypassCache?: boolean },
 ): Promise<PublicGetBloggerByIdOutputDto> {
-  return apiRequest<PublicGetBloggerByIdOutputDto>(
-    `/blogger/public/${bloggerId}`,
-  );
+  // Добавляем timestamp для обхода кэша если требуется
+  const endpoint = options?.bypassCache
+    ? `/blogger/public/${bloggerId}?t=${Date.now()}`
+    : `/blogger/public/${bloggerId}`;
+    
+  return apiRequest<PublicGetBloggerByIdOutputDto>(endpoint, {
+    headers: options?.bypassCache
+      ? {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      : undefined,
+  });
 }
 
 // ====== PUT /blogger/:id - Обновление профиля ======
@@ -123,6 +135,9 @@ export async function getBloggerById(
  * @throws APIError 404 - Blogger not found
  *
  * @note topics и restrictedTopics опциональны - отправляются только если не пустые
+ * @note По Swagger: topics и restrictedTopics должны содержать ВСЕ ID тем, которые должны быть у блогера.
+ *       Все существующие темы будут ЗАМЕНЕНЫ на новый список.
+ *       Пустой массив [] удалит все темы.
  * @note Если блогер не верифицирован - изменения сохраняются в drafts
  *
  * @example

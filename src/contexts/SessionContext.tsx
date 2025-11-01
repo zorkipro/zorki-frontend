@@ -66,24 +66,10 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
    */
   const determineRedirectPath = useCallback(async (): Promise<string> => {
     try {
-      
       const clientData = await getClientMe();
-      
-
-      // ПРОСТАЯ ЛОГИКА: Если есть username в blogger ИЛИ в активном запросе на связывание - идем на редактирование профиля
-      const username = clientData.blogger?.username || 
-                      clientData.lastLinkRequest?.username;
-      
-      if (username) {
-        return '/profile/edit';
-      }
-
-      // Если нет username - идем на страницу настройки профиля
-      return '/profile-setup';
-      
+      const username = clientData.blogger?.username || clientData.lastLinkRequest?.username;
+      return username ? '/profile/edit' : '/profile-setup';
     } catch (error) {
-      // Если не удалось получить данные - идем на настройку профиля
-      // Пользователь сможет ввести username
       return '/profile-setup';
     }
   }, []);

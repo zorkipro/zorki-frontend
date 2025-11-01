@@ -152,7 +152,6 @@ export async function apiRequest<T = unknown>(
   const url = `${baseUrl || API_BASE_URL}${endpoint}`;
 
   try {
-    // Выполняем запрос
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
