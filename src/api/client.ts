@@ -134,9 +134,10 @@ export async function apiRequest<T = unknown>(
   // Получаем токен если не пропущена аутентификация
   const token = skipAuth ? null : await tokenManager.getAuthToken();
 
-  // Подготавливаем заголовки
+  // Подготавливаем заголовки из существующих options
+  const existingHeaders = (fetchOptions.headers as Record<string, string>) || {};
   const headers: Record<string, string> = {
-    ...((fetchOptions.headers as Record<string, string>) || {}),
+    ...existingHeaders,
   };
 
   // Устанавливаем Content-Type только если это не FormData и не передан в headers
@@ -144,7 +145,9 @@ export async function apiRequest<T = unknown>(
     headers["Content-Type"] = "application/json";
   }
 
-  // Добавляем токен если есть и не передан Authorization в headers
+  // Добавляем токен если есть
+  // Важно: токен админа имеет приоритет для админских операций
+  // Если Authorization уже передан в headers, используем его, иначе добавляем токен
   if (token && !headers["Authorization"]) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -152,6 +155,8 @@ export async function apiRequest<T = unknown>(
   const url = `${baseUrl || API_BASE_URL}${endpoint}`;
 
   try {
+    // Важно: передаем headers после ...fetchOptions, чтобы наши заголовки (включая Authorization)
+    // имели приоритет и не перезаписывались
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
