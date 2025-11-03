@@ -208,17 +208,15 @@ const AdminDashboard = () => {
 
 export default AdminDashboard;
 
-
-
-// import { useState, useMemo, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+//main
+//import { useState, useEffect } from "react";
 // import { useAdminBloggers } from "@/hooks/admin/useAdminBloggers";
 // import { useAdminBloggerActions } from "@/hooks/admin/useAdminBloggerActions";
 // import { useAdminAuth } from "@/contexts/AdminAuthContext";
 // import { Button } from "@/ui-kit";
 // import { Input } from "@/ui-kit";
 // import { Checkbox } from "@/ui-kit";
-// import { Star, LogOut, Search } from "lucide-react";
+// import { Search } from "lucide-react";
 // import { useToast } from "@/hooks/use-toast";
 // import { LoadingSpinner } from "@/ui-kit/components";
 // import { StatsCards } from "@/components/admin/StatsCards";
@@ -227,20 +225,19 @@ export default AdminDashboard;
 // import { GenderSelectionTable } from "@/components/admin/GenderSelectionTable";
 // import { AddBloggerDialog } from "@/components/admin/AddBloggerDialog";
 // import { AdminHeader } from "@/components/admin/AdminHeader";
-// import { TopicsManagementDialog } from "@/components/admin/TopicsManagementDialog";
 // import { formatNumber } from "@/utils/formatters";
-// import { logError } from "@/utils/logger";
 // import { adminToggleBloggerVisibility } from "@/api/endpoints/admin";
-// import { mapLinkRequestToTableFormat } from "@/utils/admin/mappers";
-// import type { AdminGetLinkBloggerClientRequestOutputDto } from "@/api/types";
+//
+// const TAB_CONFIG = {
+//   bloggers: { label: "Все блогеры", desc: "" },
+//   "gender-selection": { label: "Выбор пола", desc: "Быстрый выбор пола для блогеров без указанного пола. Нажмите на кнопку с нужным полом для обновления." },
+//   "link-requests": { label: "Запросы", desc: "Показаны запросы на связывание блогеров с клиентами. При одобрении запроса блогер автоматически становится верифицированным." },
+// } as const;
 //
 // const AdminDashboard = () => {
-//   const navigate = useNavigate();
 //   const { toast } = useToast();
-//   const { adminInfo, loading: adminLoading } = useAdminAuth();
-//
-//   const [activeTab, setActiveTab] = useState("bloggers"); // По умолчанию показываем блогеров
-//   const [topicsDialogOpen, setTopicsDialogOpen] = useState(false);
+//   const { loading: adminLoading } = useAdminAuth();
+//   const [activeTab, setActiveTab] = useState<keyof typeof TAB_CONFIG>("bloggers");
 //
 //   const {
 //     allBloggers,
@@ -269,80 +266,31 @@ export default AdminDashboard;
 //     totalGenderBloggersCount,
 //     clearGenderCache,
 //     isProcessing,
-//     error,
 //   } = useAdminBloggers();
 //
-//   // Добавляем логику для работы с блогерами
-//   const { addBlogger } = useAdminBloggerActions(() => {
-//     // Обновляем список блогеров после добавления
-//     fetchBloggers(1);
-//   });
+//   const { addBlogger } = useAdminBloggerActions(() => fetchBloggers(1));
 //
-//   // Загружаем первую пачку блогеров без пола при переходе на вкладку "Выбор пола"
 //   useEffect(() => {
-//     if (activeTab === "gender-selection" && bloggersWithoutGender.length === 0 && !loadingGenderBloggers) {
+//     if (activeTab === "gender-selection" && !bloggersWithoutGender.length && !loadingGenderBloggers) {
 //       fetchBloggersWithoutGender(1, false);
 //     }
-//   }, [activeTab, bloggersWithoutGender.length, loadingGenderBloggers, fetchBloggersWithoutGender]);
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [activeTab, bloggersWithoutGender.length, loadingGenderBloggers]);
 //
-//   // Поиск теперь обрабатывается на сервере через API
-//   const filteredBloggers = allBloggers;
-//
-//   // Filter link requests
-//   const filteredLinkRequests = useMemo(() => {
-//     let result = linkRequests.map(mapLinkRequestToTableFormat);
-//
-//     // Filter by search term
-//     if (searchTerm) {
-//       result = result.filter((request) => {
-//         const bloggerName = `${request.name} ${request.lastName}`.trim() || "";
-//         const username = request.username || "";
-//         const userEmail = request.user_email || "";
-//
-//         return (
-//           bloggerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//           username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//           userEmail.toLowerCase().includes(searchTerm.toLowerCase())
-//         );
-//       });
-//     }
-//
-//     return result;
-//   }, [linkRequests, searchTerm]);
-//
-//   const handleToggleVisibility = async (
-//     bloggerId: number,
-//     currentVisibility: boolean,
-//   ) => {
+//   const handleToggleVisibility = async (bloggerId: number, currentVisibility: boolean) => {
 //     try {
-//       // ✅ Реализован API вызов для изменения видимости блогера
 //       await adminToggleBloggerVisibility(bloggerId);
-//
-//       // Обновляем локальное состояние мгновенно
 //       updateBloggerVisibility(bloggerId, !currentVisibility);
-//
 //       toast({
 //         title: "Успех",
 //         description: `Блогер ${bloggerId} ${currentVisibility ? "показан" : "скрыт"}`,
-//         variant: "default",
 //       });
-//     } catch (error) {
-//       logError("Error toggling visibility:", error);
+//     } catch {
 //       toast({
 //         title: "Ошибка",
 //         description: "Не удалось изменить видимость блогера",
 //         variant: "destructive",
 //       });
-//     }
-//   };
-//
-//   const handleAddBlogger = async (instagramUsername: string) => {
-//     try {
-//       // Используем хук для создания блогера
-//       await addBlogger(instagramUsername);
-//     } catch (error) {
-//       logError("Error creating blogger:", error);
-//       throw error; // Пробрасываем ошибку для обработки в AddBloggerDialog
 //     }
 //   };
 //
@@ -352,18 +300,13 @@ export default AdminDashboard;
 //
 //   return (
 //     <div className="min-h-screen bg-gradient-subtle">
-//       {/* Admin Header */}
-//       <AdminHeader onOpenTopicsManagement={() => setTopicsDialogOpen(true)} />
+//       <AdminHeader />
 //
-//       {/* Main Content */}
 //       <div className="container mx-auto px-4 py-6">
 //         <StatsCards stats={stats} />
 //
-//         {/* Controls */}
 //         <div className="space-y-4 mb-6">
-//           {/* Search and Filters */}
 //           <div className="flex gap-4 items-center">
-//             {/* Search */}
 //             <div className="relative flex-1">
 //               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 //               <Input
@@ -373,8 +316,6 @@ export default AdminDashboard;
 //                 className="pl-10"
 //               />
 //             </div>
-//
-//             {/* Show Hidden Checkbox */}
 //             {activeTab === "bloggers" && (
 //               <div className="flex items-center space-x-2">
 //                 <Checkbox
@@ -382,85 +323,60 @@ export default AdminDashboard;
 //                   checked={showHidden}
 //                   onCheckedChange={(checked) => setShowHidden(!!checked)}
 //                 />
-//                 <label
-//                   htmlFor="show-hidden"
-//                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-//                 >
+//                 <label htmlFor="show-hidden" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 //                   Показывать скрытых
 //                 </label>
 //               </div>
 //             )}
 //           </div>
 //
-//           {/* Tabs and Add Blogger Button */}
 //           <div className="flex gap-2 items-center justify-between">
 //             <div className="flex gap-2">
-//               <Button
-//                 variant={activeTab === "bloggers" ? "default" : "outline"}
-//                 onClick={() => setActiveTab("bloggers")}
-//                 size="sm"
-//               >
-//                 Все блогеры
-//               </Button>
-//               <Button
-//                 variant={activeTab === "gender-selection" ? "default" : "outline"}
-//                 onClick={() => setActiveTab("gender-selection")}
-//                 size="sm"
-//               >
-//                 Выбор пола
-//               </Button>
-//               <Button
-//                 variant={activeTab === "link-requests" ? "default" : "outline"}
-//                 onClick={() => setActiveTab("link-requests")}
-//                 size="sm"
-//               >
-//                 Запросы
-//               </Button>
+//               {Object.keys(TAB_CONFIG).map((tab) => (
+//                 <Button
+//                   key={tab}
+//                   variant={activeTab === tab ? "default" : "outline"}
+//                   onClick={() => setActiveTab(tab as keyof typeof TAB_CONFIG)}
+//                   size="sm"
+//                 >
+//                   {TAB_CONFIG[tab as keyof typeof TAB_CONFIG].label}
+//                 </Button>
+//               ))}
 //             </div>
-//
-//             {/* Add Blogger Button - только на вкладке блогеров */}
-//             {activeTab === "bloggers" && (
-//               <AddBloggerDialog onAddBlogger={handleAddBlogger} />
-//             )}
+//             {activeTab === "bloggers" && <AddBloggerDialog onAddBlogger={addBlogger} />}
 //           </div>
 //
-//           {/* Info */}
-//           <div className="text-sm text-muted-foreground">
-//             {activeTab === "link-requests"
-//               ? "Показаны запросы на связывание блогеров с клиентами. При одобрении запроса блогер автоматически становится верифицированным."
-//               : activeTab === "gender-selection"
-//               ? "Быстрый выбор пола для блогеров без указанного пола. Нажмите на кнопку с нужным полом для обновления."
-//               : ""}
-//           </div>
+//           {TAB_CONFIG[activeTab].desc && (
+//             <div className="text-sm text-muted-foreground">{TAB_CONFIG[activeTab].desc}</div>
+//           )}
 //         </div>
 //
-//         {/* Content based on active tab */}
-//         {activeTab === "bloggers" ? (
+//         {activeTab === "bloggers" && (
 //           <BloggersTable
-//             bloggers={filteredBloggers}
+//             bloggers={allBloggers}
 //             onToggleVisibility={handleToggleVisibility}
 //             formatNumber={formatNumber}
 //             searchLoading={searchLoading}
 //             isLoadingMore={isLoadingMore}
 //             hasMore={hasMoreBloggers}
 //             onLoadMore={loadMoreBloggers}
-//             totalCount={
-//               searchTerm ? filteredBloggers.length : totalBloggersCount
-//             }
+//             totalCount={searchTerm ? allBloggers.length : totalBloggersCount}
 //           />
-//        ) : activeTab === "gender-selection" ? (
-//          <GenderSelectionTable
-//            bloggers={bloggersWithoutGender}
-//            onBloggerGenderUpdated={updateBloggerGenderLocally}
-//            loading={loadingGenderBloggers}
-//            hasMore={hasMoreGenderBloggers}
-//            onLoadMore={loadMoreGenderBloggers}
-//            totalCount={totalGenderBloggersCount}
-//            onClearCache={clearGenderCache}
-//          />
-//        ) : (
+//         )}
+//         {activeTab === "gender-selection" && (
+//           <GenderSelectionTable
+//             bloggers={bloggersWithoutGender}
+//             onBloggerGenderUpdated={updateBloggerGenderLocally}
+//             loading={loadingGenderBloggers}
+//             hasMore={hasMoreGenderBloggers}
+//             onLoadMore={loadMoreGenderBloggers}
+//             totalCount={totalGenderBloggersCount}
+//             onClearCache={clearGenderCache}
+//           />
+//         )}
+//         {activeTab === "link-requests" && (
 //           <AdminLinkRequestsTable
-//             requests={filteredLinkRequests}
+//             requests={linkRequests}
 //             loading={loading}
 //             isProcessing={isProcessing}
 //             onApprove={approveRequest}
@@ -468,12 +384,6 @@ export default AdminDashboard;
 //           />
 //         )}
 //       </div>
-//
-//       {/* Topics Management Dialog */}
-//       <TopicsManagementDialog
-//         open={topicsDialogOpen}
-//         onOpenChange={setTopicsDialogOpen}
-//       />
 //     </div>
 //   );
 // };
