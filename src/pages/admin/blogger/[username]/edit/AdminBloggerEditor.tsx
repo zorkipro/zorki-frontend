@@ -1,9 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useMemo } from "react";
 import { Button } from "@/ui-kit";
-import { Card, CardContent } from "@/ui-kit";
-import { Label } from "@/ui-kit";
-import { Textarea } from "@/ui-kit";
+import { Card, CardContent, Label, Textarea } from "@/ui-kit";
 import {
   Dialog,
   DialogContent,
@@ -15,29 +12,20 @@ import {
 import { ArrowLeft, AlertCircle, Edit } from "lucide-react";
 import { Alert, AlertDescription } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
-import { logError } from "@/utils/logger.ts";
+import { BloggerInfo } from "@/components/profile/BloggerInfo";
+import { VerificationNotice } from "@/components/profile/VerificationNotice";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm";
+import { PricingSection } from "@/components/profile/organisms/PricingSection";
+import { useAdminBloggerEditor } from "@/hooks/admin/useAdminBloggerEditor";
+import { useAdminStatsFileManagement } from "@/hooks/admin/useAdminStatsFileManagement";
+import { formatNumber } from "@/utils/formatters";
+import type { ApiSocialType } from "@/api/types";
 
-// Импортируем переиспользуемые компоненты
-import { BloggerInfo } from "@/components/profile/BloggerInfo.tsx";
-import { VerificationNotice } from "@/components/profile/VerificationNotice.tsx";
-import { ProfileHeader } from "@/components/profile/ProfileHeader.tsx";
-import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm.tsx";
-import { PricingSection } from "@/components/profile/organisms/PricingSection.tsx";
-
-// Импортируем хук и типы
-import { useAdminBloggerEditor } from "@/hooks/admin/useAdminBloggerEditor.ts";
-import { useAdminStatsFileManagement } from "@/hooks/admin/useAdminStatsFileManagement.ts";
-import { useAuth } from "@/contexts/AuthContext.tsx";
-import { formatNumber } from "@/utils/formatters.ts";
-import type { Blogger } from "@/types/blogger.ts";
-import type { ApiSocialType } from "@/api/types.ts";
-
-const AdminBloggerEditor = () => {
-  const { user } = useAuth();
+export const AdminBloggerEditor = () => {
   const { username } = useParams();
   const navigate = useNavigate();
 
-  // Используем специализированный хук для админа
   const {
     profile,
     formData,
@@ -54,71 +42,42 @@ const AdminBloggerEditor = () => {
     setAvailablePlatforms,
     refetch: fetchBloggerData,
   } = useAdminBloggerEditor(username);
-    console.log('PROFILE_ADMIN:',profile)
-  // Извлекаем скриншоты из профиля для текущей платформы
-  const currentPlatformScreenshots = useMemo(() => {
-    if (!profile?.social) return [];
-    
-    const platformType = activeTab === "settings" 
-      ? "INSTAGRAM" 
-      : activeTab.toUpperCase();
-    
-    const platformSocial = profile.social.find(s => s.type === platformType);
-    if (!platformSocial?.statsFiles) return [];
-    
-    // Преобразуем API формат в формат Screenshot
-    return platformSocial.statsFiles.map(file => ({
-      id: file.id,
-      influencer_id: profile.id,
-      platform: platformSocial.type.toLowerCase(),
-      file_name: file.name,
-      file_url: file.publicUrl,
-      file_size: file.size * 1024, // Конвертируем KB в байты
-      width: file.width,
-      height: file.height,
-      created_at: file.createdAt,
-      is_draft: false,
-    }));
-  }, [profile, activeTab]);
 
-  // Управление файлами статистики
+  const platformType = activeTab === "settings" ? "INSTAGRAM" : activeTab.toUpperCase();
+  const platformSocial = profile?.social?.find(s => s.type === platformType);
+  const currentPlatformScreenshots = platformSocial?.statsFiles?.map(file => ({
+    id: file.id,
+    influencer_id: profile.id,
+    platform: platformSocial.type.toLowerCase(),
+    file_name: file.name,
+    file_url: file.publicUrl,
+    file_size: file.size * 1024,
+    width: file.width,
+    height: file.height,
+    created_at: file.createdAt,
+    is_draft: false,
+  })) || [];
+
   const {
     files: statsFiles,
     uploading: uploadingStats,
-    deleting: deletingStats,
     uploadFiles: uploadStatsFiles,
     deleteFile: deleteStatsFile,
   } = useAdminStatsFileManagement(
     profile?.id?.toString(),
-    activeTab === "settings"
-      ? "INSTAGRAM"
-      : (activeTab.toUpperCase() as ApiSocialType),
+    platformType as ApiSocialType,
     currentPlatformScreenshots,
-    () => {
-      // Обновляем данные профиля после загрузки файла
-      fetchBloggerData();
-    }
+    fetchBloggerData
   );
 
-  // Загрузка файлов статистики
-  const handleStatsUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleStatsUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-
-    if (!files || !profile?.id) {
-      logError("Missing required data:", {
-        files: !!files,
-        profileId: !!profile?.id,
-      });
-      return;
-    }
+    if (!files || !profile?.id) return;
 
     try {
-      const fileArray = Array.from(files);
-      await uploadStatsFiles(fileArray);
-    } catch (error) {
-      logError("Error uploading stats files:", error);
+      await uploadStatsFiles(Array.from(files));
+    } catch {
+      // Ошибка обработана в хуке
     } finally {
       event.target.value = "";
     }
@@ -147,56 +106,41 @@ const AdminBloggerEditor = () => {
     );
   }
 
-  // Преобразуем данные профиля в формат, ожидаемый ProfileHeader
-  const profileForHeader = profile
-    ? {
-        id: profile.id.toString(),
-        name:
-          profile.social?.title ||
-          profile.name ||
-          profile.social?.username ||
-          "Неизвестный блогер",
-        handle: profile.social?.username || "",
-        avatar: profile.social?.avatar || "",
-        promoText: profile.social?.description || "",
-        platforms: {
-          instagram: profile.social
-            ? {
-                username: profile.social.username,
-                followers: parseInt(profile.social.subscribers || "0"),
-                avatar: profile.social.avatar,
-                engagementRate: profile.social.er || 0,
-              }
-            : undefined,
-        },
-        followers: parseInt(profile.social?.subscribers || "0"),
-        postPrice: parseFloat(profile.price?.postPrice || "0"),
-        storyPrice: parseFloat(profile.price?.storiesPrice || "0"),
-        postReach: parseInt(profile.social?.[0]?.postCoverage || "0"),
-        storyReach: parseInt(profile.social?.[0]?.coverage || "0"),
-        engagementRate: profile.social?.er || 0,
-        gender: profile.genderType?.toLowerCase() as
-          | "мужчина"
-          | "женщина"
-          | "пара"
-          | "паблик"
-          | undefined,
-        category: "",
-        topics: [],
-        allowsBarter: false,
-        inMartRegistry: false,
-        restrictedTopics: [],
-        cooperationConditions: "",
-        workFormat: "",
-        paymentTerms: "",
-        contact_url: "",
-        verificationStatus: profile.verificationStatus,
-      }
-    : null;
+  const profileForHeader = profile ? {
+    id: profile.id.toString(),
+    name: profile.social?.title || profile.name || profile.social?.username || "Неизвестный блогер",
+    handle: profile.social?.username || "",
+    avatar: profile.social?.avatar || "",
+    promoText: profile.social?.description || "",
+    platforms: {
+      instagram: profile.social ? {
+        username: profile.social.username,
+        followers: parseInt(profile.social.subscribers || "0"),
+        avatar: profile.social.avatar,
+        engagementRate: profile.social.er || 0,
+      } : undefined,
+    },
+    followers: parseInt(profile.social?.subscribers || "0"),
+    postPrice: parseFloat(profile.price?.postPrice || "0"),
+    storyPrice: parseFloat(profile.price?.storiesPrice || "0"),
+    postReach: parseInt(profile.social?.[0]?.postCoverage || "0"),
+    storyReach: parseInt(profile.social?.[0]?.coverage || "0"),
+    engagementRate: profile.social?.er || 0,
+    gender: profile.genderType?.toLowerCase() as "мужчина" | "женщина" | "пара" | "паблик" | undefined,
+    category: "",
+    topics: [],
+    allowsBarter: false,
+    inMartRegistry: false,
+    restrictedTopics: [],
+    cooperationConditions: "",
+    workFormat: "",
+    paymentTerms: "",
+    contact_url: "",
+    verificationStatus: profile.verificationStatus,
+  } : null;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       {profileForHeader && (
         <ProfileHeader
           profile={profileForHeader}
@@ -212,7 +156,6 @@ const AdminBloggerEditor = () => {
         />
       )}
 
-      {/* Error Messages */}
       {error && (
         <div className="container mx-auto px-4 pt-4">
           <Alert className="mb-4" variant="destructive">
@@ -222,10 +165,8 @@ const AdminBloggerEditor = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Form - 3 columns */}
           <div className="lg:col-span-3">
             <PlatformProfileForm
               formData={formData}
@@ -248,9 +189,7 @@ const AdminBloggerEditor = () => {
             />
           </div>
 
-          {/* Sidebar - 1 column */}
           <div className="space-y-6">
-            {/* Prices */}
             <PricingSection
               availablePlatforms={availablePlatforms}
               formData={formData}
@@ -260,7 +199,6 @@ const AdminBloggerEditor = () => {
               saving={saving}
             />
 
-            {/* Blogger Info */}
             <BloggerInfo
               formData={formData}
               editingSection={editingSection}
@@ -269,15 +207,12 @@ const AdminBloggerEditor = () => {
               saving={saving}
             />
 
-            {/* Cooperation Terms */}
             <Card className="relative">
               <CardContent className="p-4">
                 <div className="absolute top-2 right-2">
                   <Dialog
                     open={editingSection === "cooperation_conditions"}
-                    onOpenChange={(open) =>
-                      setEditingSection(open ? "cooperation_conditions" : null)
-                    }
+                    onOpenChange={(open) => setEditingSection(open ? "cooperation_conditions" : null)}
                   >
                     <DialogTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -286,18 +221,12 @@ const AdminBloggerEditor = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>
-                          Редактировать условия сотрудничества
-                        </DialogTitle>
-                        <DialogDescription>
-                          Обновите условия сотрудничества для профиля
-                        </DialogDescription>
+                        <DialogTitle>Редактировать условия сотрудничества</DialogTitle>
+                        <DialogDescription>Обновите условия сотрудничества для профиля</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="cooperation_conditions">
-                            Условия сотрудничества
-                          </Label>
+                          <Label htmlFor="cooperation_conditions">Условия сотрудничества</Label>
                           <Textarea
                             id="cooperation_conditions"
                             defaultValue={formData.cooperation_conditions}
@@ -306,24 +235,17 @@ const AdminBloggerEditor = () => {
                           />
                         </div>
                         <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setEditingSection(null)}
-                          >
+                          <Button variant="outline" onClick={() => setEditingSection(null)}>
                             Отмена
                           </Button>
                           <Button
                             onClick={async () => {
-                              const textarea = document.getElementById(
-                                "cooperation_conditions",
-                              ) as HTMLTextAreaElement;
+                              const textarea = document.getElementById("cooperation_conditions") as HTMLTextAreaElement;
                               try {
-                                await handleSave({
-                                  cooperation_conditions: textarea.value,
-                                });
+                                await handleSave({ cooperation_conditions: textarea.value });
                                 setEditingSection(null);
-                              } catch (error) {
-                                // Ошибка уже обработана в handleSave
+                              } catch {
+                                // Ошибка обработана в handleSave
                               }
                             }}
                             disabled={saving}
@@ -337,21 +259,14 @@ const AdminBloggerEditor = () => {
                 </div>
 
                 <h3 className="font-semibold mb-4">Условия сотрудничества</h3>
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    {formData.cooperation_conditions ||
-                      "Нажмите на иконку редактирования, чтобы добавить условия сотрудничества..."}
-                  </p>
-                </div>
+                <p className="text-muted-foreground">
+                  {formData.cooperation_conditions || "Нажмите на иконку редактирования, чтобы добавить условия сотрудничества..."}
+                </p>
               </CardContent>
             </Card>
 
             <VerificationNotice
-              profileStatus={
-                profile?.verificationStatus === "APPROVED"
-                  ? "verified"
-                  : "unverified"
-              }
+              profileStatus={profile?.verificationStatus === "APPROVED" ? "verified" : "unverified"}
             />
           </div>
         </div>

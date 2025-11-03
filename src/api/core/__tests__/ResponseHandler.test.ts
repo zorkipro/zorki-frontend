@@ -8,8 +8,8 @@ import { ResponseHandler } from "../ResponseHandler";
 // Mock logger
 vi.mock("@/utils/logger", () => ({
   logger: {
-    debug: vi.fn(),
     error: vi.fn(),
+    critical: vi.fn(),
   },
 }));
 

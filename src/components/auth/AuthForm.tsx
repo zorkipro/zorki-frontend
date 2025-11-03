@@ -38,46 +38,47 @@ export const AuthForm = ({
 }: AuthFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const isLogin = mode === "login";
+
+  const texts = {
+    title: isLogin ? "Добро пожаловать" : "Создать аккаунт",
+    description: isLogin
+      ? "Войдите в свой аккаунт для продолжения"
+      : "Зарегистрируйтесь для доступа к платформе",
+    button: isLogin ? "Войти" : "Зарегистрироваться",
+    googleButton: isLogin
+      ? "Войти через Google"
+      : "Зарегистрироваться через Google",
+    linkText: isLogin ? "Нет аккаунта?" : "Уже есть аккаунт?",
+    linkPath: isLogin ? "/register" : "/login",
+    linkLabel: isLogin ? "Зарегистрироваться" : "Войти",
+    termsPrefix: isLogin
+      ? "Рады видеть вас снова! Входя в систему, вы подтверждаете согласие с"
+      : "Добро пожаловать! Регистрируясь на нашей платформе, вы принимаете",
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit(email, password);
   };
 
-  const isLogin = mode === "login";
-  const title = isLogin ? "Добро пожаловать" : "Создать аккаунт";
-  const description = isLogin
-    ? "Войдите в свой аккаунт для продолжения"
-    : "Зарегистрируйтесь для доступа к платформе";
-  const buttonText = isLogin ? "Войти" : "Зарегистрироваться";
-  const googleButtonText = isLogin
-    ? "Войти через Google"
-    : "Зарегистрироваться через Google";
-  const linkText = isLogin ? "Нет аккаунта?" : "Уже есть аккаунт?";
-  const linkPath = isLogin ? "/register" : "/login";
-  const linkLabel = isLogin ? "Зарегистрироваться" : "Войти";
-
   return (
     <CenteredAuthLayout>
       <Card className="w-full">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
+          <CardTitle className="text-2xl">{texts.title}</CardTitle>
+          <CardDescription>{texts.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Google Button */}
           <GoogleAuthButton
-            text={googleButtonText}
+            text={texts.googleButton}
             onClick={onGoogleAuth}
             loading={loading}
           />
 
           <DividerWithText text="или" />
-
-          {/* Error Message */}
           <ErrorAlert error={error} />
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -104,15 +105,13 @@ export const AuthForm = ({
             </div>
 
             {showForgotPassword && isLogin && (
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <Link
-                    to="/forgot-password"
-                    className="text-primary hover:text-primary/80"
-                  >
-                    Забыли пароль?
-                  </Link>
-                </div>
+              <div className="text-sm">
+                <Link
+                  to="/forgot-password"
+                  className="text-primary hover:text-primary/80"
+                >
+                  Забыли пароль?
+                </Link>
               </div>
             )}
 
@@ -121,16 +120,13 @@ export const AuthForm = ({
               className="w-full bg-gradient-primary hover:bg-primary-hover"
               disabled={loading}
             >
-              {loading ? `${buttonText}...` : buttonText}
+              {loading ? `${texts.button}...` : texts.button}
             </Button>
           </form>
 
-          {/* Terms and Privacy */}
           <div className="text-center text-sm text-muted-foreground mb-4">
             <p className="mb-2">
-              {isLogin
-                ? "Рады видеть вас снова! Входя в систему, вы подтверждаете согласие с"
-                : "Добро пожаловать! Регистрируясь на нашей платформе, вы принимаете"}{" "}
+              {texts.termsPrefix}{" "}
               <Link
                 to="/terms"
                 className="text-primary hover:text-primary/80 underline font-medium"
@@ -152,14 +148,13 @@ export const AuthForm = ({
             )}
           </div>
 
-          {/* Switch Mode Link */}
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">{linkText} </span>
+            <span className="text-muted-foreground">{texts.linkText} </span>
             <Link
-              to={linkPath}
+              to={texts.linkPath}
               className="text-primary hover:text-primary/80 font-medium"
             >
-              {linkLabel}
+              {texts.linkLabel}
             </Link>
           </div>
         </CardContent>

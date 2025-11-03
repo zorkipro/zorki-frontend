@@ -17,6 +17,7 @@ interface MultiSelectProps {
   className?: string;
   disabled?: boolean;
   maxDisplayItems?: number;
+  maxItems?: number;
 }
 
 export const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -27,6 +28,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   className,
   disabled = false,
   maxDisplayItems = 3,
+  maxItems,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,10 +50,19 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const toggleOption = (optionValue: string) => {
     if (disabled) return;
 
-    const newValue = value.includes(optionValue)
-      ? value.filter((v) => v !== optionValue)
-      : [optionValue, ...value];
+    // Если элемент уже выбран - удаляем его
+    if (value.includes(optionValue)) {
+      onChange(value.filter((v) => v !== optionValue));
+      return;
+    }
 
+    // Если достигнут лимит и пытаемся добавить новый элемент - блокируем
+    if (maxItems && value.length >= maxItems) {
+      return;
+    }
+
+    // Добавляем элемент
+    const newValue = [optionValue, ...value];
     onChange(newValue);
   };
 

@@ -4,52 +4,194 @@
 
 Zorki7 использует PostgreSQL с Supabase в качестве BaaS платформы. База данных интегрирована с NestJS API backend.
 
+## ⚡ Быстрый обзор
+
+**12 таблиц БД:**
+- `influencers` - основная таблица блогеров
+- `influencer_profiles` - профили по платформам
+- `influencer_platform_stats` - статистика по платформам
+- `topics` / `banned_topics` - тематики
+- `platforms` - социальные платформы
+- И другие...
+
+**Миграции:** `supabase/migrations/`  
+**Применение:** `npm run supabase:db:push`
+
+---
+
 ## ⚠️ Важная информация
 
 **RLS (Row Level Security) политики ОТКЛЮЧЕНЫ** для упрощения разработки.
 
 Все таблицы имеют полные права доступа для всех пользователей. В продакшене необходимо включить RLS политики для безопасности.
 
-## 📊 Основные таблицы
+---
 
-### `influencers` - Блогеры
+## 📐 ENUM типы
+
+База данных использует следующие ENUM типы:
+
+### `platform_type`
+
+Типы социальных платформ:
 
 ```sql
-CREATE TABLE influencers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  full_name TEXT NOT NULL,
-  avatar_url TEXT,
-  description TEXT,
-  is_visible BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TYPE public.platform_type AS ENUM ('instagram', 'tiktok', 'youtube', 'telegram');
+```
+
+### `profile_status`
+
+Статусы профилей блогеров:
+
+```sql
+CREATE TYPE public.profile_status AS ENUM ('unverified', 'pending', 'verified');
+```
+
+### `data_source`
+
+Источники данных:
+
+```sql
+CREATE TYPE public.data_source AS ENUM ('imported', 'scraped', 'graph_api', 'manual');
+```
+
+### `edit_status`
+
+Статусы редактирования профилей:
+
+```sql
+CREATE TYPE public.edit_status AS ENUM ('new', 'pending', 'approved', 'rejected');
+```
+
+---
+
+## 📊 Основные таблицы
+
+### 1. `influencers` - Основная таблица блогеров
+
+Основная таблица для хранения информации о блогерах.
+
+```sql
+CREATE TABLE public.influencers (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    full_name TEXT NOT NULL CHECK (length(full_name) >= 2 AND length(full_name) <= 100),
+    avatar_url TEXT CHECK (avatar_url IS NULL OR avatar_url ~ '^https?://'),
+    description TEXT CHECK (description IS NULL OR length(description) <= 1000),
+    barter_available BOOLEAN DEFAULT FALSE,
+    mart_registry BOOLEAN DEFAULT FALSE,
+    contact_link TEXT CHECK (contact_link IS NULL OR contact_link ~ '^https?://'),
+    work_format TEXT CHECK (work_format IN ('ИП', 'профдоход', 'договор подряда', 'ООО')),
+    gender_type TEXT CHECK (gender_type IN ('мужчина', 'женщина', 'пара', 'паблик')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    verification_status TEXT CHECK (verification_status IN ('новый', 'на проверке', 'одобрен', 'отклонён')) DEFAULT 'новый',
+    visibility_status TEXT CHECK (visibility_status IN ('виден', 'скрыт', 'удалён')) DEFAULT 'виден',
+    linked_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
 ```
 
 **Поля:**
 
 - `id` - уникальный идентификатор (UUID)
-- `full_name` - полное имя блогера (обязательное)
-- `avatar_url` - URL аватара
-- `description` - описание блогера
-- `is_visible` - видимость профиля (по умолчанию true)
-- `created_at` - дата создания
-- `updated_at` - дата последнего обновления
+- `full_name` - полное имя блогера (2-100 символов)
+- `avatar_url` - URL аватара (должен начинаться с http:// или https://)
+- `description` - описание блогера (до 1000 символов)
+- `barter_available` - доступен ли бартер
+- `mart_registry` - регистрация в марте
+- `contact_link` - ссылка для связи
+- `work_format` - правовая форма работы ('ИП', 'профдоход', 'договор подряда', 'ООО')
+- `gender_type` - тип пола ('мужчина', 'женщина', 'пара', 'паблик')
+- `verification_status` - статус верификации ('новый', 'на проверке', 'одобрен', 'отклонён')
+- `visibility_status` - статус видимости ('виден', 'скрыт', 'удалён')
+- `linked_user_id` - ссылка на пользователя в auth.users
+- `created_at`, `updated_at` - временные метки
 
-### `influencer_platform_stats` - Статистика по платформам
+### 2. `topics` - Тематики блогов
+
+Таблица для хранения тематик блогов.
 
 ```sql
-CREATE TABLE influencer_platform_stats (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  influencer_id UUID REFERENCES influencers(id) ON DELETE CASCADE,
-  platform_id UUID REFERENCES platforms(id) ON DELETE CASCADE,
-  username TEXT NOT NULL,
-  followers INTEGER,
-  post_price INTEGER,
-  story_price INTEGER,
-  integration_price INTEGER,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE public.topics (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL
+);
+```
+
+**Поля:**
+
+- `id` - уникальный идентификатор
+- `title` - название тематики
+
+### 3. `influencer_topics` - Связь блогеров с тематиками
+
+Связующая таблица для связи блогеров с тематиками (many-to-many).
+
+```sql
+CREATE TABLE public.influencer_topics (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    influencer_id UUID REFERENCES public.influencers(id) ON DELETE CASCADE,
+    topic_id UUID REFERENCES public.topics(id) ON DELETE CASCADE
+);
+```
+
+### 4. `banned_topics` - Запрещенные тематики
+
+Таблица для хранения запрещенных тематик.
+
+```sql
+CREATE TABLE public.banned_topics (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL
+);
+```
+
+### 5. `influencer_banned_topics` - Связь блогеров с запрещенными тематиками
+
+Связующая таблица для связи блогеров с запрещенными тематиками (many-to-many).
+
+```sql
+CREATE TABLE public.influencer_banned_topics (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    influencer_id UUID REFERENCES public.influencers(id) ON DELETE CASCADE,
+    banned_topic_id UUID REFERENCES public.banned_topics(id) ON DELETE CASCADE
+);
+```
+
+### 6. `platforms` - Социальные платформы
+
+Таблица для хранения социальных платформ.
+
+```sql
+CREATE TABLE public.platforms (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    title platform_type NOT NULL
+);
+```
+
+**Предустановленные платформы:**
+- instagram
+- tiktok
+- youtube
+- telegram
+
+### 7. `influencer_platform_stats` - Статистика по платформам
+
+Статистика блогеров по каждой платформе.
+
+```sql
+CREATE TABLE public.influencer_platform_stats (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    influencer_id UUID REFERENCES public.influencers(id) ON DELETE CASCADE,
+    platform_id UUID REFERENCES public.platforms(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    profile_url TEXT,
+    followers BIGINT DEFAULT 0,
+    engagement_rate NUMERIC(5,2),
+    post_reach BIGINT DEFAULT 0,
+    story_reach BIGINT DEFAULT 0,
+    post_price BIGINT DEFAULT 0,
+    story_price BIGINT DEFAULT 0,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
@@ -59,152 +201,382 @@ CREATE TABLE influencer_platform_stats (
 - `influencer_id` - ссылка на блогера
 - `platform_id` - ссылка на платформу
 - `username` - имя пользователя на платформе
-- `followers` - количество подписчиков
+- `profile_url` - URL профиля
+- `followers` - количество подписчиков (BIGINT)
+- `engagement_rate` - коэффициент вовлеченности (NUMERIC 5,2)
+- `post_reach` - охват постов
+- `story_reach` - охват сторис
 - `post_price` - цена за пост
 - `story_price` - цена за сторис
-- `integration_price` - цена за интеграцию
+- `updated_at` - дата обновления статистики
 
-### `platforms` - Платформы
+### 8. `profiles` - Профили пользователей
+
+Профили пользователей системы.
 
 ```sql
-CREATE TABLE platforms (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL UNIQUE, -- instagram, tiktok, youtube, telegram
-  icon TEXT, -- иконка платформы
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE public.profiles (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT,
+    full_name TEXT,
+    display_name TEXT,
+    instagram_username TEXT,
+    primary_profile_id UUID,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 ```
 
-### `topics` - Тематики
+**Поля:**
+
+- `id` - уникальный идентификатор
+- `user_id` - ссылка на пользователя в auth.users (UNIQUE)
+- `email` - email пользователя
+- `full_name` - полное имя
+- `display_name` - отображаемое имя
+- `instagram_username` - username в Instagram
+- `primary_profile_id` - ссылка на основной профиль блогера
+
+### 9. `influencer_profiles` - Профили блогеров по платформам
+
+Профили блогеров для каждой платформы отдельно.
 
 ```sql
-CREATE TABLE topics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  is_restricted BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE public.influencer_profiles (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    platform platform_type NOT NULL,
+    username TEXT NOT NULL CHECK (length(username) >= 1 AND length(username) <= 50),
+    full_name TEXT CHECK (full_name IS NULL OR (length(full_name) >= 2 AND length(full_name) <= 100)),
+    bio TEXT CHECK (bio IS NULL OR length(bio) <= 500),
+    followers_count BIGINT DEFAULT 0,
+    following_count BIGINT DEFAULT 0,
+    posts_count BIGINT DEFAULT 0,
+    is_verified BOOLEAN DEFAULT FALSE,
+    is_private BOOLEAN DEFAULT FALSE,
+    profile_picture_url TEXT CHECK (profile_picture_url IS NULL OR profile_picture_url ~ '^https?://'),
+    external_url TEXT CHECK (external_url IS NULL OR external_url ~ '^https?://'),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    public_visible BOOLEAN DEFAULT FALSE,
+    is_business BOOLEAN DEFAULT FALSE,
+    avg_reels_views INTEGER DEFAULT 0,
+    last_scraped_at TIMESTAMP WITH TIME ZONE,
+    source data_source DEFAULT 'manual',
+    status profile_status DEFAULT 'unverified',
+    UNIQUE(platform, username)
 );
 ```
 
-### `profile_edits` - Черновики изменений
+**Поля:**
+
+- `id` - уникальный идентификатор
+- `user_id` - ссылка на пользователя
+- `platform` - тип платформы (platform_type ENUM)
+- `username` - имя пользователя на платформе (1-50 символов, UNIQUE с platform)
+- `full_name` - полное имя (2-100 символов)
+- `bio` - биография (до 500 символов)
+- `followers_count`, `following_count`, `posts_count` - статистика
+- `is_verified` - верифицирован ли аккаунт
+- `is_private` - приватный ли аккаунт
+- `profile_picture_url` - URL аватара
+- `external_url` - внешняя ссылка
+- `public_visible` - видимость для публики
+- `is_business` - бизнес-аккаунт
+- `avg_reels_views` - среднее количество просмотров reels
+- `last_scraped_at` - дата последнего парсинга
+- `source` - источник данных (data_source ENUM)
+- `status` - статус профиля (profile_status ENUM)
+
+**Ограничения:**
+
+- UNIQUE(platform, username) - уникальность комбинации платформы и username
+
+### 10. `platform_screenshots` - Скриншоты профилей
+
+Скриншоты профилей блогеров.
 
 ```sql
-CREATE TABLE profile_edits (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  influencer_id UUID REFERENCES influencers(id) ON DELETE CASCADE,
-  edit_data JSONB NOT NULL,
-  edit_status TEXT DEFAULT 'draft' CHECK (edit_status IN ('draft', 'published', 'rejected')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE public.platform_screenshots (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    influencer_profile_id UUID REFERENCES public.influencer_profiles(id) ON DELETE CASCADE,
+    file_url TEXT NOT NULL,
+    platform platform_type,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ```
+
+### 11. `profile_edits` - Черновики изменений профилей
+
+Черновики изменений профилей для модерации.
+
+```sql
+CREATE TABLE public.profile_edits (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    status edit_status DEFAULT 'new',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    influencer_profile_id UUID REFERENCES public.influencer_profiles(id) ON DELETE CASCADE,
+    changes_json JSONB CHECK (changes_json IS NULL OR octet_length(changes_json::text) <= 10000)
+);
+```
+
+**Поля:**
+
+- `id` - уникальный идентификатор
+- `user_id` - ссылка на пользователя
+- `status` - статус редактирования (edit_status ENUM: 'new', 'pending', 'approved', 'rejected')
+- `influencer_profile_id` - ссылка на профиль блогера
+- `changes_json` - JSON с изменениями (до 10000 байт)
+
+### 12. `admin_actions` - Действия администраторов
+
+Логирование действий администраторов.
+
+```sql
+CREATE TABLE public.admin_actions (
+    id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    admin_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    influencer_id UUID REFERENCES public.influencers(id) ON DELETE CASCADE,
+    action TEXT NOT NULL CHECK (action IN ('approve', 'reject', 'delete', 'hide', 'edit')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+---
 
 ## 🔗 Связи между таблицами
 
 ```
-auth.users (1) ←→ (1) influencers (1) ←→ (N) influencer_platform_stats
-                                    ↓
-                               (N) profile_edits
+auth.users
+    ├── (1:1) → profiles (user_id)
+    ├── (1:N) → influencer_profiles (user_id)
+    ├── (1:N) → platform_screenshots (user_id)
+    ├── (1:N) → profile_edits (user_id)
+    └── (1:N) → admin_actions (admin_id)
 
-platforms (1) ←→ (N) influencer_platform_stats
+influencers
+    ├── (1:N) → influencer_topics (influencer_id)
+    ├── (1:N) → influencer_banned_topics (influencer_id)
+    ├── (1:N) → influencer_platform_stats (influencer_id)
+    └── (1:N) → admin_actions (influencer_id)
+    └── (N:1) → auth.users (linked_user_id)
+
+topics
+    └── (1:N) → influencer_topics (topic_id)
+
+banned_topics
+    └── (1:N) → influencer_banned_topics (banned_topic_id)
+
+platforms
+    └── (1:N) → influencer_platform_stats (platform_id)
+
+influencer_profiles
+    ├── (1:N) → platform_screenshots (influencer_profile_id)
+    └── (1:N) → profile_edits (influencer_profile_id)
+
+profiles
+    └── (N:1) → influencer_profiles (primary_profile_id)
 ```
+
+---
 
 ## ⚡ Индексы для производительности
 
+### Индексы для `influencers`
+
 ```sql
--- Индексы для быстрого поиска
-CREATE INDEX idx_influencers_visible ON influencers(is_visible);
-CREATE INDEX idx_influencers_name ON influencers(full_name);
-CREATE INDEX idx_influencers_created_at ON influencers(created_at);
-
--- Индексы для связей
-CREATE INDEX idx_influencer_platform_stats_influencer_id ON influencer_platform_stats(influencer_id);
-CREATE INDEX idx_influencer_platform_stats_platform_id ON influencer_platform_stats(platform_id);
-CREATE INDEX idx_profile_edits_influencer_id ON profile_edits(influencer_id);
-
--- Индексы для статусов
-CREATE INDEX idx_profile_edits_status ON profile_edits(edit_status);
-CREATE INDEX idx_topics_restricted ON topics(is_restricted);
-
--- Составные индексы для сложных запросов
-CREATE INDEX idx_influencer_platform_stats_composite ON influencer_platform_stats(influencer_id, platform_id);
-CREATE INDEX idx_profile_edits_composite ON profile_edits(influencer_id, edit_status);
+CREATE INDEX idx_influencers_visibility ON public.influencers(visibility_status);
+CREATE INDEX idx_influencers_verification ON public.influencers(verification_status);
+CREATE INDEX idx_influencers_linked_user_id ON public.influencers(linked_user_id);
 ```
 
-## 🔧 Функции и процедуры
-
-### `get_bloggers_with_stats()`
-
-Возвращает блогеров с их статистикой по платформам.
+### Индексы для `influencer_platform_stats`
 
 ```sql
-CREATE OR REPLACE FUNCTION get_bloggers_with_stats()
-RETURNS TABLE (
-  blogger_id UUID,
-  full_name TEXT,
-  avatar_url TEXT,
-  platform_title TEXT,
-  username TEXT,
-  followers INTEGER,
-  post_price INTEGER
-) AS $$
+CREATE INDEX idx_influencer_platform_followers ON public.influencer_platform_stats(platform_id, followers);
+CREATE INDEX idx_influencer_platform_post_price ON public.influencer_platform_stats(platform_id, post_price);
+CREATE UNIQUE INDEX idx_influencer_platform_username 
+ON public.influencer_platform_stats(platform_id, lower(username));
+```
+
+### Индексы для `profiles`
+
+```sql
+CREATE INDEX idx_profiles_user_id ON public.profiles(user_id);
+CREATE INDEX idx_profiles_instagram_username ON public.profiles(instagram_username);
+CREATE INDEX idx_profiles_email ON public.profiles(email);
+CREATE INDEX idx_profiles_full_name ON public.profiles(full_name);
+```
+
+### Индексы для `influencer_profiles`
+
+```sql
+CREATE INDEX idx_influencer_profiles_platform_username ON public.influencer_profiles(platform, username);
+CREATE INDEX idx_influencer_profiles_user_id ON public.influencer_profiles(user_id);
+CREATE INDEX idx_influencer_profiles_status ON public.influencer_profiles(status);
+```
+
+### Индексы для `platform_screenshots`
+
+```sql
+CREATE INDEX idx_platform_screenshots_user_id ON public.platform_screenshots(user_id);
+CREATE INDEX idx_platform_screenshots_platform ON public.platform_screenshots(platform);
+```
+
+### Индексы для `profile_edits`
+
+```sql
+CREATE INDEX idx_profile_edits_user_id ON public.profile_edits(user_id);
+CREATE INDEX idx_profile_edits_status ON public.profile_edits(status);
+```
+
+---
+
+## 🔧 Функции и триггеры
+
+### Функция обновления `updated_at`
+
+Автоматическое обновление поля `updated_at` при изменении записи.
+
+```sql
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER AS $$
 BEGIN
-  RETURN QUERY
-  SELECT
-    i.id,
-    i.full_name,
-    i.avatar_url,
-    p.title,
-    ips.username,
-    ips.followers,
-    ips.post_price
-  FROM influencers i
-  LEFT JOIN influencer_platform_stats ips ON i.id = ips.influencer_id
-  LEFT JOIN platforms p ON ips.platform_id = p.id
-  WHERE i.is_visible = true
-  ORDER BY i.created_at DESC;
+    NEW.updated_at = NOW();
+    RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ language 'plpgsql';
 ```
 
-### `get_blogger_profile(blogger_id)`
+**Используется в таблицах:**
+- `influencers`
+- `profiles`
+- `influencer_profiles`
+- `profile_edits`
 
-Возвращает полный профиль блогера с статистикой.
+### Функция создания профиля пользователя
+
+Автоматическое создание профиля при регистрации нового пользователя.
 
 ```sql
-CREATE OR REPLACE FUNCTION get_blogger_profile(blogger_id UUID)
-RETURNS JSON AS $$
-DECLARE
-  result JSON;
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public 
+AS $$
 BEGIN
-  SELECT json_build_object(
-    'id', i.id,
-    'full_name', i.full_name,
-    'avatar_url', i.avatar_url,
-    'description', i.description,
-    'platforms', (
-      SELECT json_agg(
-        json_build_object(
-          'platform', p.title,
-          'username', ips.username,
-          'followers', ips.followers,
-          'post_price', ips.post_price,
-          'story_price', ips.story_price
-        )
-      )
-      FROM influencer_platform_stats ips
-      JOIN platforms p ON ips.platform_id = p.id
-      WHERE ips.influencer_id = i.id
-    )
-  ) INTO result
-  FROM influencers i
-  WHERE i.id = blogger_id AND i.is_visible = true;
-
-  RETURN result;
+  INSERT INTO public.profiles (user_id, email, full_name)
+  VALUES (
+    NEW.id, 
+    NEW.email, 
+    COALESCE(NEW.raw_user_meta_data ->> 'full_name', NEW.raw_user_meta_data ->> 'name')
+  );
+  RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 ```
+
+**Триггер:** `on_auth_user_created` срабатывает после INSERT в `auth.users`
+
+---
+
+## 📦 Базовые данные (Seed)
+
+### Платформы
+
+При создании базы данных автоматически добавляются платформы:
+- instagram
+- tiktok
+- youtube
+- telegram
+
+### Тематики
+
+Предустановленные тематики блогов:
+- Красота и мода
+- Здоровье и фитнес
+- Путешествия
+- Еда и рецепты
+- Технологии
+- Образование
+- Развлечения
+- Спорт
+- Автомобили
+- Дом и интерьер
+- Бизнес
+- Психология
+- Дети и семья
+- Искусство и творчество
+- Финансы
+
+### Запрещенные тематики
+
+Предустановленные запрещенные тематики:
+- Алкоголь
+- Табак и курение
+- Наркотики
+- Азартные игры
+- Политика
+- Религия
+- Взрослый контент
+- Насилие
+- Экстремизм
+- Медицинские советы
+
+---
+
+## 🔒 RLS политики (Row Level Security)
+
+### ⚠️ Текущее состояние
+
+**RLS политики ОТКЛЮЧЕНЫ** для упрощения разработки.
+
+Все таблицы имеют `DISABLE ROW LEVEL SECURITY` для разработки.
+
+### ⚠️ ВАЖНО для продакшена
+
+В продакшене **ОБЯЗАТЕЛЬНО** включить RLS политики для:
+
+- Защиты данных пользователей
+- Контроля доступа к API
+- Соответствия требованиям безопасности
+- Защиты от несанкционированного доступа
+
+**Таблицы, требующие RLS:**
+- `influencers`
+- `influencer_profiles`
+- `influencer_platform_stats`
+- `platform_screenshots`
+- `profile_edits`
+- `admin_actions`
+- `profiles`
+- `topics`
+- `banned_topics`
+- `platforms`
+- `influencer_topics`
+- `influencer_banned_topics`
+
+---
+
+## 💾 Storage Buckets
+
+### `profile-assets`
+
+Bucket для хранения файлов профилей (аватары, скриншоты и т.д.).
+
+```sql
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('profile-assets', 'profile-assets', false);
+```
+
+- **ID:** `profile-assets`
+- **Public:** `false` (приватный bucket)
+
+---
 
 ## 📦 Миграции
 
@@ -231,45 +603,11 @@ supabase migration new migration_name
 supabase db push
 ```
 
-## 🔒 RLS политики (Row Level Security)
+### Расположение миграций
 
-### ⚠️ Текущее состояние
+Миграции находятся в папке `supabase/migrations/`.
 
-**RLS политики ОТКЛЮЧЕНЫ** для упрощения разработки.
-
-### Планируемые RLS политики
-
-```sql
--- Включение RLS для таблиц
-ALTER TABLE influencers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE influencer_platform_stats ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profile_edits ENABLE ROW LEVEL SECURITY;
-
--- Политики для блогеров
-CREATE POLICY "Публичный доступ к видимым блогерам" ON influencers
-  FOR SELECT USING (is_visible = true);
-
-CREATE POLICY "Админы могут управлять блогерами" ON influencers
-  FOR ALL USING (auth.role() = 'admin');
-
--- Политики для статистики
-CREATE POLICY "Публичный доступ к статистике" ON influencer_platform_stats
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM influencers
-      WHERE id = influencer_id AND is_visible = true
-    )
-  );
-```
-
-### ⚠️ ВАЖНО для продакшена
-
-В продакшене **ОБЯЗАТЕЛЬНО** включить RLS политики для:
-
-- Защиты данных пользователей
-- Контроля доступа к API
-- Соответствия требованиям безопасности
-- Защиты от несанкционированного доступа
+---
 
 ## 🔌 Интеграция с NestJS API
 
@@ -305,7 +643,7 @@ async getBloggers(filters: BloggerFilters) {
           platforms (*)
         )
       `)
-      .eq('is_visible', true)
+      .eq('visibility_status', 'виден')
       .range(filters.offset, filters.offset + filters.limit - 1);
 
     if (error) {
@@ -319,6 +657,8 @@ async getBloggers(filters: BloggerFilters) {
   }
 }
 ```
+
+---
 
 ## 💾 Backup и восстановление
 
@@ -345,14 +685,18 @@ psql -h localhost -U postgres -d zorki7 < backup_file.sql
 psql -h localhost -U postgres -d zorki7 < schema_backup.sql
 ```
 
+---
+
 ## 🎯 Готовность базы данных
 
-✅ **Схема БД** оптимизирована для производительности  
-✅ **Индексы** настроены для быстрого поиска  
-✅ **Функции и процедуры** реализованы  
-✅ **Миграции** настроены и работают  
-✅ **Интеграция с NestJS API** функциональна  
-✅ **Backup и восстановление** настроены
+✅ **Схема БД** - полная схема с 12 таблицами  
+✅ **ENUM типы** - 4 типа для типизации данных  
+✅ **Индексы** - оптимизированы для быстрого поиска  
+✅ **Функции и триггеры** - автоматическое обновление и создание записей  
+✅ **Миграции** - настроены и работают  
+✅ **Интеграция с NestJS API** - функциональна  
+✅ **Backup и восстановление** - настроены  
+✅ **Seed данные** - предустановленные платформы, тематики
 
 ### Рекомендации для продакшена
 
@@ -361,7 +705,9 @@ psql -h localhost -U postgres -d zorki7 < schema_backup.sql
 3. **Регулярные backup'ы** данных
 4. **Оптимизация запросов** при росте данных
 5. **Настройка репликации** для высокой доступности
+6. **Настройка индексов** для часто используемых запросов
+7. **Мониторинг размера БД** и очистка старых данных
 
 ---
 
-_Последнее обновление: Октябрь 2025_
+_Последнее обновление: Январь 2025_

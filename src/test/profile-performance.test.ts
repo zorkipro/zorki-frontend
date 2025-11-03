@@ -118,13 +118,6 @@ describe("BloggerContext Selective Updates", () => {
     // В реальном приложении можно использовать @testing-library/react-hooks
     // или создать тестовый компонент с BloggerProvider
 
-    console.log("✅ Селективное обновление BloggerContext работает корректно");
-    console.log(
-      "✅ Компоненты перерисовываются только при изменении соответствующих полей",
-    );
-    console.log(
-      "✅ Производительность улучшена за счет мемоизации и селекторов",
-    );
   });
 });
 
@@ -150,13 +143,6 @@ export function measureUpdatePerformance() {
 
   const endTime = performance.now();
   const duration = endTime - startTime;
-
-  console.log(`🚀 Performance Test Results:`);
-  console.log(`   Iterations: ${iterations}`);
-  console.log(`   Duration: ${duration.toFixed(2)}ms`);
-  console.log(
-    `   Average per iteration: ${(duration / iterations).toFixed(4)}ms`,
-  );
 
   return {
     iterations,

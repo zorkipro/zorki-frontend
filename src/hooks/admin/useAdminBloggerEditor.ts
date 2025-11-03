@@ -7,10 +7,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { getAllBloggers, getBloggerById } from '@/api/endpoints/blogger';
-import { adminUpdateBlogger, adminUpdateBloggerSocialPrice } from '@/api/endpoints/admin';
+import { getBloggerById } from '@/api/endpoints/blogger';
+import { adminGetBloggers, adminUpdateBlogger, adminUpdateBloggerSocialPrice } from '@/api/endpoints/admin';
 import { mapEditDataToProfileUpdate, mapPlatformPricesToUpdate, mapGenderFromApi, mapWorkFormatFromApi } from '@/utils/api/admin-blogger-mappers';
-import type { PublicGetAllBloggersOutputDto, PublicGetBloggerByIdOutputDto } from '@/api/types';
+import type { PublicGetBloggerByIdOutputDto } from '@/api/types';
 import type { EditData, PlatformData } from '@/types/profile';
 import type { ApiSocialType } from '@/api/types';
 import { logger } from '@/utils/logger';
@@ -93,8 +93,9 @@ export const useAdminBloggerEditor = (username?: string) => {
       // Нормализуем username - убираем @ если есть
       const normalizedUsername = normalizeUsername(username);
 
-      // Сначала находим блогера по username через публичный API
-      const response = await getAllBloggers({
+      // Используем админский API для поиска блогера по username
+      // Это важно, так как админский API возвращает всех блогеров, включая неверифицированных
+      const response = await adminGetBloggers({
         username: normalizedUsername,
         socialType: 'INSTAGRAM',
         page: 1,
@@ -104,7 +105,8 @@ export const useAdminBloggerEditor = (username?: string) => {
       if (response.items && response.items.length > 0) {
         const bloggerSummary = response.items[0];
         
-        // Получаем полные данные блогера по ID
+        // Получаем полные данные блогера по ID через публичный API
+        // С токеном админа он вернет данные даже для неверифицированных блогеров
         const bloggerDetails = await getBloggerById(bloggerSummary.id);
 
         setProfile(bloggerDetails);

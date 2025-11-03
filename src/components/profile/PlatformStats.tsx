@@ -29,10 +29,10 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
   formatNumber,
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
       {/* Подписчики - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
+        <CardContent className="p-4 sm:p-5 text-center">
           <Users className="w-6 h-6 text-primary mx-auto mb-2" />
           <div className="text-2xl font-bold text-foreground">
             {formatNumber(stats.subscribers)}
@@ -43,21 +43,21 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
 
       {/* ER - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <TrendingUp className="w-6 h-6 text-success mx-auto mb-2" />
-          <div className="text-2xl font-bold text-success">{stats.er}%</div>
-          <div className="text-sm text-muted-foreground">ER</div>
+        <CardContent className="p-4 sm:p-5 text-center">
+          <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-success mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-success">{stats.er}%</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">ER</div>
         </CardContent>
       </Card>
 
       {/* Охват публикаций - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Eye className="w-6 h-6 text-warning mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-warning mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.reach)}
           </div>
-          <div className="text-sm text-muted-foreground">Охват публикаций</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Охват публикаций</div>
         </CardContent>
       </Card>
 
@@ -232,26 +232,26 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
   formatNumber,
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
       {/* Подписчики - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.subscribers)}
           </div>
-          <div className="text-sm text-muted-foreground">Подписчиков</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Подписчиков</div>
         </CardContent>
       </Card>
 
       {/* Охват - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Eye className="w-6 h-6 text-warning mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-warning mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.reach || stats.subscribers * 0.4)}
           </div>
-          <div className="text-sm text-muted-foreground">Охват</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Охват</div>
         </CardContent>
       </Card>
 
@@ -322,26 +322,26 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
   formatNumber,
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
       {/* Подписчики - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.subscribers)}
           </div>
-          <div className="text-sm text-muted-foreground">Подписчиков</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Подписчиков</div>
         </CardContent>
       </Card>
 
       {/* Охват - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Eye className="w-6 h-6 text-warning mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-warning mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.reach || stats.subscribers * 0.6)}
           </div>
-          <div className="text-sm text-muted-foreground">Охват</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Охват</div>
         </CardContent>
       </Card>
 
@@ -414,26 +414,26 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
   isVerified = false,
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
       {/* Подписчики - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.subscribers)}
           </div>
-          <div className="text-sm text-muted-foreground">Подписчиков</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Подписчиков</div>
         </CardContent>
       </Card>
 
       {/* Просмотры - НЕ редактируемое */}
       <Card>
-        <CardContent className="p-4 text-center">
-          <Eye className="w-6 h-6 text-warning mx-auto mb-2" />
-          <div className="text-2xl font-bold text-foreground">
+        <CardContent className="p-4 sm:p-5 text-center">
+          <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-warning mx-auto mb-1.5 sm:mb-2" />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             {formatNumber(stats.views || 0)}
           </div>
-          <div className="text-sm text-muted-foreground">Просмотров</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Просмотров</div>
         </CardContent>
       </Card>
 

@@ -1,8 +1,7 @@
-import { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext.tsx";
-import { getBloggerProfilePath } from "@/config/routes.ts";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Button,
   Card,
@@ -13,30 +12,20 @@ import {
 } from "@/ui-kit";
 import { Alert, AlertDescription } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
-
-// Components
-import { BloggerInfo } from "@/components/profile/BloggerInfo.tsx";
-import { VerificationNotice } from "@/components/profile/VerificationNotice.tsx";
-import { ProfileHeader } from "@/components/profile/ProfileHeader.tsx";
-import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm.tsx";
-import { PricingSection } from "@/components/profile/organisms/PricingSection.tsx";
-import { CooperationTermsSection } from "@/components/profile/CooperationTermsSection.tsx";
-
-// Hooks
-import { useProfileEditor } from "@/hooks/profile/useProfileEditor.ts";
-import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager.ts";
-
-// API
-import { getBloggerById } from "@/api/endpoints/blogger";
-
-// Utils
-import { formatNumber } from "@/utils/formatters.ts";
+import { BloggerInfo } from "@/components/profile/BloggerInfo";
+import { VerificationNotice } from "@/components/profile/VerificationNotice";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { PlatformProfileForm } from "@/components/profile/organisms/PlatformProfileForm";
+import { PricingSection } from "@/components/profile/organisms/PricingSection";
+import { CooperationTermsSection } from "@/components/profile/CooperationTermsSection";
+import { useProfileEditor } from "@/hooks/profile/useProfileEditor";
+import { useScreenshotManager } from "@/hooks/profile/useScreenshotManager";
+import { formatNumber } from "@/utils/formatters";
 
 const ProfileEditor = () => {
-  const { user, bloggerInfo } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Use the comprehensive useProfileEditor hook instead of duplicate state
   const {
     profile,
     loading,
@@ -51,99 +40,20 @@ const ProfileEditor = () => {
     setActiveTab,
     setEditingSection,
     setAvailablePlatforms,
-    hasDrafts,
   } = useProfileEditor();
 
-  // Callback для обновления availablePlatforms после загрузки скриншотов
+  const platform = activeTab === "settings" ? "instagram" : activeTab;
+
   const handleScreenshotsUpdate = useCallback(
     (platform: string, screenshots: any[]) => {
       setAvailablePlatforms((prev) => ({
         ...prev,
-        [platform]: {
-          ...prev[platform],
-          screenshots: screenshots,
-        },
+        [platform]: { ...prev[platform], screenshots },
       }));
     },
-    [setAvailablePlatforms],
+    [setAvailablePlatforms]
   );
 
-  // Принудительно загружаем скриншоты для всех платформ при инициализации
-  const loadScreenshotsForAllPlatforms = useCallback(async () => {
-    if (!profile?.id || !availablePlatforms) return;
-    
-    const platforms = Object.keys(availablePlatforms).filter(p => p !== 'settings');
-    
-    try {
-      // Делаем ОДИН запрос для всех платформ
-      const response = await getBloggerById(Number(profile.id));
-      
-      // Обрабатываем скриншоты для всех платформ из одного ответа
-      platforms.forEach(platform => {
-        let platformScreenshots: any[] = [];
-        
-        // Проверяем одобренные платформы
-        if (response.social) {
-          for (const social of response.social) {
-            if (social.type.toLowerCase() === platform && social.statsFiles) {
-              const screenshots = social.statsFiles.map(file => ({
-                id: file.id,
-                influencer_id: profile.id,
-                platform: social.type.toLowerCase(),
-                file_name: file.name,
-                file_url: file.publicUrl,
-                file_size: file.size * 1024,
-                width: file.width,
-                height: file.height,
-                created_at: file.createdAt,
-                is_draft: false,
-              }));
-              
-              platformScreenshots.push(...screenshots);
-            }
-          }
-        }
-        
-        // Проверяем платформы на модерации
-        if (response.socialMediaDrafts) {
-          for (const socialDraft of response.socialMediaDrafts) {
-            if (socialDraft.type.toLowerCase() === platform && socialDraft.statsFiles) {
-              const screenshots = socialDraft.statsFiles.map(file => ({
-                id: file.id,
-                influencer_id: profile.id,
-                platform: socialDraft.type.toLowerCase(),
-                file_name: file.name,
-                file_url: file.publicUrl,
-                file_size: file.size * 1024,
-                width: file.width,
-                height: file.height,
-                created_at: file.createdAt,
-                is_draft: false,
-              }));
-              
-              platformScreenshots.push(...screenshots);
-            }
-          }
-        }
-        
-        // Обновляем скриншоты для платформы только если они есть
-        if (platformScreenshots.length > 0) {
-          handleScreenshotsUpdate(platform, platformScreenshots);
-        }
-      });
-    } catch (error) {
-      // Ошибка загрузки скриншотов - не критично, продолжаем работу
-    }
-  }, [profile?.id, availablePlatforms, handleScreenshotsUpdate]);
-
-  // Загружаем скриншоты для всех платформ после загрузки профиля
-  useEffect(() => {
-    if (profile && availablePlatforms && Object.keys(availablePlatforms).length > 0) {
-      loadScreenshotsForAllPlatforms();
-    }
-  }, [profile, availablePlatforms, loadScreenshotsForAllPlatforms]);
-
-  // Use the fixed useScreenshotManager hook with platform support
   const {
     screenshots,
     uploading: uploadingScreenshot,
@@ -152,40 +62,14 @@ const ProfileEditor = () => {
     uploadScreenshot,
     uploadMultipleScreenshots,
     deleteScreenshot,
-  } = useScreenshotManager(
-    profile?.id,
-    activeTab === "settings"
-      ? "instagram"
-      : (activeTab as "instagram" | "tiktok" | "youtube" | "telegram"),
-    true, // isEditorPage = true для страницы редактирования
-    handleScreenshotsUpdate, // Callback для обновления availablePlatforms
-  );
+  } = useScreenshotManager(profile?.id, platform, true, handleScreenshotsUpdate);
 
-  // Handle screenshot upload with proper file validation and platform support
-  const handleScreenshotUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-
-      if (!files || !profile?.id || !user?.id) {
-        return;
-      }
-
-      try {
-        const fileArray = Array.from(files);
-
-        if (fileArray.length === 1) {
-          await uploadScreenshot(fileArray[0], user.id);
-        } else {
-          await uploadMultipleScreenshots(fileArray, user.id);
-        }
-      } catch (error) {
-        // Ошибка загрузки скриншотов
-      } finally {
-        event.target.value = "";
-      }
-    },
-    [profile?.id, user?.id, uploadScreenshot, uploadMultipleScreenshots],
-  );
+  const handleScreenshotUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files?.length || !profile?.id || !user?.id) return;
+    const files = Array.from(event.target.files);
+    await (files.length === 1 ? uploadScreenshot(files[0], user.id) : uploadMultipleScreenshots(files, user.id));
+    event.target.value = "";
+  };
 
   if (loading) {
     return <LoadingSpinner fullScreen text="Загрузка профиля..." />;
@@ -216,13 +100,10 @@ const ProfileEditor = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <ProfileHeader
         profile={profile}
         formData={formData}
-        onBack={() => {
-          navigate("/");
-        }}
+        onBack={() => navigate("/")}
         onFormDataChange={updateFormData}
         editingSection={editingSection}
         onEditingSectionChange={setEditingSection}
@@ -230,7 +111,6 @@ const ProfileEditor = () => {
         saving={saving}
       />
 
-      {/* Success/Error Messages */}
       {error && (
         <div className="container mx-auto px-4 pt-4">
           <Alert className="mb-4" variant="destructive">
@@ -240,11 +120,9 @@ const ProfileEditor = () => {
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Stats - 3 columns */}
-          <div className="lg:col-span-3">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
+          <div className="lg:col-span-3 space-y-6 sm:space-y-8">
             <PlatformProfileForm
               formData={formData}
               onFormDataChange={updateFormData}
@@ -263,14 +141,12 @@ const ProfileEditor = () => {
               screenshotError={screenshotError}
               onScreenshotUpload={handleScreenshotUpload}
               onDeleteScreenshot={deleteScreenshot}
-              bloggerId={profile?.id ? parseInt(profile.id, 10) : undefined}
-              isVerified={profile?.verificationStatus === "APPROVED"}
+              bloggerId={parseInt(profile.id, 10)}
+              isVerified={profile.verificationStatus === "APPROVED"}
             />
           </div>
 
-          {/* Sidebar - 1 column */}
-          <div className="space-y-6">
-            {/* Prices */}
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
             <PricingSection
               availablePlatforms={availablePlatforms}
               formData={formData}
@@ -298,11 +174,7 @@ const ProfileEditor = () => {
             />
 
             <VerificationNotice
-              profileStatus={
-                profile?.verificationStatus === "APPROVED"
-                  ? "verified"
-                  : "unverified"
-              }
+              profileStatus={profile.verificationStatus === "APPROVED" ? "verified" : "unverified"}
             />
           </div>
         </div>

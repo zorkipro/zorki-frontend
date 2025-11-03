@@ -1,27 +1,12 @@
-import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
-import { Card, CardContent } from '@/ui-kit';
-import { Button } from '@/ui-kit';
-import { Input } from '@/ui-kit';
-import { Label } from '@/ui-kit';
-import { Textarea } from '@/ui-kit';
-import { Badge } from '@/ui-kit';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui-kit';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/ui-kit';
-import { Edit, CheckCircle, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, Button, Input, Label, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Checkbox } from '@/ui-kit';
+import { Edit, CheckCircle } from 'lucide-react';
 import { EditData } from '@/types/profile';
 import { CategorySelector } from '@/components/profile/CategorySelector';
 import { RestrictedTopicsSelector } from '@/components/profile/RestrictedTopicsSelector';
-import { bloggerInfoReducer, createInitialState, stateToEditData } from './BloggerInfo.reducer';
 import { useTopics } from '@/hooks/useTopics';
+import { convertTopicIdsToNames, convertTopicNamesToIds } from '@/utils/topic-helpers';
 
-// Опции для правовой формы
 const legalFormOptions = [
   { value: 'ИП', label: 'ИП' },
   { value: 'профдоход', label: 'Профдоход' },
@@ -29,7 +14,6 @@ const legalFormOptions = [
   { value: 'ООО', label: 'ООО' },
 ];
 
-// Опции для пола
 const genderOptions = [
   { value: 'мужчина', label: 'Мужчина' },
   { value: 'женщина', label: 'Женщина' },
@@ -45,48 +29,101 @@ interface BloggerInfoProps {
   onSave: (data: Partial<EditData>) => void;
 }
 
-export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
-  ({ formData, editingSection, saving, onEditingChange, onSave }) => {
-    // Получаем темы и lookup таблицы
-    const { topicLookup, topicReverseLookup, loading: topicsLoading } = useTopics();
-    
-    // Используем useMemo для создания начального состояния только при изменении formData
-    const initialState = useMemo(() => {
-      return createInitialState(formData);
-    }, [formData]);
+interface FormState {
+  legalForm: string;
+  gender: string;
+  contactUrl: string;
+  categories: number[];
+  restrictedTopics: number[];
+  barterAvailable: boolean;
+  martRegistry: boolean;
+}
 
-    // Заменяем 7 useState на один useReducer
-    const [state, dispatch] = useReducer(bloggerInfoReducer, initialState);
+const parseTopicIds = (topics: (string | number)[] | undefined): number[] => {
+  return (topics || []).map(t => typeof t === 'string' ? parseInt(t, 10) : t);
+};
 
-    // Синхронизируем state с formData при изменении formData извне
-    useEffect(() => {
-      dispatch({ type: 'LOAD_FROM_FORM_DATA', payload: formData });
-    }, [formData]);
+export const BloggerInfo: React.FC<BloggerInfoProps> = ({ formData, editingSection, saving, onEditingChange, onSave }) => {
+  const { 
+    topicReverseLookup, 
+    loading: topicsLoading,
+    getCategoryIdByName,
+    getRestrictedTopicIdByName,
+    topicLookup,
+  } = useTopics();
+  
+  const [state, setState] = useState<FormState>(() => ({
+    legalForm: formData.work_format || "",
+    gender: formData.gender_type || "",
+    contactUrl: formData.contact_link || "",
+    categories: parseTopicIds(formData.topics),
+    restrictedTopics: parseTopicIds(formData.banned_topics),
+    barterAvailable: formData.barter_available ?? false,
+    martRegistry: formData.mart_registry ?? false,
+  }));
+
+  // Синхронизируем состояние с formData при открытии модального окна или изменении formData
+  useEffect(() => {
+    if (editingSection === 'blogger_info') {
+      setState({
+        legalForm: formData.work_format || "",
+        gender: formData.gender_type || "",
+        contactUrl: formData.contact_link || "",
+        categories: parseTopicIds(formData.topics),
+        restrictedTopics: parseTopicIds(formData.banned_topics),
+        barterAvailable: formData.barter_available ?? false,
+        martRegistry: formData.mart_registry ?? false,
+      });
+    }
+  }, [editingSection, formData.work_format, formData.gender_type, formData.contact_link, formData.topics, formData.banned_topics, formData.barter_available, formData.mart_registry]);
 
     const handleSave = useCallback(() => {
-      const editData = stateToEditData(state);
-      
-      // Передаем данные как есть - конвертация будет в mapLocalToApiUpdate
+      const editData: Partial<EditData> = {
+        work_format: state.legalForm || undefined,
+        gender_type: state.gender || undefined,
+        contact_link: state.contactUrl || undefined,
+        topics: state.categories,
+        banned_topics: state.restrictedTopics,
+        barter_available: state.barterAvailable,
+        mart_registry: state.martRegistry,
+      };
       onSave(editData);
       onEditingChange(null);
     }, [state, onSave, onEditingChange]);
 
     const handleCancel = useCallback(() => {
-      dispatch({ type: 'RESET_TO_INITIAL', payload: initialState });
+      setState({
+        legalForm: formData.work_format || "",
+        gender: formData.gender_type || "",
+        contactUrl: formData.contact_link || "",
+        categories: parseTopicIds(formData.topics),
+        restrictedTopics: parseTopicIds(formData.banned_topics),
+        barterAvailable: formData.barter_available ?? false,
+        martRegistry: formData.mart_registry ?? false,
+      });
       onEditingChange(null);
-    }, [initialState, onEditingChange]);
+    }, [
+      formData.work_format,
+      formData.gender_type,
+      formData.contact_link,
+      formData.topics,
+      formData.banned_topics,
+      formData.barter_available,
+      formData.mart_registry,
+      onEditingChange,
+    ]);
 
     return (
       <Card className="relative">
-        <CardContent className="p-4">
-          <div className="absolute top-2 right-2">
+        <CardContent className="p-4 sm:p-5">
+          <div className="absolute top-3 right-3">
             <Dialog
               open={editingSection === 'blogger_info'}
               onOpenChange={(open) => onEditingChange(open ? 'blogger_info' : null)}
             >
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -95,14 +132,11 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                   <DialogDescription>Обновите основную информацию о профиле</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6">
-                  {/* Правовая форма */}
                   <div>
                     <Label htmlFor="legal_form">Правовая форма</Label>
                     <Select
                       value={state.legalForm}
-                      onValueChange={(value: string) =>
-                        dispatch({ type: 'SET_LEGAL_FORM', payload: value })
-                      }
+                      onValueChange={(value) => setState(prev => ({ ...prev, legalForm: value }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите правовую форму" />
@@ -117,14 +151,11 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                     </Select>
                   </div>
 
-                  {/* Пол */}
                   <div>
                     <Label htmlFor="gender">Пол</Label>
                     <Select
                       value={state.gender}
-                      onValueChange={(value: string) =>
-                        dispatch({ type: 'SET_GENDER', payload: value })
-                      }
+                      onValueChange={(value) => setState(prev => ({ ...prev, gender: value }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите пол" />
@@ -139,43 +170,38 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                     </Select>
                   </div>
 
-                  {/* Контактная ссылка */}
                   <div>
                     <Label htmlFor="contact_url">Контакт для связи</Label>
                     <Input
                       id="contact_url"
                       value={state.contactUrl}
-                      onChange={(e) =>
-                        dispatch({ type: 'SET_CONTACT_URL', payload: e.target.value })
-                      }
+                      onChange={(e) => setState(prev => ({ ...prev, contactUrl: e.target.value }))}
                       placeholder="https://t.me/username или ссылка на WhatsApp"
                     />
                   </div>
 
-
-                  {/* Категории */}
                   <div>
-                    <Label>Категории</Label>
+                    <Label>Категории (максимум 3)</Label>
                     {topicsLoading ? (
                       <div className="flex items-center justify-center p-3 text-sm text-muted-foreground">
                         Загрузка тематик...
                       </div>
                     ) : (
                       <CategorySelector
-                        value={state.categories.map(topic => {
-                          // Конвертируем строковые ID в числовые для lookup
-                          const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
-                          const name = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
-                          return name || '';
-                        }).filter(Boolean) as string[]}
-                        onChange={(categories) =>
-                          dispatch({ type: 'SET_CATEGORIES', payload: categories })
-                        }
+                        maxItems={3}
+                        value={convertTopicIdsToNames(state.categories, topicReverseLookup)}
+                        onChange={(categoryNames) => {
+                          const categoryIds = convertTopicNamesToIds(
+                            categoryNames,
+                            getCategoryIdByName,
+                            topicLookup
+                          );
+                          setState(prev => ({ ...prev, categories: categoryIds }));
+                        }}
                       />
                     )}
                   </div>
 
-                  {/* Запрещенные темы */}
                   <div>
                     <Label>Запрещенные темы</Label>
                     {topicsLoading ? (
@@ -184,45 +210,44 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
                       </div>
                     ) : (
                       <RestrictedTopicsSelector
-                        value={state.restrictedTopics.map(topic => {
-                          // Конвертируем строковые ID в числовые для lookup
-                          const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
-                          const name = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
-                          return name || '';
-                        }).filter(Boolean) as string[]}
-                        onChange={(topics) =>
-                          dispatch({ type: 'SET_RESTRICTED_TOPICS', payload: topics })
-                        }
+                        value={convertTopicIdsToNames(state.restrictedTopics, topicReverseLookup)}
+                        onChange={(topicNames) => {
+                          const topicIds = convertTopicNamesToIds(
+                            topicNames,
+                            getRestrictedTopicIdByName,
+                            topicLookup
+                          );
+                          setState(prev => ({ ...prev, restrictedTopics: topicIds }));
+                        }}
                       />
                     )}
                   </div>
 
-                  {/* Дополнительные опции */}
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         id="barter_available"
                         checked={state.barterAvailable}
-                        onChange={(e) =>
-                          dispatch({ type: 'SET_BARTER_AVAILABLE', payload: e.target.checked })
+                        onCheckedChange={(checked) =>
+                          setState(prev => ({ ...prev, barterAvailable: !!checked }))
                         }
-                        className="rounded border-gray-300"
                       />
-                      <Label htmlFor="barter_available">Доступен бартер</Label>
+                      <Label htmlFor="barter_available" className="cursor-pointer">
+                        Доступен бартер
+                      </Label>
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         id="mart_registry"
                         checked={state.martRegistry}
-                        onChange={(e) =>
-                          dispatch({ type: 'SET_MART_REGISTRY', payload: e.target.checked })
+                        onCheckedChange={(checked) =>
+                          setState(prev => ({ ...prev, martRegistry: !!checked }))
                         }
-                        className="rounded border-gray-300"
                       />
-                      <Label htmlFor="mart_registry">В реестре МАРТ</Label>
+                      <Label htmlFor="mart_registry" className="cursor-pointer">
+                        В реестре МАРТ
+                      </Label>
                     </div>
                   </div>
 
@@ -239,18 +264,18 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
             </Dialog>
           </div>
 
-          <h3 className="font-semibold mb-4">Информация о блогере</h3>
-          <div className="space-y-4">
-            <div>
-              <span className="text-sm text-muted-foreground">Правовая форма:</span>
-              <Badge variant="secondary" className="ml-2">
+          <h3 className="font-semibold mb-4 sm:mb-5 text-sm sm:text-base">Информация о блогере</h3>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs sm:text-sm text-muted-foreground">Правовая форма:</span>
+              <Badge variant="secondary" className="text-xs">
                 {formData.work_format || 'Не указано'}
               </Badge>
             </div>
 
-            <div>
-              <span className="text-sm text-muted-foreground">Пол:</span>
-              <Badge variant="secondary" className="ml-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs sm:text-sm text-muted-foreground">Пол:</span>
+              <Badge variant="secondary" className="text-xs">
                 {formData.gender_type 
                   ? formData.gender_type.charAt(0).toUpperCase() + formData.gender_type.slice(1)
                   : 'Не указано'}
@@ -271,41 +296,28 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
               </div>
             )}
 
-            {formData.topics && formData.topics.length > 0 && (
+            {formData.topics?.length > 0 && (
               <div>
                 <span className="text-sm text-muted-foreground">Категории:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {formData.topics.map((topic) => {
-                    // Конвертируем строковые ID в числовые для lookup
-                    const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
-                    const topicName = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
-                    
-                    return topicName ? (
-                      <Badge key={topic} variant="outline" className="text-xs">
-                        {topicName}
-                      </Badge>
-                    ) : null;
-                  })}
+                  {convertTopicIdsToNames(formData.topics, topicReverseLookup).map((topicName, index) => (
+                    <Badge key={formData.topics[index]} variant="outline" className="text-xs">
+                      {topicName}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
 
-            {formData.banned_topics && formData.banned_topics.length > 0 && (
+            {formData.banned_topics?.length > 0 && (
               <div>
                 <span className="text-sm text-muted-foreground">Запрещенные темы:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {formData.banned_topics.map((topic) => {
-                    // Конвертируем строковые ID в числовые для lookup
-                    const numericId = typeof topic === 'string' ? parseInt(topic, 10) : topic;
-                    const topicName = typeof numericId === 'number' ? topicReverseLookup[numericId] : topic;
-                    
-                    return topicName ? (
+                  {formData.banned_topics.map((topic, index) => {
+                    const topicName = convertTopicIdsToNames([topic], topicReverseLookup)[0] || `Тема ${topic}`;
+                    return (
                       <Badge key={topic} variant="destructive" className="text-xs">
                         {topicName}
-                      </Badge>
-                    ) : (
-                      <Badge key={topic} variant="destructive" className="text-xs">
-                        Тема {topic}
                       </Badge>
                     );
                   })}
@@ -331,7 +343,4 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = React.memo(
         </CardContent>
       </Card>
     );
-  }
-);
-
-BloggerInfo.displayName = 'BloggerInfo';
+};

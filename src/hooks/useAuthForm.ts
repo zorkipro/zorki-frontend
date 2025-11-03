@@ -1,8 +1,7 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { REDIRECT_URL } from "@/config/constants";
-import { useErrorHandler } from "@/utils/errorHandler";
 
 interface UseAuthFormProps {
   mode: "login" | "register";
@@ -11,15 +10,6 @@ interface UseAuthFormProps {
 
 export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
   const navigate = useNavigate();
-  
-  // Мемоизируем опции для useErrorHandler
-  const errorHandlerOptions = useMemo(() => ({
-    navigate,
-    showNotifications: true,
-  }), [navigate]);
-  
-  const { handleError } = useErrorHandler(errorHandlerOptions);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,77 +19,39 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
       setError("");
 
       try {
-        if (mode === "login") {
-          const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (error) {
-            setError(error.message);
-          } else {
-            onSuccess?.();
-            // Редирект теперь происходит в SessionContext при событии SIGNED_IN
-            // Не нужно делать редирект здесь
-          }
+        const authFn = mode === "login" 
+          ? () => supabase.auth.signInWithPassword({ email, password })
+          : () => supabase.auth.signUp({ email, password, options: { emailRedirectTo: REDIRECT_URL } });
+        
+        const { error } = await authFn();
+        
+        if (error) {
+          setError(error.message);
+        } else if (mode === "login") {
+          onSuccess?.();
         } else {
-          const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: REDIRECT_URL,
-            },
-          });
-
-          if (error) {
-            setError(error.message);
-          } else {
-            navigate("/email-confirmation");
-          }
+          navigate("/email-confirmation");
         }
-      } catch (err) {
-        const processedError = handleError(err, {
-          showNotification: false,
-          logError: true,
-        });
-        setError(processedError.message);
       } finally {
         setLoading(false);
       }
     },
-    [mode, navigate, handleError, onSuccess],
+    [mode, navigate, onSuccess],
   );
 
   const handleGoogleAuth = useCallback(async () => {
     setLoading(true);
     setError("");
-
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: {
-          redirectTo: REDIRECT_URL,
-        },
+        options: { redirectTo: REDIRECT_URL },
       });
-
-      if (error) {
-        setError(error.message);
-      }
-    } catch (err) {
-      const processedError = handleError(err, {
-        showNotification: false,
-        logError: true,
-      });
-      setError(processedError.message);
+      if (error) setError(error.message);
     } finally {
       setLoading(false);
     }
-  }, [handleError]);
+  }, []);
 
-  return {
-    loading,
-    error,
-    handleSubmit,
-    handleGoogleAuth,
-  };
+  return { loading, error, handleSubmit, handleGoogleAuth };
 };

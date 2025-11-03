@@ -4,20 +4,13 @@ import { safeParseInt } from '@/utils/formatters';
 import { normalizeUsername } from '@/utils/username';
 import type { TopicsOutputDto } from '@/api/types';
 
-// Константы для API
-const API_CONSTANTS = {
-  DEFAULT_PAGE_SIZE: 50,
-  MAX_PAGE_SIZE: 100,
-  DEFAULT_SOCIAL_TYPE: 'INSTAGRAM',
-} as const;
+const DEFAULT_PAGE_SIZE = 50;
+const DEFAULT_SOCIAL_TYPE = 'INSTAGRAM';
 
-/**
- * Строит параметры для API запроса на основе фильтров
- */
 export function buildApiParams(
   filters: FilterState,
   page: number,
-  size: number = API_CONSTANTS.DEFAULT_PAGE_SIZE,
+  size: number = DEFAULT_PAGE_SIZE,
   topicsData?: {
     categories: TopicsOutputDto[];
     restrictedTopics: TopicsOutputDto[];
@@ -26,68 +19,32 @@ export function buildApiParams(
   const apiParams: Record<string, unknown> = {
     page,
     size,
-    socialType: API_CONSTANTS.DEFAULT_SOCIAL_TYPE, // Обязательный параметр
+    socialType: DEFAULT_SOCIAL_TYPE,
   };
 
-  if (filters.gender && filters.gender !== 'all') {
+  if (filters.gender && filters.gender !== 'all' && GENDER_REVERSE[filters.gender]) {
     apiParams.gender = GENDER_REVERSE[filters.gender];
   }
 
-  if (filters.followersMin) {
-    apiParams.subCountFrom = safeParseInt(filters.followersMin);
-  }
+  if (filters.followersMin) apiParams.subCountFrom = safeParseInt(filters.followersMin);
+  if (filters.followersMax) apiParams.subCountTo = safeParseInt(filters.followersMax);
+  if (filters.postPriceMin) apiParams.postPriceFrom = safeParseInt(filters.postPriceMin);
+  if (filters.postPriceMax) apiParams.postPriceTo = safeParseInt(filters.postPriceMax);
+  if (filters.storyPriceMin) apiParams.storyPriceFrom = safeParseInt(filters.storyPriceMin);
+  if (filters.storyPriceMax) apiParams.storyPriceTo = safeParseInt(filters.storyPriceMax);
 
-  if (filters.followersMax) {
-    apiParams.subCountTo = safeParseInt(filters.followersMax);
-  }
+  if (filters.allowsBarter) apiParams.isBarterAvailable = true;
+  if (filters.inMartRegistry) apiParams.isMartRegistry = true;
+  if (filters.search?.trim()) apiParams.username = normalizeUsername(filters.search);
 
-  if (filters.postPriceMin) {
-    apiParams.postPriceFrom = safeParseInt(filters.postPriceMin);
-  }
-
-  if (filters.postPriceMax) {
-    apiParams.postPriceTo = safeParseInt(filters.postPriceMax);
-  }
-
-  if (filters.storyPriceMin) {
-    apiParams.storyPriceFrom = safeParseInt(filters.storyPriceMin);
-  }
-
-  if (filters.storyPriceMax) {
-    apiParams.storyPriceTo = safeParseInt(filters.storyPriceMax);
-  }
-
-  if (filters.allowsBarter) {
-    apiParams.isBarterAvailable = true;
-  }
-
-  if (filters.inMartRegistry) {
-    apiParams.isMartRegistry = true;
-  }
-
-  // Добавляем поиск по username (поддерживается API)
-  if (filters.search && filters.search.trim()) {
-    // Нормализуем username - убираем @ если есть
-    apiParams.username = normalizeUsername(filters.search);
-  }
-
-  // Добавляем фильтрацию по тематикам
-  if (filters.category && filters.category !== 'all' && topicsData) {
-    const categoryId = topicsData.categories.find(
-      (cat) => cat.name === filters.category
-    )?.id;
-    if (categoryId) {
-      apiParams.topics = [categoryId];
+  if (topicsData) {
+    if (filters.category && filters.category !== 'all') {
+      const categoryId = topicsData.categories.find((cat) => cat.name === filters.category)?.id;
+      if (categoryId) apiParams.topics = [categoryId];
     }
-  }
-
-  // Добавляем фильтрацию по запрещенным тематикам
-  if (filters.restrictedTopics && filters.restrictedTopics !== 'all' && topicsData) {
-    const restrictedTopicId = topicsData.restrictedTopics.find(
-      (topic) => topic.name === filters.restrictedTopics
-    )?.id;
-    if (restrictedTopicId) {
-      apiParams.restrictedTopics = [restrictedTopicId];
+    if (filters.restrictedTopics && filters.restrictedTopics !== 'all') {
+      const restrictedTopicId = topicsData.restrictedTopics.find((topic) => topic.name === filters.restrictedTopics)?.id;
+      if (restrictedTopicId) apiParams.restrictedTopics = [restrictedTopicId];
     }
   }
 

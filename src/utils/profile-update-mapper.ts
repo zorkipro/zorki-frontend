@@ -68,30 +68,3 @@ export function hasProfileChanges(
 
   return false;
 }
-
-/**
- * Логирует изменения профиля для отладки
- * @param changes - изменения профиля
- * @param component - название компонента
- */
-export function logProfileChanges(
-  changes: Partial<EditData>,
-  component: string,
-): void {
-  const changedFields = Object.keys(changes).filter(
-    (key) => changes[key as keyof EditData] !== undefined,
-  );
-
-  if (changedFields.length > 0) {
-    console.log(`🔄 ${component}: Profile changes detected`, {
-      changedFields,
-      changes: changedFields.reduce(
-        (acc, key) => {
-          acc[key] = changes[key as keyof EditData];
-          return acc;
-        },
-        {} as Record<string, any>,
-      ),
-    });
-  }
-}

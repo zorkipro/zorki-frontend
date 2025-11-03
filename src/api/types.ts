@@ -240,6 +240,7 @@ export interface PublicGetBloggerByIdProfileDraftOutputDto {
   lastName: string | null;
   description: string | null; // НОВОЕ ПОЛЕ
   contactLink: string | null;
+  cooperation: string | null; // Условия сотрудничества
   workFormat: ApiWorkFormat | null;
   genderType: ApiGender | null;
   isMartRegistry: boolean | null;
@@ -273,6 +274,7 @@ export interface PublicGetBloggerByIdOutputDto {
   lastName: string | null;
   description: string | null; // НОВОЕ ПОЛЕ
   contactLink: string | null;
+  cooperation: string | null; // Условия сотрудничества
   genderType: ApiGender | null;
   workFormat: ApiWorkFormat | null;
   verificationStatus: ApiVerificationStatus | null;
@@ -296,6 +298,7 @@ export interface BloggerUpdateProfileInputDto {
   name?: string; // 1-30 chars
   lastName?: string; // 1-30 chars
   description?: string; // 1-500 символов, опционально
+  cooperation?: string; // 1-1000 символов, опционально
   contactLink?: string; // URI
   workFormat?: ApiWorkFormat;
   genderType?: ApiGender;
@@ -441,6 +444,7 @@ export interface AdminGetBloggerOutputDto {
   userId: string | null;
   status: ApiVerificationStatus; // NEW, APPROVED, REJECTED, MODERATION
   isHidden: boolean; // НОВОЕ ПОЛЕ для видимости
+  genderType: ApiGender | null; // Пол блогера (приходит с бэкенда)
   social: AdminGetBloggerSocialOutputDto[];
   createdAt: string; // ISO string
   updatedAt: string | null; // ISO string
@@ -853,11 +857,13 @@ export interface TgClientConfirmOutputDto {
   isVerify: boolean;
 }
 
-// Telegram Session (для будущего API - пока не реализован)
+// Telegram Session (из swagger)
 export interface TgClientSessionsOutputDto {
   id: number;
   phone: string;
   isAuthorized: boolean;
+  requests: number; // количество запросов
+  lastReset: string; // ISO date string - дата последнего сброса
   createdAt: string; // ISO date string
 }
 
@@ -886,4 +892,19 @@ export interface IgSessionsResponse {
   page: number;
   size: number;
   items: IgClientSessionsOutputDto[];
+}
+
+// ====== YOUTUBE CLIENT TYPES ======
+
+export interface YtClientSessionOutputDto {
+  id: number;
+  name: string | null;
+  lastReset: string; // ISO date string
+  quota: number;
+  createdAt: string; // ISO date string
+}
+
+export interface YtClientAddInputDto {
+  token: string; // 35-40 chars, pattern: ^AIza[0-9A-Za-z_\\-]{30,35}$
+  name: string; // 2-40 chars
 }

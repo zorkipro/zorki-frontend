@@ -13,60 +13,22 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Вычисляем один раз
   const isAdminRoute = location.pathname.startsWith("/admin");
-  const isAdminAuthPage =
-    location.pathname === "/admin/login" || location.pathname === "/admin/2fa";
+  const isAdminAuthPage = location.pathname === "/admin/login" || location.pathname === "/admin/2fa";
 
   useEffect(() => {
-    if (isAdminRoute) {
-      // Для админки используем AdminAuthContext
-      if (!adminLoading && !adminInfo && !isAdminAuthPage) {
-        navigate("/admin/login");
-      }
-      return;
-    }
-
-    // Для обычных защищенных маршрутов используем проверку Supabase
-    // УПРОЩЕНО: Проверяем только наличие Supabase пользователя
-    if (!loading && !user) {
+    if (isAdminRoute && !adminLoading && !adminInfo && !isAdminAuthPage) {
+      navigate("/admin/login");
+    } else if (!isAdminRoute && !loading && !user) {
       navigate("/login");
     }
-  }, [
-    user,
-    loading,
-    adminInfo,
-    adminLoading,
-    navigate,
-    location,
-    isAdminRoute,
-    isAdminAuthPage,
-  ]);
+  }, [user, loading, adminInfo, adminLoading, navigate, location.pathname, isAdminRoute, isAdminAuthPage]);
 
   if (isAdminRoute) {
-    // Для админки используем AdminAuthContext
-    if (isAdminAuthPage) {
-      // Страницы логина и 2FA админки доступны всем
-      return <>{children}</>;
-    }
-
-    // Для других страниц админки проверяем авторизацию через контекст
-    if (adminLoading) {
-      return null; // Не показываем лоадер - AuthRedirectHandler покажет его
-    }
-
-    if (!adminInfo) {
-      return null;
-    }
+    if (isAdminAuthPage) return <>{children}</>;
+    if (adminLoading || !adminInfo) return null;
   } else {
-    // Для обычных маршрутов проверяем пользователя Supabase
-    if (loading) {
-      return null; // Не показываем лоадер - AuthRedirectHandler покажет его
-    }
-
-    if (!user) {
-      return null;
-    }
+    if (loading || !user) return null;
   }
 
   return <>{children}</>;

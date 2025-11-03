@@ -18,7 +18,7 @@ import {
 import { SafeAvatar } from "@/components/ui/SafeAvatar";
 import { truncateName } from "@/utils/formatters";
 import { formatLargeNumber } from "@/api/types";
-import type { AdminBloggerWithGender } from "@/api/types";
+import type { AdminGetBloggerOutputDto } from "@/api/types";
 import { logger } from "@/utils/logger";
 import { prepareBloggerData } from "@/utils/admin/blogger";
 import { adminUpdateBlogger } from "@/api/endpoints/admin";
@@ -27,7 +27,7 @@ import { GENDER_MAP, ApiGender } from "@/api/types";
 import { Loader2 } from "lucide-react";
 
 interface GenderSelectionTableProps {
-  bloggers: AdminBloggerWithGender[];
+  bloggers: AdminGetBloggerOutputDto[];
   onGenderUpdated?: () => void;
   onBloggerGenderUpdated?: (bloggerId: number, genderType: ApiGender) => void;
   loading?: boolean;
@@ -50,11 +50,6 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
   const { toast } = useToast();
   const [updatingBloggerId, setUpdatingBloggerId] = useState<number | null>(null);
 
-  // Фильтруем блогеров без пола или с неопределенным полом
-  const bloggersWithoutGender = bloggers.filter(
-    (blogger) => !blogger.genderType || blogger.genderType === null
-  );
-
   // Функция для обновления пола блогера
   const handleGenderUpdate = async (
     bloggerId: number,
@@ -65,8 +60,6 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
       
       await adminUpdateBlogger(bloggerId, {
         genderType,
-        topics: [], // Обязательные поля
-        restrictedTopics: [], // Обязательные поля
       });
 
       toast({
@@ -94,8 +87,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
     }
   };
 
-  // Если все блогеры имеют пол, показываем сообщение
-  if (bloggersWithoutGender.length === 0) {
+  if (bloggers.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -121,7 +113,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
             <CardTitle>Выбор пола блогеров</CardTitle>
             <CardDescription>
               Быстрый выбор пола для блогеров без указанного пола. 
-              Показано: {bloggersWithoutGender.length} из {totalCount} блогеров
+              Показано: {bloggers.length} из {totalCount} блогеров
             </CardDescription>
           </div>
           {onClearCache && (
@@ -154,7 +146,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bloggersWithoutGender.map((blogger) => {
+                  {bloggers.map((blogger) => {
                     const { mainSocial, displayName, username, subscribers } =
                       prepareBloggerData(blogger);
 
@@ -220,7 +212,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
 
             {/* Mobile Cards */}
             <div className="md:hidden">
-              {bloggersWithoutGender.map((blogger) => {
+              {bloggers.map((blogger) => {
                 const { mainSocial, displayName, username, subscribers } =
                   prepareBloggerData(blogger);
 

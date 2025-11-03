@@ -72,6 +72,7 @@ export function extractProfileDraft(
   return {
     full_name: profileDraft.name || undefined,
     contact_link: profileDraft.contactLink || undefined,
+    cooperation_conditions: profileDraft.cooperation || undefined,
     work_format: mapWorkFormatFromApi(profileDraft.workFormat),
     gender_type: mapGenderTypeFromApi(profileDraft.genderType),
     barter_available: profileDraft.isBarterAvailable ?? undefined,

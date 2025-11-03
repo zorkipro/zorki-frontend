@@ -1,5 +1,4 @@
-import { memo, useCallback, useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,9 +10,8 @@ import {
 import { Button } from "@/ui-kit";
 import { SafeAvatar } from "@/components/ui/SafeAvatar";
 import { useToast } from "@/hooks/use-toast";
-import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { formatSubscribers } from "@/utils/formatters";
-import { logger } from "@/utils/logger";
+import { formatNumber } from "@/utils/formatters";
 import { APIError } from "@/api/client";
 
 interface LinkRequest {
@@ -54,9 +52,6 @@ interface AdminLinkRequestsTableProps {
   onReject?: (requestId: number) => Promise<void>;
 }
 
-import { formatNumber } from "@/utils/formatters";
-
-// Компонент кнопки с удержанием
 interface HoldButtonProps {
   children: React.ReactNode;
   onAction: () => void;
@@ -64,7 +59,7 @@ interface HoldButtonProps {
   variant?: "default" | "destructive";
   className?: string;
   size?: "sm" | "default" | "lg";
-  holdDuration?: number; // в миллисекундах
+  holdDuration?: number;
 }
 
 const HoldButton: React.FC<HoldButtonProps> = ({
@@ -76,59 +71,40 @@ const HoldButton: React.FC<HoldButtonProps> = ({
   size = "sm",
   holdDuration = 1000,
 }) => {
-  const [isHolding, setIsHolding] = useState(false);
   const [progress, setProgress] = useState(0);
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
 
-  const updateProgress = useCallback(() => {
-    if (startTimeRef.current) {
-      const elapsed = Date.now() - startTimeRef.current;
-      const progressPercent = Math.min((elapsed / holdDuration) * 100, 100);
-      setProgress(progressPercent);
-
-      // Отладочная информация
-      if (elapsed % 500 < 16) {
-        // Логируем каждые ~500мс
-      }
-
-      if (elapsed >= holdDuration) {
-        onAction();
-        stopHold();
-      } else {
-        animationRef.current = requestAnimationFrame(updateProgress);
-      }
-    }
-  }, [holdDuration, onAction]);
-
-  const startHold = useCallback(() => {
-    if (disabled || isHolding) return;
-
-    setIsHolding(true);
-    setProgress(0);
-    startTimeRef.current = Date.now();
-
-    animationRef.current = requestAnimationFrame(updateProgress);
-  }, [disabled, isHolding, updateProgress, holdDuration]);
-
-  const stopHold = useCallback(() => {
-    setIsHolding(false);
+  const stopHold = () => {
     setProgress(0);
     startTimeRef.current = null;
-
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
+  const updateProgress = () => {
+    if (!startTimeRef.current) return;
+    const elapsed = Date.now() - startTimeRef.current;
+    const progressPercent = Math.min((elapsed / holdDuration) * 100, 100);
+    setProgress(progressPercent);
+
+    if (elapsed >= holdDuration) {
+      onAction();
+      stopHold();
+    } else {
+      animationRef.current = requestAnimationFrame(updateProgress);
+    }
+  };
+
+  const startHold = () => {
+    if (disabled) return;
+    startTimeRef.current = Date.now();
+    animationRef.current = requestAnimationFrame(updateProgress);
+  };
+
+  useEffect(() => () => animationRef.current && cancelAnimationFrame(animationRef.current), []);
 
   return (
     <Button
@@ -143,28 +119,11 @@ const HoldButton: React.FC<HoldButtonProps> = ({
       onTouchEnd={stopHold}
     >
       <div className="relative z-10">{children}</div>
-      {isHolding && (
-        <div
-          className="absolute inset-0 bg-white/20 transition-all duration-75 ease-out"
-          style={{
-            width: `${progress}%`,
-            transition: "width 0ms linear",
-          }}
-        />
+      {progress > 0 && (
+        <div className="absolute inset-0 bg-white/20" style={{ width: `${progress}%`, transition: "width 0ms linear" }} />
       )}
     </Button>
   );
-};
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 const AdminLinkRequestsTableComponent = ({
@@ -174,112 +133,84 @@ const AdminLinkRequestsTableComponent = ({
   onApprove,
   onReject,
 }: AdminLinkRequestsTableProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const { adminSignOut } = useAdminAuth();
 
-  const handleApprove = useCallback(
-    async (requestId: number, bloggerName: string) => {
-      if (!onApprove) {
-        logger.error("onApprove function is not provided", undefined, {
-          component: "AdminLinkRequestsTable",
-          requestId: requestId.toString(),
-        });
-        return;
-      }
+  const handleRequest = async (requestId: number, bloggerName: string, action: "approve" | "reject") => {
+    const handler = action === "approve" ? onApprove : onReject;
+    if (!handler) return;
 
-      try {
-        await onApprove(requestId);
-        toast({
-          title: "Запрос одобрен",
-          description: `Блогер ${bloggerName} успешно верифицирован`,
-          variant: "default",
-        });
-      } catch (error) {
-        logger.error("Ошибка при одобрении запроса", error, {
-          component: "AdminLinkRequestsTable",
-          requestId: requestId.toString(),
-        });
+    try {
+      await handler(requestId);
+      toast({
+        title: action === "approve" ? "Запрос одобрен" : "Запрос отклонён",
+        description: action === "approve" ? `Блогер ${bloggerName} успешно верифицирован` : `Запрос от блогера ${bloggerName} отклонён`,
+      });
+    } catch (error) {
+      const isAuthError = error instanceof APIError && error.isAuthError();
+      toast({
+        title: isAuthError ? "Ошибка авторизации" : `Ошибка при ${action === "approve" ? "одобрении" : "отклонении"} запроса`,
+        description: isAuthError ? "Сессия истекла. Необходимо войти в админку заново." : (error instanceof Error ? error.message : "Произошла неизвестная ошибка"),
+        variant: "destructive",
+      });
+    }
+  };
 
-        // Проверяем, является ли это ошибкой авторизации
-        if (error instanceof APIError && error.isAuthError()) {
-          toast({
-            title: "❌ Ошибка авторизации",
-            description: "Сессия истекла. Необходимо войти в админку заново.",
-            variant: "destructive",
-          });
-          // Не вызываем adminSignOut() автоматически, пусть пользователь сам решит
-          return;
-        }
+  const renderRequest = (request: LinkRequest, index: number, isMobile: boolean = false) => {
+    const name = [request.name, request.lastName].filter(Boolean).join(" ");
+    const subscribers = request.social_accounts?.[0]?.subscribers
+      ? formatSubscribers(request.social_accounts[0].subscribers)
+      : formatNumber(request.followers);
 
-        // Для других ошибок показываем общее сообщение
-        toast({
-          title: "❌ Ошибка при одобрении запроса",
-          description:
-            error instanceof APIError
-              ? error.message
-              : error instanceof Error
-                ? error.message
-                : "Произошла неизвестная ошибка",
-          variant: "destructive",
-        });
-      }
-    },
-    [onApprove, toast, adminSignOut],
-  );
+    if (isMobile) {
+      return (
+        <div key={request.id} className="bg-card rounded-lg border p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-start space-x-3 mb-3">
+            <SafeAvatar
+              src={request.social_accounts?.[0]?.avatarUrl || null}
+              alt={`Аватар ${request.name}`}
+              className="w-12 h-12 flex-shrink-0 aspect-square"
+              username={request.username}
+              gender="MALE"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-foreground">{name}</div>
+              <div className="text-sm text-muted-foreground">@{request.username}</div>
+              {request.user_email && <div className="text-xs text-muted-foreground">{request.user_email}</div>}
+            </div>
+          </div>
+          <div className="space-y-3 text-xs mb-4">
+            <div className="space-y-1">
+              <div className="text-muted-foreground">Подписчиков</div>
+              <div className="font-medium text-sm">{subscribers}</div>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <HoldButton
+              size="sm"
+              variant="default"
+              onAction={() => handleRequest(request.request_id, request.name, "approve")}
+              disabled={isProcessing}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              holdDuration={1000}
+            >
+              ✓ Одобрить
+            </HoldButton>
+            <HoldButton
+              size="sm"
+              variant="destructive"
+              onAction={() => handleRequest(request.request_id, request.name, "reject")}
+              disabled={isProcessing}
+              className="flex-1"
+              holdDuration={1000}
+            >
+              ✗ Отклонить
+            </HoldButton>
+          </div>
+        </div>
+      );
+    }
 
-  const handleReject = useCallback(
-    async (requestId: number, bloggerName: string) => {
-      if (!onReject) {
-        logger.error("onReject function is not provided", undefined, {
-          component: "AdminLinkRequestsTable",
-          requestId: requestId.toString(),
-        });
-        return;
-      }
-
-      try {
-        await onReject(requestId);
-        toast({
-          title: "Запрос отклонён",
-          description: `Запрос от блогера ${bloggerName} отклонён`,
-          variant: "default",
-        });
-      } catch (error) {
-        logger.error("Ошибка при отклонении запроса", error, {
-          component: "AdminLinkRequestsTable",
-          requestId: requestId.toString(),
-        });
-
-        // Проверяем, является ли это ошибкой авторизации
-        if (error instanceof APIError && error.isAuthError()) {
-          toast({
-            title: "❌ Ошибка авторизации",
-            description: "Сессия истекла. Необходимо войти в админку заново.",
-            variant: "destructive",
-          });
-          // Не вызываем adminSignOut() автоматически, пусть пользователь сам решит
-          return;
-        }
-
-        // Для других ошибок показываем общее сообщение
-        toast({
-          title: "❌ Ошибка при отклонении запроса",
-          description:
-            error instanceof APIError
-              ? error.message
-              : error instanceof Error
-                ? error.message
-                : "Произошла неизвестная ошибка",
-          variant: "destructive",
-        });
-      }
-    },
-    [onReject, toast, adminSignOut],
-  );
-
-  const renderDesktopRow = useCallback(
-    (request: LinkRequest, index: number) => (
+    return (
       <TableRow key={request.id}>
         <TableCell className="text-center font-medium">{index + 1}</TableCell>
         <TableCell>
@@ -292,26 +223,14 @@ const AdminLinkRequestsTableComponent = ({
               gender="MALE"
             />
             <div>
-              <div className="font-medium text-foreground">
-                {[request.name, request.lastName].filter(Boolean).join(" ")}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                @{request.username}
-              </div>
-              {request.user_email && (
-                <div className="text-xs text-muted-foreground">
-                  {request.user_email}
-                </div>
-              )}
+              <div className="font-medium text-foreground">{name}</div>
+              <div className="text-sm text-muted-foreground">@{request.username}</div>
+              {request.user_email && <div className="text-xs text-muted-foreground">{request.user_email}</div>}
             </div>
           </div>
         </TableCell>
         <TableCell className="text-center">
-          <div className="font-medium">
-            {request.social_accounts?.[0]?.subscribers
-              ? formatSubscribers(request.social_accounts[0].subscribers)
-              : formatNumber(request.followers)}
-          </div>
+          <div className="font-medium">{subscribers}</div>
           <div className="text-xs text-muted-foreground">подписчиков</div>
         </TableCell>
         <TableCell className="text-center">
@@ -319,7 +238,7 @@ const AdminLinkRequestsTableComponent = ({
             <HoldButton
               size="sm"
               variant="default"
-              onAction={() => handleApprove(request.request_id, request.name)}
+              onAction={() => handleRequest(request.request_id, request.name, "approve")}
               disabled={isProcessing}
               className="bg-green-600 hover:bg-green-700 text-white"
               holdDuration={1000}
@@ -329,7 +248,7 @@ const AdminLinkRequestsTableComponent = ({
             <HoldButton
               size="sm"
               variant="destructive"
-              onAction={() => handleReject(request.request_id, request.name)}
+              onAction={() => handleRequest(request.request_id, request.name, "reject")}
               disabled={isProcessing}
               holdDuration={1000}
             >
@@ -338,96 +257,20 @@ const AdminLinkRequestsTableComponent = ({
           </div>
         </TableCell>
       </TableRow>
-    ),
-    [handleApprove, handleReject, isProcessing],
-  );
+    );
+  };
 
-  const renderMobileCard = useCallback(
-    (request: LinkRequest, index: number) => (
-      <div
-        key={request.id}
-        className="bg-card rounded-lg border p-4 hover:shadow-md transition-all duration-200"
-      >
-        <div className="flex items-start space-x-3 mb-3">
-          <SafeAvatar
-            src={request.social_accounts?.[0]?.avatarUrl || null}
-            alt={`Аватар ${request.name}`}
-            className="w-12 h-12 flex-shrink-0 aspect-square"
-            username={request.username}
-            gender="MALE"
-          />
-          <div className="flex-1 min-w-0">
-            <div className="font-medium text-foreground">
-              {[request.name, request.lastName].filter(Boolean).join(" ")}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              @{request.username}
-            </div>
-            {request.user_email && (
-              <div className="text-xs text-muted-foreground">
-                {request.user_email}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-3 text-xs mb-4">
-          <div className="space-y-1">
-            <div className="text-muted-foreground">Подписчиков</div>
-            <div className="font-medium text-sm">
-              {request.social_accounts?.[0]?.subscribers
-                ? formatSubscribers(request.social_accounts[0].subscribers)
-                : formatNumber(request.followers)}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex space-x-2">
-          <HoldButton
-            size="sm"
-            variant="default"
-            onAction={() => handleApprove(request.request_id, request.name)}
-            disabled={isProcessing}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-            holdDuration={1000}
-          >
-            ✓ Одобрить
-          </HoldButton>
-          <HoldButton
-            size="sm"
-            variant="destructive"
-            onAction={() => handleReject(request.request_id, request.name)}
-            disabled={isProcessing}
-            className="flex-1"
-            holdDuration={1000}
-          >
-            ✗ Отклонить
-          </HoldButton>
-        </div>
-      </div>
-    ),
-    [handleApprove, handleReject, isProcessing],
-  );
 
   return (
     <>
-      {/* Desktop Table */}
-      <div
-        className="hidden md:block border rounded-lg"
-        role="region"
-        aria-label="Таблица запросов"
-      >
+      <div className="hidden md:block border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-16 text-center">№</TableHead>
               <TableHead className="min-w-[250px]">Блогер</TableHead>
-              <TableHead className="text-center min-w-[120px]">
-                Подписчиков
-              </TableHead>
-              <TableHead className="text-center min-w-[200px]">
-                Действия
-              </TableHead>
+              <TableHead className="text-center min-w-[120px]">Подписчиков</TableHead>
+              <TableHead className="text-center min-w-[200px]">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -436,45 +279,32 @@ const AdminLinkRequestsTableComponent = ({
                 <TableCell colSpan={4} className="text-center py-8">
                   <div className="flex items-center justify-center space-x-2">
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-muted-foreground">
-                      Загрузка запросов...
-                    </span>
+                    <span className="text-muted-foreground">Загрузка запросов...</span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : requests.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">
-                  <div className="text-muted-foreground">
-                    Запросы на связывание не найдены
-                  </div>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  Запросы на связывание не найдены
                 </TableCell>
               </TableRow>
             ) : (
-              requests.map((request, index) => renderDesktopRow(request, index))
+              requests.map((request, index) => renderRequest(request, index, false))
             )}
           </TableBody>
         </Table>
-
-        {/* Info */}
         <div className="text-center text-sm text-muted-foreground mt-2 p-2">
           Показано {requests.length} запросов на связывание
         </div>
       </div>
 
-      {/* Mobile Cards */}
-      <div
-        className="md:hidden space-y-4"
-        role="region"
-        aria-label="Карточки запросов на связывание"
-      >
+      <div className="md:hidden space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-muted-foreground">
-                Загрузка запросов...
-              </span>
+              <span className="text-muted-foreground">Загрузка запросов...</span>
             </div>
           </div>
         ) : requests.length === 0 ? (
@@ -482,11 +312,11 @@ const AdminLinkRequestsTableComponent = ({
             Запросы на связывание не найдены
           </div>
         ) : (
-          requests.map((request, index) => renderMobileCard(request, index))
+          requests.map((request, index) => renderRequest(request, index, true))
         )}
       </div>
     </>
   );
 };
 
-export const AdminLinkRequestsTable = memo(AdminLinkRequestsTableComponent);
+export const AdminLinkRequestsTable = AdminLinkRequestsTableComponent;

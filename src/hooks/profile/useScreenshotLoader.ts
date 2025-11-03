@@ -104,7 +104,7 @@ export const useScreenshotLoader = (
     if (profileId) {
       fetchScreenshots();
     }
-  }, [profileId, platform, fetchScreenshots]);
+  }, [profileId, platform]);
 
   return {
     screenshots,

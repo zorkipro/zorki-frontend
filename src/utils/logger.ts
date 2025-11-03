@@ -7,48 +7,40 @@ const isDev = import.meta.env.DEV;
 
 /**
  * Логирование ошибок
- * Работает только для критических ошибок
+ * Работает только в development режиме
+ * @param message - сообщение об ошибке
+ * @param error - объект ошибки (опционально)
+ * @param context - дополнительный контекст (опционально, только для development)
  */
-export function logError(message: string, error?: unknown): void {
+export function logError(message: string, error?: unknown, context?: Record<string, unknown>): void {
   if (isDev) {
-    console.error(`❌ [ERROR] ${message}`, error || '');
-  }
-}
-
-/**
- * Логирование отладочной информации
- * Работает только в development
- */
-export function logDev(message: string, data?: unknown): void {
-  if (isDev) {
-    console.log(`🔍 [DEV] ${message}`, data || '');
-  }
-}
-
-/**
- * Логирование предупреждений
- * Работает только в development
- */
-export function logWarn(message: string, data?: unknown): void {
-  if (isDev) {
-    console.warn(`⚠️ [WARN] ${message}`, data || '');
+    if (context) {
+      console.error(`❌ [ERROR] ${message}`, error || '', context);
+    } else {
+      console.error(`❌ [ERROR] ${message}`, error || '');
+    }
   }
 }
 
 /**
  * Логирование критических ошибок
  * Логируется всегда, даже в production
+ * @param message - сообщение об ошибке
+ * @param error - объект ошибки (опционально)
+ * @param context - дополнительный контекст (опционально)
  */
-export function logCritical(message: string, error?: unknown): void {
-  console.error(`🔥 [CRITICAL] ${message}`, error || '');
+export function logCritical(message: string, error?: unknown, context?: Record<string, unknown>): void {
+  if (context) {
+    console.error(`🔥 [CRITICAL] ${message}`, error || '', context);
+  } else {
+    console.error(`🔥 [CRITICAL] ${message}`, error || '');
+  }
 }
 
 /**
  * Простой logger объект для обратной совместимости
  */
 export const logger = {
-  dev: logDev,
   error: logError,
-  warn: logWarn,
   critical: logCritical,
 };

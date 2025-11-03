@@ -7,6 +7,7 @@ interface CategorySelectorProps {
   onChange: (value: string[]) => void;
   disabled?: boolean;
   className?: string;
+  maxItems?: number;
 }
 
 export const CategorySelector: React.FC<CategorySelectorProps> = ({
@@ -14,6 +15,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
   onChange,
   disabled = false,
   className,
+  maxItems,
 }) => {
   const { categories, loading, error } = useTopics();
 
@@ -51,6 +53,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
       disabled={disabled}
       className={className}
       maxDisplayItems={2}
+      maxItems={maxItems}
     />
   );
 };

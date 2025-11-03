@@ -1,8 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  getAllCategories,
-  getAllRestrictedTopics,
-} from "@/api/endpoints/topics";
+import { useState, useEffect, useMemo } from "react";
+import { getAllCategories, getAllRestrictedTopics } from "@/api/endpoints/topics";
 import type { TopicsOutputDto } from "@/api/types";
 import { logError } from "@/utils/logger";
 
@@ -19,105 +16,83 @@ interface UseTopicsReturn {
   topicReverseLookup: Record<number, string>;
 }
 
-/**
- * Хук для работы с тематиками
- * Предоставляет методы для получения ID по названию и наоборот
- */
+const cache: {
+  categories: TopicsOutputDto[] | null;
+  restrictedTopics: TopicsOutputDto[] | null;
+  promise: Promise<void> | null;
+} = {
+  categories: null,
+  restrictedTopics: null,
+  promise: null,
+};
+
 export const useTopics = (): UseTopicsReturn => {
-  const [categories, setCategories] = useState<TopicsOutputDto[]>([]);
-  const [restrictedTopics, setRestrictedTopics] = useState<TopicsOutputDto[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<TopicsOutputDto[]>(cache.categories || []);
+  const [restrictedTopics, setRestrictedTopics] = useState<TopicsOutputDto[]>(cache.restrictedTopics || []);
+  const [loading, setLoading] = useState(!cache.categories || !cache.restrictedTopics);
   const [error, setError] = useState<string | null>(null);
 
-  // Загружаем тематики при инициализации
   useEffect(() => {
-    const loadTopics = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    if (cache.categories && cache.restrictedTopics) {
+      return;
+    }
 
-        const [categoriesData, restrictedTopicsData] = await Promise.all([
-          getAllCategories(),
-          getAllRestrictedTopics(),
-        ]);
+    if (cache.promise) {
+      cache.promise.then(() => {
+        setCategories(cache.categories || []);
+        setRestrictedTopics(cache.restrictedTopics || []);
+        setLoading(false);
+      });
+      return;
+    }
 
+    setLoading(true);
+    cache.promise = Promise.all([getAllCategories(), getAllRestrictedTopics()])
+      .then(([categoriesData, restrictedTopicsData]) => {
+        cache.categories = categoriesData;
+        cache.restrictedTopics = restrictedTopicsData;
         setCategories(categoriesData);
         setRestrictedTopics(restrictedTopicsData);
-      } catch (err) {
+        setLoading(false);
+      })
+      .catch((err) => {
         logError("Error loading topics:", err);
         setError("Ошибка загрузки тематик");
-        setCategories([]);
-        setRestrictedTopics([]);
-      } finally {
         setLoading(false);
-      }
-    };
-
-    loadTopics();
+      })
+      .finally(() => {
+        cache.promise = null;
+      });
   }, []);
 
-  // Получить ID категории по названию
-  const getCategoryIdByName = useCallback(
-    (name: string): number | null => {
-      const category = categories.find((cat) => cat.name === name);
-      return category ? category.id : null;
-    },
-    [categories],
+  const getCategoryIdByName = (name: string) => categories.find((cat) => cat.name === name)?.id ?? null;
+  const getRestrictedTopicIdByName = (name: string) => restrictedTopics.find((topic) => topic.name === name)?.id ?? null;
+  const getCategoryNameById = (id: number) => categories.find((cat) => cat.id === id)?.name ?? null;
+  const getRestrictedTopicNameById = (id: number) => restrictedTopics.find((topic) => topic.id === id)?.name ?? null;
+
+  const topicLookup = useMemo(
+    () =>
+      [...categories, ...restrictedTopics].reduce(
+        (acc, topic) => {
+          acc[topic.name] = topic.id;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
+    [categories, restrictedTopics]
   );
 
-  // Получить ID запрещенной тематики по названию
-  const getRestrictedTopicIdByName = useCallback(
-    (name: string): number | null => {
-      const topic = restrictedTopics.find((topic) => topic.name === name);
-      return topic ? topic.id : null;
-    },
-    [restrictedTopics],
+  const topicReverseLookup = useMemo(
+    () =>
+      [...categories, ...restrictedTopics].reduce(
+        (acc, topic) => {
+          acc[topic.id] = topic.name;
+          return acc;
+        },
+        {} as Record<number, string>
+      ),
+    [categories, restrictedTopics]
   );
-
-  // Получить название категории по ID
-  const getCategoryNameById = useCallback(
-    (id: number): string | null => {
-      const category = categories.find((cat) => cat.id === id);
-      return category ? category.name : null;
-    },
-    [categories],
-  );
-
-  // Получить название запрещенной тематики по ID
-  const getRestrictedTopicNameById = useCallback(
-    (id: number): string | null => {
-      const topic = restrictedTopics.find((topic) => topic.id === id);
-      return topic ? topic.name : null;
-    },
-    [restrictedTopics],
-  );
-
-  // Создаем lookup таблицы для обратной совместимости
-  const topicLookup = useMemo(() => {
-    // Объединяем обычные категории и запрещённые темы
-    const allTopics = [...categories, ...restrictedTopics];
-    return allTopics.reduce(
-      (acc, topic) => {
-        acc[topic.name] = topic.id;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-  }, [categories, restrictedTopics]);
-
-  const topicReverseLookup = useMemo(() => {
-    // Объединяем обычные категории и запрещённые темы
-    const allTopics = [...categories, ...restrictedTopics];
-    return allTopics.reduce(
-      (acc, topic) => {
-        acc[topic.id] = topic.name;
-        return acc;
-      },
-      {} as Record<number, string>,
-    );
-  }, [categories, restrictedTopics]);
 
   return {
     categories,

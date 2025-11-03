@@ -29,6 +29,81 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   ? "/api" // Прокси в режиме разработки
   : "https://zorki.pro/api";
 
+// Трекер запросов для отслеживания потенциального дублирования
+interface RequestTracker {
+  endpoint: string;
+  method: string;
+  timestamp: number;
+  bodyHash?: string;
+}
+
+const requestTracker: RequestTracker[] = [];
+const DUPLICATE_THRESHOLD_MS = 1000; // 1 секунда - если запрос повторяется быстрее, это дублирование
+
+/**
+ * Проверяет, является ли запрос потенциальным дублированием
+ * Работает только в development режиме
+ */
+function checkDuplicateRequest(
+  endpoint: string,
+  method: string,
+  body?: BodyInit,
+): void {
+  if (!import.meta.env.DEV) return;
+
+  // Простой хэш для тела запроса (только для строковых тел)
+  let bodyHash: string | undefined;
+  if (body && typeof body === "string") {
+    try {
+      // Простой хэш: первые 50 символов JSON
+      bodyHash = body.slice(0, 50);
+    } catch {
+      // Игнорируем ошибки парсинга
+    }
+  }
+
+  const now = Date.now();
+  
+  // Проверяем последние запросы
+  const recentDuplicate = requestTracker.find(
+    (track) =>
+      track.endpoint === endpoint &&
+      track.method === method &&
+      (track.bodyHash === bodyHash || (!track.bodyHash && !bodyHash)) &&
+      now - track.timestamp < DUPLICATE_THRESHOLD_MS,
+  );
+
+  if (recentDuplicate) {
+    const timeDiff = now - recentDuplicate.timestamp;
+    console.warn(
+      `⚠️ [API DUPLICATE] Обнаружен потенциально дублирующий запрос:`,
+      {
+        endpoint,
+        method,
+        timeDiff: `${timeDiff}ms`,
+        stack: new Error().stack,
+      },
+    );
+  }
+
+  // Добавляем текущий запрос в трекер
+  requestTracker.push({
+    endpoint,
+    method,
+    timestamp: now,
+    bodyHash,
+  });
+
+  // Очищаем старые записи (старше 10 секунд)
+  const cutoff = now - 10000;
+  const index = requestTracker.findIndex(
+    (track) => track.timestamp > cutoff,
+  );
+  if (index > 0) {
+    requestTracker.splice(0, index);
+  }
+}
+
 /**
  * Базовая функция для выполнения API запросов
  * Автоматически добавляет токен аутентификации и обрабатывает ошибки
@@ -49,12 +124,20 @@ export async function apiRequest<T = unknown>(
 ): Promise<T> {
   const { skipAuth = false, skipAuthErrorHandling = false, baseUrl, ...fetchOptions } = options;
 
+  // Проверяем дублирование запросов (только в dev режиме)
+  checkDuplicateRequest(
+    endpoint,
+    fetchOptions.method || "GET",
+    fetchOptions.body,
+  );
+
   // Получаем токен если не пропущена аутентификация
   const token = skipAuth ? null : await tokenManager.getAuthToken();
 
-  // Подготавливаем заголовки
+  // Подготавливаем заголовки из существующих options
+  const existingHeaders = (fetchOptions.headers as Record<string, string>) || {};
   const headers: Record<string, string> = {
-    ...((fetchOptions.headers as Record<string, string>) || {}),
+    ...existingHeaders,
   };
 
   // Устанавливаем Content-Type только если это не FormData и не передан в headers
@@ -62,7 +145,9 @@ export async function apiRequest<T = unknown>(
     headers["Content-Type"] = "application/json";
   }
 
-  // Добавляем токен если есть и не передан Authorization в headers
+  // Добавляем токен если есть
+  // Важно: токен админа имеет приоритет для админских операций
+  // Если Authorization уже передан в headers, используем его, иначе добавляем токен
   if (token && !headers["Authorization"]) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -70,7 +155,8 @@ export async function apiRequest<T = unknown>(
   const url = `${baseUrl || API_BASE_URL}${endpoint}`;
 
   try {
-    // Выполняем запрос
+    // Важно: передаем headers после ...fetchOptions, чтобы наши заголовки (включая Authorization)
+    // имели приоритет и не перезаписывались
     const response = await fetch(url, {
       ...fetchOptions,
       headers,

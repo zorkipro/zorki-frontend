@@ -21,7 +21,6 @@ import { SafeAvatar } from "@/components/ui/SafeAvatar";
 import { truncateName } from "@/utils/formatters";
 import { formatLargeNumber } from "@/api/types";
 import type { AdminGetBloggerOutputDto } from "@/api/types";
-import { logger } from "@/utils/logger";
 import { getStatusColor, getStatusText } from "@/utils/admin/status";
 import { prepareBloggerData } from "@/utils/admin/blogger";
 
@@ -50,63 +49,28 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const mobileLoadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Функция для получения URL блогера
-  const getBloggerUrl = (blogger: AdminGetBloggerOutputDto): string | null => {
-    const mainSocial = blogger.social.find((s) => s.type === "INSTAGRAM");
-    const username = mainSocial?.username;
-    return username ? `/admin/blogger/${username}/edit` : null;
-  };
-
-  // Функция для обработки кликов
   const handleBloggerClick = (blogger: AdminGetBloggerOutputDto, event: React.MouseEvent) => {
-    const url = getBloggerUrl(blogger);
-    if (!url) {
-      logger.error("Username not found for blogger", {
-        component: "BloggersTable",
-        bloggerId: blogger.id,
-      });
-      return;
-    }
-
-    // Проверяем, был ли это правый клик или клик с модификаторами
-    const isRightClick = event.button === 2;
-    const isModifierClick = event.ctrlKey || event.metaKey || event.shiftKey;
-    
-    if (isRightClick || isModifierClick) {
-      // Открываем в новой вкладке
-      window.open(url, '_blank');
-    } else {
-      // Обычная навигация в той же вкладке
-      navigate(url);
-    }
+    const username = blogger.social.find((s) => s.type === "INSTAGRAM")?.username;
+    if (!username) return;
+    const url = `/admin/blogger/${username}/edit`;
+    const shouldOpenNewTab = event.button === 2 || event.ctrlKey || event.metaKey || event.shiftKey;
+    shouldOpenNewTab ? window.open(url, '_blank') : navigate(url);
   };
 
-  // Intersection Observer для автоматической подгрузки
+  const handleCardClick = (blogger: AdminGetBloggerOutputDto) => (e: React.MouseEvent) => handleBloggerClick(blogger, e);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting && hasMore && !isLoadingMore && onLoadMore) {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore && onLoadMore) {
           onLoadMore();
         }
       },
-      {
-        threshold: 0.1,
-        rootMargin: "100px",
-      },
+      { threshold: 0.1, rootMargin: "100px" },
     );
 
-    // Наблюдаем за обоими элементами (десктоп и мобильная версия)
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-    if (mobileLoadMoreRef.current) {
-      observer.observe(mobileLoadMoreRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
+    [loadMoreRef.current, mobileLoadMoreRef.current].forEach((ref) => ref && observer.observe(ref));
+    return () => observer.disconnect();
   }, [hasMore, isLoadingMore, onLoadMore]);
 
   // Функция для рендера мобильной карточки
@@ -115,20 +79,14 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
       prepareBloggerData(blogger);
 
     return (
-      <Card 
-        key={blogger.id} 
+      <Card
+        key={blogger.id}
         className="mb-4 cursor-pointer hover:bg-muted/50 transition-colors"
-        onClick={(event) => handleBloggerClick(blogger, event)}
-        onMouseDown={(event) => {
-          // Предотвращаем стандартное поведение правого клика
-          if (event.button === 2) {
-            event.preventDefault();
-          }
-        }}
-        onContextMenu={(event) => {
-          // Предотвращаем стандартное контекстное меню
-          event.preventDefault();
-          handleBloggerClick(blogger, event);
+        onClick={handleCardClick(blogger)}
+        onMouseDown={(e) => e.button === 2 && e.preventDefault()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          handleBloggerClick(blogger, e);
         }}
       >
         <CardContent className="p-4">
@@ -225,18 +183,14 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   <TableCell colSpan={4} className="text-center py-8">
                     <div className="flex items-center justify-center space-x-2">
                       <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      <span className="text-muted-foreground">
-                        Поиск блогеров...
-                      </span>
+                      <span className="text-muted-foreground">Поиск блогеров...</span>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : bloggers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
-                    <div className="text-muted-foreground">
-                      Блогеры не найдены
-                    </div>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    Блогеры не найдены
                   </TableCell>
                 </TableRow>
               ) : (
@@ -248,17 +202,11 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                     <TableRow
                       key={blogger.id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={(event) => handleBloggerClick(blogger, event)}
-                      onMouseDown={(event) => {
-                        // Предотвращаем стандартное поведение правого клика
-                        if (event.button === 2) {
-                          event.preventDefault();
-                        }
-                      }}
-                      onContextMenu={(event) => {
-                        // Предотвращаем стандартное контекстное меню
-                        event.preventDefault();
-                        handleBloggerClick(blogger, event);
+                      onClick={handleCardClick(blogger)}
+                      onMouseDown={(e) => e.button === 2 && e.preventDefault()}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        handleBloggerClick(blogger, e);
                       }}
                     >
                       <TableCell className="font-medium">
@@ -272,10 +220,8 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                           />
                           <div>
                             <div className="font-medium flex items-center gap-2">
-                              <span title={displayName}>
-                                {truncateName(displayName, 25)}
-                              </span>
-                            </div>
+                            <span title={displayName}>{truncateName(displayName, 25)}</span>
+                          </div>
                             <div className="text-sm text-muted-foreground">
                               @{username}
                             </div>
@@ -335,7 +281,6 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
             </TableBody>
           </Table>
 
-          {/* Load More Indicator for Desktop */}
           {hasMore && (
             <div ref={loadMoreRef} className="flex justify-center mt-4 py-4">
               {isLoadingMore ? (
@@ -344,9 +289,7 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   <span>Загрузка...</span>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">
-                  Прокрутите вниз для загрузки
-                </div>
+                <div className="text-sm text-muted-foreground">Прокрутите вниз для загрузки</div>
               )}
             </div>
           )}
@@ -361,7 +304,6 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
         <div className="md:hidden">
           {bloggers.map((blogger) => renderMobileCard(blogger))}
 
-          {/* Load More Indicator for Mobile */}
           {hasMore && (
             <div ref={mobileLoadMoreRef} className="flex justify-center mt-4 py-4">
               {isLoadingMore ? (
@@ -370,9 +312,7 @@ export const BloggersTable: React.FC<BloggersTableProps> = ({
                   <span>Загрузка...</span>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">
-                  Прокрутите вниз для загрузки
-                </div>
+                <div className="text-sm text-muted-foreground">Прокрутите вниз для загрузки</div>
               )}
             </div>
           )}

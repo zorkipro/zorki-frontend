@@ -93,32 +93,6 @@ const PriceListEditorComponent = ({
 
         <Separator />
 
-        {/* YouTube Pricing */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Youtube className="h-4 w-4 text-red-500" />
-            <h3 className="text-sm font-medium">YouTube</h3>
-          </div>
-          <div className="pl-6">
-            <FormField
-              label="Цена интеграции"
-              description="Стоимость размещения рекламы в BYN"
-            >
-              <Input
-                type="number"
-                value={prices.youtube?.price || ""}
-                onChange={(e) =>
-                  onPriceChange("youtube", "price", e.target.value)
-                }
-                placeholder="0"
-                disabled={disabled}
-              />
-            </FormField>
-          </div>
-        </div>
-
-        <Separator />
-
         {/* TikTok Pricing */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
@@ -161,6 +135,32 @@ const PriceListEditorComponent = ({
                 value={prices.telegram?.price || ""}
                 onChange={(e) =>
                   onPriceChange("telegram", "price", e.target.value)
+                }
+                placeholder="0"
+                disabled={disabled}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* YouTube Pricing */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Youtube className="h-4 w-4 text-red-500" />
+            <h3 className="text-sm font-medium">YouTube</h3>
+          </div>
+          <div className="pl-6">
+            <FormField
+              label="Цена интеграции"
+              description="Стоимость размещения рекламы в BYN"
+            >
+              <Input
+                type="number"
+                value={prices.youtube?.price || ""}
+                onChange={(e) =>
+                  onPriceChange("youtube", "price", e.target.value)
                 }
                 placeholder="0"
                 disabled={disabled}
