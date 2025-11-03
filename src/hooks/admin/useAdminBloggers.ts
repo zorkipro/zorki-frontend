@@ -59,18 +59,18 @@ export const useAdminBloggers = () => {
             queryFn: async ({pageParam = 1}) => {
                 const res = await adminGetBloggers({
                     page: pageParam,
-                    size: 50,
+                    size: 5,
                     sortDirection: "desc",
                     sortField: "createdAt",
                     username: debouncedSearchTerm || undefined
                 });
-                const enriched = await adminEnrichBloggersWithGender(res.items);
-                return {bloggers: enriched, currentPage: pageParam, totalCount: res.totalCount};
+                return {bloggers: res.items, currentPage: pageParam, totalCount: res.totalCount};
             },
             initialPageParam: 1,
-            getNextPageParam: (lastPage) => {
-                const loaded = lastPage.currentPage * 50;
-                return loaded < lastPage.totalCount ? lastPage.currentPage + 1 : undefined;
+            getNextPageParam: (lastPage, allPages) => {
+                // const loaded = lastPage.currentPage * 5;
+                // return loaded < lastPage.totalCount ? lastPage.currentPage + 1 : undefined;
+                return lastPage.currentPage < (lastPage.totalCount / 5) ? lastPage.currentPage + 1 : undefined
             },
         }
     );
@@ -79,7 +79,7 @@ export const useAdminBloggers = () => {
     const bloggersWithoutGenderQuery = useInfiniteQuery({
             queryKey: ["adminBloggersWithoutGender"],
             queryFn: async ({pageParam = 1}) => {
-                const res = await adminGetBloggersWithoutGender(pageParam, 50);
+                const res = await adminGetBloggersWithoutGender(pageParam, 5);
                 const filtered = res.bloggers.filter((b) => !b.genderType || b.genderType === null);
                 return {bloggers: filtered, currentPage: pageParam, totalCount: res.totalCount, hasMore: res.hasMore};
             },
@@ -168,8 +168,13 @@ export const useAdminBloggers = () => {
         }
     }, [refetchLinkRequests, toast]);
 
+    // Фильтруем блогеров в зависимости от настройки показа скрытых
+  const filteredBloggers = showHidden
+    ?  bloggersQuery.data?.pages.flatMap(p => p.bloggers)
+    :  bloggersQuery.data?.pages.flatMap(p => p.bloggers).filter(blogger => !blogger.isHidden);
+
     // === Вычисленные значения ===
-    const allBloggers = bloggersQuery.data?.pages.flatMap(p => p.bloggers) || [];
+    const allBloggers = filteredBloggers || [];
     const bloggersWithoutGender = bloggersWithoutGenderQuery.data?.pages.flatMap(p => p.bloggers) || [];
     const loading = bloggersQuery.isLoading && !debouncedSearchTerm;
     const searchLoading = bloggersQuery.isLoading && !!debouncedSearchTerm;
@@ -179,9 +184,11 @@ export const useAdminBloggers = () => {
     const hasMoreGenderBloggers = !!bloggersWithoutGenderQuery.hasNextPage;
     const totalBloggersCount = bloggersQuery.data?.pages[0]?.totalCount || 0;
     const totalGenderBloggersCount = bloggersWithoutGenderQuery.data?.pages[0]?.totalCount || 0;
+    const error = bloggersQuery.error;
 
     return {
         allBloggers,
+        refetchBloggers: bloggersQuery.refetch,
         bloggersWithoutGender,
         linkRequests,
         loading,
@@ -205,7 +212,7 @@ export const useAdminBloggers = () => {
         hasMoreGenderBloggers,
         totalGenderBloggersCount,
         isProcessing,
-        error: bloggersQuery.error,
+        error,
     };
 };
 

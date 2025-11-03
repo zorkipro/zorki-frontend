@@ -746,6 +746,7 @@ export async function adminGetBloggerGenderInfo(
 export async function adminEnrichBloggersWithGender(
   bloggers: AdminGetBloggersResponse['items']
 ): Promise<AdminBloggerWithGender[]> {
+  console.log('🥨🥨')
   const enrichedBloggers: AdminBloggerWithGender[] = [];
   
   // Обрабатываем блогеров параллельно, но с ограничением
