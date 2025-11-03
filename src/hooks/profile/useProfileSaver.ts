@@ -100,14 +100,15 @@ export const useProfileSaver = (
           updateBloggerFields(bloggerFields);
         }
 
+        // Обновляем только измененные данные локально, без полной перезагрузки страницы
+        // Это обеспечивает точечное обновление только измененных компонентов
         updateFormData?.(data);
+        
         toast({ title: "Успешно", description: "Профиль обновлен" });
         
-        if (refetch && loadProfileWithDrafts && setFormData) {
-          await refetch();
-          const freshData = await loadProfileWithDrafts();
-          freshData && setFormData(freshData);
-        }
+        // Примечание: refetch убран для избежания полной перезагрузки страницы
+        // Данные уже обновлены локально через updateFormData, updateBloggerFields и setAvailablePlatforms
+        // При необходимости синхронизации с сервером refetch можно вызвать вручную отдельно
       } catch (err: unknown) {
         const message = err instanceof APIError ? err.message : "Не удалось сохранить изменения";
         toast({
@@ -119,7 +120,7 @@ export const useProfileSaver = (
         setSaving(false);
       }
     },
-    [user, profile, formData, topicLookup, savePlatformPrices, updatePlatformsState, setAvailablePlatforms, updateBloggerFields, toast, updateFormData, refetch, loadProfileWithDrafts, setFormData],
+    [user, profile, formData, topicLookup, savePlatformPrices, updatePlatformsState, setAvailablePlatforms, updateBloggerFields, toast, updateFormData],
   );
 
   return {
