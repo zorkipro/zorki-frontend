@@ -270,18 +270,19 @@ export async function adminLinkYtChannelToBlogger(
 export async function adminGetBloggersWithoutGender(
   page: number = 1,
   size: number = 50,
-  cachedPages: Map<number, AdminBloggerWithGender[]> = new Map()
+  cachedPages: Map<number, AdminGetBloggerOutputDto[]> = new Map()
 ): Promise<{
-  bloggers: AdminBloggerWithGender[];
+  bloggers: AdminGetBloggerOutputDto[];
   hasMore: boolean;
   totalCount: number;
-  cachedPages: Map<number, AdminBloggerWithGender[]>;
+  cachedPages: Map<number, AdminGetBloggerOutputDto[]>;
 }> {
-  const bloggersWithoutGender: AdminBloggerWithGender[] = [];
+  const bloggersWithoutGender: AdminGetBloggerOutputDto[] = [];
   let currentPage = page;
   let hasMore = true;
   const maxPages = 20;
   
+  // Проверяем кэш для предыдущих страниц
   for (let i = 1; i < page; i++) {
     const cachedBloggers = cachedPages.get(i);
     if (cachedBloggers) {
@@ -290,7 +291,9 @@ export async function adminGetBloggersWithoutGender(
     }
   }
   
+  // Загружаем новые страницы
   while (hasMore && currentPage <= maxPages) {
+    // Если страница есть в кэше, используем её
     if (cachedPages.has(currentPage)) {
       const cachedBloggers = cachedPages.get(currentPage)!;
       const filtered = cachedBloggers.filter(blogger => !blogger.genderType);
@@ -299,6 +302,7 @@ export async function adminGetBloggersWithoutGender(
       continue;
     }
     
+    // Запрашиваем блогеров с бэкенда (теперь genderType приходит в ответе)
     const bloggersResponse = await adminGetBloggers({
       page: currentPage,
       size,
@@ -311,12 +315,14 @@ export async function adminGetBloggersWithoutGender(
       break;
     }
     
-    const enrichedBloggers = await adminEnrichBloggersWithGender(bloggersResponse.items);
-    const bloggersWithoutGenderInBatch = enrichedBloggers.filter(blogger => !blogger.genderType);
+    // Фильтруем блогеров без пола (genderType уже приходит в ответе)
+    const bloggersWithoutGenderInBatch = bloggersResponse.items.filter(blogger => !blogger.genderType);
     
-    cachedPages.set(currentPage, bloggersWithoutGenderInBatch);
+    // Сохраняем все блогеры (не только без пола) в кэш для возможного повторного использования
+    cachedPages.set(currentPage, bloggersResponse.items);
     bloggersWithoutGender.push(...bloggersWithoutGenderInBatch);
     
+    // Проверяем условия для продолжения загрузки
     if (bloggersResponse.items.length < size || bloggersWithoutGender.length >= size) {
       hasMore = false;
     }

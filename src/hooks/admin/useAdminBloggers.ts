@@ -15,7 +15,6 @@ import { mapLinkRequestToTableFormat } from "@/utils/admin/mappers";
 import type {
   AdminGetLinkBloggerClientRequestOutputDto,
   AdminGetBloggersStatsOutputDto,
-  AdminBloggerWithGender,
   AdminGetBloggerOutputDto,
   ApiGender,
 } from "../../api/types";
@@ -23,12 +22,12 @@ import type {
 export const useAdminBloggers = () => {
   const { toast } = useToast();
   const [allBloggers, setAllBloggers] = useState<AdminGetBloggerOutputDto[]>([]);
-  const [bloggersWithoutGender, setBloggersWithoutGender] = useState<AdminBloggerWithGender[]>([]);
+  const [bloggersWithoutGender, setBloggersWithoutGender] = useState<AdminGetBloggerOutputDto[]>([]);
   const [loadingGenderBloggers, setLoadingGenderBloggers] = useState(false);
   const [genderBloggersPage, setGenderBloggersPage] = useState(1);
   const [hasMoreGenderBloggers, setHasMoreGenderBloggers] = useState(true);
   const [totalGenderBloggersCount, setTotalGenderBloggersCount] = useState(0);
-  const [genderPagesCache, setGenderPagesCache] = useState<Map<number, AdminBloggerWithGender[]>>(new Map());
+  const [genderPagesCache, setGenderPagesCache] = useState<Map<number, AdminGetBloggerOutputDto[]>>(new Map());
   const [linkRequests, setLinkRequests] = useState<AdminGetLinkBloggerClientRequestOutputDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);

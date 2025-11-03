@@ -444,6 +444,7 @@ export interface AdminGetBloggerOutputDto {
   userId: string | null;
   status: ApiVerificationStatus; // NEW, APPROVED, REJECTED, MODERATION
   isHidden: boolean; // НОВОЕ ПОЛЕ для видимости
+  genderType: ApiGender | null; // Пол блогера (приходит с бэкенда)
   social: AdminGetBloggerSocialOutputDto[];
   createdAt: string; // ISO string
   updatedAt: string | null; // ISO string

@@ -18,7 +18,7 @@ import {
 import { SafeAvatar } from "@/components/ui/SafeAvatar";
 import { truncateName } from "@/utils/formatters";
 import { formatLargeNumber } from "@/api/types";
-import type { AdminBloggerWithGender } from "@/api/types";
+import type { AdminGetBloggerOutputDto } from "@/api/types";
 import { logger } from "@/utils/logger";
 import { prepareBloggerData } from "@/utils/admin/blogger";
 import { adminUpdateBlogger } from "@/api/endpoints/admin";
@@ -27,7 +27,7 @@ import { GENDER_MAP, ApiGender } from "@/api/types";
 import { Loader2 } from "lucide-react";
 
 interface GenderSelectionTableProps {
-  bloggers: AdminBloggerWithGender[];
+  bloggers: AdminGetBloggerOutputDto[];
   onGenderUpdated?: () => void;
   onBloggerGenderUpdated?: (bloggerId: number, genderType: ApiGender) => void;
   loading?: boolean;
@@ -60,8 +60,6 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
       
       await adminUpdateBlogger(bloggerId, {
         genderType,
-        topics: [], // Обязательные поля
-        restrictedTopics: [], // Обязательные поля
       });
 
       toast({
