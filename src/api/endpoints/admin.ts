@@ -30,7 +30,7 @@ import type {
   GetIgSessionsParams,
   IgSessionsResponse,
   BloggerLinkMediaTgRequestInputDto,
-  BloggerLinkMediaYtRequestInputDto,
+  BloggerLinkMediaYtRequestInputDto, AdminGetBloggerOutputDto,
 } from "../types";
 
 export async function adminLogin(data: AdminLoginInputDto): Promise<AdminLoginOutputDto> {

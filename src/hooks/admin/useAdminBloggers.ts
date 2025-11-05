@@ -1,6 +1,6 @@
 import {useState, useCallback} from "react";
 import {useToast} from "@/hooks/use-toast";
-import {logError, logWarn} from "@/utils/logger";
+import {logError} from "@/utils/logger";
 import {useDebounce} from "@/hooks/useDebounce";
 import {
     adminGetBloggers,
@@ -20,7 +20,7 @@ import type {
 } from "@/api/types";
 import {useInfiniteQuery, useQuery, useQueryClient} from "@tanstack/react-query";
 
-export const useAdminBloggers = () => {
+export const useAdminBloggers = (activeTab: string) => {
     const {toast} = useToast();
     const [searchTerm, setSearchTerm] = useState("");
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -67,9 +67,7 @@ export const useAdminBloggers = () => {
                 return {bloggers: res.items, currentPage: pageParam, totalCount: res.totalCount};
             },
             initialPageParam: 1,
-            getNextPageParam: (lastPage, allPages) => {
-                // const loaded = lastPage.currentPage * 5;
-                // return loaded < lastPage.totalCount ? lastPage.currentPage + 1 : undefined;
+            getNextPageParam: (lastPage) => {
                 return lastPage.currentPage < (lastPage.totalCount / 5) ? lastPage.currentPage + 1 : undefined
             },
         }
@@ -83,8 +81,11 @@ export const useAdminBloggers = () => {
                 const filtered = res.bloggers.filter((b) => !b.genderType || b.genderType === null);
                 return {bloggers: filtered, currentPage: pageParam, totalCount: res.totalCount, hasMore: res.hasMore};
             },
+            enabled: activeTab === 'gender-selection',
             initialPageParam: 1,
             getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.currentPage + 1 : undefined,
+            staleTime: 5 * 60 * 1000,
+            gcTime: 30 * 60 * 1000,
         }
     );
 
@@ -138,7 +139,7 @@ export const useAdminBloggers = () => {
     }, [queryClient]);
 
     const clearGenderCache = useCallback(() => {
-        queryClient.invalidateQueries({queryKey:["adminBloggersWithoutGender"]});
+        queryClient.invalidateQueries({queryKey: ["adminBloggersWithoutGender"]});
     }, [queryClient]);
 
     // === approve/reject запросы ===
@@ -169,9 +170,9 @@ export const useAdminBloggers = () => {
     }, [refetchLinkRequests, toast]);
 
     // Фильтруем блогеров в зависимости от настройки показа скрытых
-  const filteredBloggers = showHidden
-    ?  bloggersQuery.data?.pages.flatMap(p => p.bloggers)
-    :  bloggersQuery.data?.pages.flatMap(p => p.bloggers).filter(blogger => !blogger.isHidden);
+    const filteredBloggers = showHidden
+        ? bloggersQuery.data?.pages.flatMap(p => p.bloggers)
+        : bloggersQuery.data?.pages.flatMap(p => p.bloggers).filter(blogger => !blogger.isHidden);
 
     // === Вычисленные значения ===
     const allBloggers = filteredBloggers || [];
@@ -179,16 +180,17 @@ export const useAdminBloggers = () => {
     const loading = bloggersQuery.isLoading && !debouncedSearchTerm;
     const searchLoading = bloggersQuery.isLoading && !!debouncedSearchTerm;
     const isLoadingMore = bloggersQuery.isFetchingNextPage;
-    const loadingGenderBloggers = bloggersWithoutGenderQuery.isFetchingNextPage || bloggersWithoutGenderQuery.isLoading;
+    const loadingGenderBloggers = bloggersWithoutGenderQuery.isFetching || bloggersQuery.isFetchingNextPage;
     const hasMoreBloggers = !!bloggersQuery.hasNextPage;
     const hasMoreGenderBloggers = !!bloggersWithoutGenderQuery.hasNextPage;
     const totalBloggersCount = bloggersQuery.data?.pages[0]?.totalCount || 0;
     const totalGenderBloggersCount = bloggersWithoutGenderQuery.data?.pages[0]?.totalCount || 0;
     const error = bloggersQuery.error;
-
     return {
+
         allBloggers,
         refetchBloggers: bloggersQuery.refetch,
+        fetchBloggersWithoutGender: bloggersWithoutGenderQuery.fetchNextPage,
         bloggersWithoutGender,
         linkRequests,
         loading,

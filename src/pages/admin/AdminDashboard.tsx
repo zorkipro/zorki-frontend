@@ -57,7 +57,7 @@ const AdminDashboard = () => {
     clearGenderCache,
     isProcessing,
     error,
-  } = useAdminBloggers();
+  } = useAdminBloggers(activeTab);
 
   const { addBlogger, toggleVisibility } = useAdminBloggerActions();
 
