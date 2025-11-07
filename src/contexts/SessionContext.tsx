@@ -3,42 +3,28 @@
  * Отвечает только за auth state (SRP - Single Responsibility Principle)
  */
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import {createContext, useContext, useEffect, useState, useCallback, ReactNode,} from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
 import { saveAccessToken, removeAccessToken } from "@/utils/googleAuth";
-import { getClientMe } from "@/api/endpoints/client";
+import {clientMeQueryKey} from "@/hooks/profile/useClientMeQuery.ts";
+import {useQueryClient} from "@tanstack/react-query";
+import {ClientAuthMeOutputDto} from "@/api/types.ts";
 
 export interface SessionContextType {
-  /** Текущий пользователь Supabase */
   user: User | null;
-  /** Текущая сессия Supabase */
   session: Session | null;
-  /** Флаг загрузки начальной сессии */
   loading: boolean;
-  /** JWT токен доступа */
   accessToken: string | null;
-  /** Выход из системы */
   signOut: () => Promise<void>;
-  /** Обновить сессию вручную */
   refreshSession: () => Promise<void>;
-  /** Определить маршрут после авторизации */
   determineRedirectPath: () => Promise<string>;
+  isSessionReady:boolean
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-/**
- * Hook для доступа к SessionContext
- * @throws {Error} если используется вне SessionProvider
- */
 export const useSession = () => {
   const context = useContext(SessionContext);
   if (!context) {
@@ -48,35 +34,29 @@ export const useSession = () => {
 };
 
 interface SessionProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-/**
- * Provider для управления сессией пользователя
- */
 export const SessionProvider = ({ children }: SessionProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const isSessionReady = !!user && !!accessToken && !loading;
 
-  /**
-   * Определяет куда направить пользователя после авторизации
-   * на основе данных из /auth/client/me
-   */
+  const queryClient = useQueryClient();
+
   const determineRedirectPath = useCallback(async (): Promise<string> => {
-    try {
-      const clientData = await getClientMe();
-      const username = clientData.blogger?.username || clientData.lastLinkRequest?.username;
-      return username ? '/profile/edit' : '/profile-setup';
-    } catch (error) {
-      return '/profile-setup';
-    }
-  }, []);
+    const cachedData:ClientAuthMeOutputDto = queryClient.getQueryData(clientMeQueryKey);
 
-  /**
-   * Обновляет состояние сессии и токена
-   */
+    if (cachedData) {
+      const username =
+          cachedData.blogger?.username || cachedData.lastLinkRequest?.username;
+      return username ? "/profile/edit" : "/profile-setup";
+    }
+
+  }, [queryClient]);
+
   const updateSession = useCallback((newSession: Session | null) => {
     setSession(newSession);
     setUser(newSession?.user ?? null);
@@ -84,7 +64,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     const token = newSession?.access_token ?? null;
     setAccessToken(token);
 
-    // Обновляем sessionStorage только при изменении токена
     if (token) {
       saveAccessToken(token);
     } else {
@@ -92,9 +71,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     }
   }, []);
 
-  /**
-   * Обновить сессию вручную (например, после изменения профиля)
-   */
   const refreshSession = useCallback(async () => {
     try {
       const { data, error } = await supabase.auth.getSession();
@@ -105,16 +81,11 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     }
   }, [updateSession]);
 
-  /**
-   * Выход из системы
-   */
   const signOut = useCallback(async () => {
     try {
-      // Очищаем токен
       removeAccessToken();
       setAccessToken(null);
 
-      // Выходим из Supabase
       await supabase.auth.signOut();
 
       setUser(null);
@@ -125,9 +96,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     }
   }, []);
 
-  // Инициализация сессии и подписка на изменения
   useEffect(() => {
-    // Подписка на изменения auth state
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, newSession) => {
@@ -135,7 +104,6 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
       setLoading(false);
     });
 
-    // Проверяем существующую сессию
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       updateSession(initialSession);
       setLoading(false);
@@ -154,6 +122,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     signOut,
     refreshSession,
     determineRedirectPath,
+    isSessionReady
   };
 
   return (

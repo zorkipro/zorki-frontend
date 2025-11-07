@@ -5,7 +5,7 @@ import { mapApiDetailBloggerToLocal } from "@/utils/api/mappers";
 import { useErrorHandler } from "@/utils/errorHandler";
 import { normalizeUsername } from "@/utils/username";
 
-export const useBloggerProfile = (username?: string) => {
+export const useBloggerProfile = ({username,id}:{username?: string, id?:number}) => {
   const { handleError } = useErrorHandler({ showNotifications: true });
   const [blogger, setBlogger] = useState<Blogger | null>(null);
   const [loading, setLoading] = useState(false);

@@ -29,7 +29,7 @@ export const ProfileChecker = ({ children }: ProfileCheckerProps) => {
   useEffect(() => {
     const performProfileCheck = async () => {
       // Пропускаем проверку на auth страницах
-      if (AUTH_PAGES.some((page) => location.pathname === page)) {
+      if (AUTH_PAGES.some((page) => location.pathname === page || '/')) {
         return;
       }
 

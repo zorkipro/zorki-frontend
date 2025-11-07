@@ -7,7 +7,6 @@ import {LoadingSpinner} from "@/ui-kit/components";
 import NotFound from "@/pages/not-found/NotFound.tsx";
 
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..."/>;
-console.log('privateRoutes', privateRoutes)
 const openAdminRoutes = adminRoutes.filter(
     (r) => r.pathName === "/admin/login" || r.pathName === "/admin/2fa"
 );
