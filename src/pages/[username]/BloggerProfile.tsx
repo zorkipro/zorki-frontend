@@ -11,9 +11,9 @@ const BloggerProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const bloggerId = location.state?.bloggerId ?? undefined;
-
+  console.log('BloggerProfile',bloggerId)
   // Use the optimized hook
-  const { blogger, loading, error } = useBloggerProfile({username, id: bloggerId});
+  const { blogger, loading, error } = useBloggerProfile({username, id: Number(bloggerId)});
 
   if (loading) {
     return <LoadingSpinner fullScreen text="Загрузка профиля..." />;

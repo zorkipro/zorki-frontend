@@ -125,7 +125,7 @@ const Index = () => {
               <BloggerTable
                 bloggers={filteredBloggers}
                 loading={loading}
-                searchLoading={searchLoading}
+                // searchLoading={searchLoading}
                 hasMore={hasMore}
                 isLoadingMore={isLoadingMore}
                 onLoadMore={loadMoreBloggers}

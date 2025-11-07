@@ -51,15 +51,16 @@ export const BloggerTable = ({
     return () => observer.disconnect();
   }, [onLoadMore, hasMore, isLoadingMore]);
 
-  const handleRowClick = (handle: string) => {
-    navigate(`/${normalizeUsername(handle)}`);
+  const handleRowClick = ({handle,bloggerId}:{handle: string, bloggerId?:string }) => {
+    console.log('handleRowClick',bloggerId)
+    navigate(`/${normalizeUsername(handle)}`,{ state: { bloggerId } });
   };
 
   const renderMobileCard = (blogger: Blogger) => (
       <div
         key={blogger.id}
         className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-sm transition-shadow duration-200 cursor-pointer mb-4"
-        onClick={() => handleRowClick(blogger.handle)}
+        onClick={() => handleRowClick({handle:blogger.handle, bloggerId: blogger.id})}
       >
         {/* Аватарка/имя/никнейм - главная информация */}
         <div className="flex items-center space-x-4 mb-6">
@@ -180,8 +181,8 @@ export const BloggerTable = ({
                 <TableRow
                   key={blogger.id}
                   className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => handleRowClick(blogger.handle)}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick(blogger.handle)}
+                  onClick={() => handleRowClick({handle: blogger.handle, bloggerId: blogger.id})}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick({handle: blogger.handle, bloggerId: blogger.id})}
                 >
                   <TableCell className="text-center font-medium">{index + 1}</TableCell>
                   <TableCell>
