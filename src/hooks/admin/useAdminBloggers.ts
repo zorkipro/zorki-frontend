@@ -19,6 +19,7 @@ import type {
     AdminGetLinkBloggerClientRequestOutputDto,
 } from "@/api/types";
 import {useInfiniteQuery, useQuery, useQueryClient} from "@tanstack/react-query";
+import {PAGINATION} from "@/config/pagination.ts";
 
 export const useAdminBloggers = (activeTab: string) => {
     const {toast} = useToast();
@@ -59,7 +60,7 @@ export const useAdminBloggers = (activeTab: string) => {
             queryFn: async ({pageParam = 1}) => {
                 const res = await adminGetBloggers({
                     page: pageParam,
-                    size: 5,
+                    size: PAGINATION.DEFAULT_PAGE_SIZE,
                     sortDirection: "desc",
                     sortField: "createdAt",
                     username: debouncedSearchTerm || undefined
@@ -68,7 +69,7 @@ export const useAdminBloggers = (activeTab: string) => {
             },
             initialPageParam: 1,
             getNextPageParam: (lastPage) => {
-                return lastPage.currentPage < (lastPage.totalCount / 5) ? lastPage.currentPage + 1 : undefined
+                return lastPage.currentPage < (lastPage.totalCount / PAGINATION.DEFAULT_PAGE_SIZE) ? lastPage.currentPage + 1 : undefined
             },
         }
     );
