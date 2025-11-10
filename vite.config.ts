@@ -7,10 +7,10 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080, // Стандартный порт для разработки
+    port: 8085, // Стандартный порт для разработки
     hmr: {
       overlay: false, // Отключаем overlay для ошибок HMR
-      clientPort: 8080
+      clientPort: 8085
     },
     proxy: {
       '/api': {

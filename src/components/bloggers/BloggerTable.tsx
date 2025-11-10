@@ -58,92 +58,96 @@ export const BloggerTable = ({
   const renderMobileCard = (blogger: Blogger) => (
       <div
         key={blogger.id}
-        className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-sm transition-shadow duration-200 cursor-pointer mb-4"
+        className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 hover:shadow-sm transition-shadow duration-200 cursor-pointer mb-3 sm:mb-4 w-full max-w-full overflow-hidden"
         onClick={() => handleRowClick(blogger.handle)}
       >
         {/* Аватарка/имя/никнейм - главная информация */}
-        <div className="flex items-center space-x-4 mb-6">
+        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-full overflow-hidden">
           <SafeAvatar
             src={blogger.avatar}
             alt={`Аватар ${blogger.name}`}
-            className="w-12 h-12 flex-shrink-0 aspect-square"
+            className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 aspect-square"
             username={normalizeUsername(blogger.handle)}
             gender={blogger.gender}
           />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <h3
-              className="font-semibold text-gray-900 text-base truncate leading-tight"
+              className="font-semibold text-gray-900 text-sm sm:text-base truncate leading-tight"
               title={blogger.name}
             >
               {truncateName(blogger.name, 20)}
             </h3>
-            <p className="text-sm text-gray-500 truncate mt-0.5">
+            <p className="text-xs sm:text-sm text-gray-500 truncate mt-0.5 break-words">
               {blogger.handle}
             </p>
           </div>
         </div>
 
         {/* Статистика - вторичная информация */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4 w-full max-w-full overflow-hidden">
           {/* Подписчики и ER */}
-          <div className="flex items-center">
-            <div className="flex-1 text-center">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex-1 min-w-0 text-center overflow-hidden">
+              <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
                 Подписчиков
               </div>
-              <div className="font-bold text-gray-900 text-lg">
+              <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {formatNumber(blogger.followers)}
               </div>
             </div>
-            <div className="w-px h-12 bg-gray-200 mx-4"></div>
-            <div className="flex-1 text-center">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
+            <div className="w-px h-10 sm:h-12 bg-gray-200 flex-shrink-0"></div>
+            <div className="flex-1 min-w-0 text-center overflow-hidden">
+              <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
                 ER
               </div>
-              <div className="font-bold text-gray-900 text-lg">
+              <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {blogger.engagementRate}%
               </div>
             </div>
           </div>
 
           {/* Охваты */}
-          <div className="flex items-center">
-            <div className="flex-1 text-center">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex-1 min-w-0 text-center overflow-hidden">
+              <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
                 Охваты поста
               </div>
-              <div className="font-bold text-gray-900 text-lg">
+              <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {formatReach(blogger.postReach)}
               </div>
             </div>
-            <div className="w-px h-12 bg-gray-200 mx-4"></div>
-            <div className="flex-1 text-center">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
+            <div className="w-px h-10 sm:h-12 bg-gray-200 flex-shrink-0"></div>
+            <div className="flex-1 min-w-0 text-center overflow-hidden">
+              <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
                 Охваты сториз
               </div>
-              <div className="font-bold text-gray-900 text-lg">
+              <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {formatReach(blogger.storyReach)}
               </div>
             </div>
           </div>
 
           {/* Цены */}
-          <div className="flex items-center">
-            <div className="flex-1 text-center">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
-                Цена поста
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex-1 min-w-0 text-center overflow-hidden">
+              <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
+                Цена поста от
               </div>
-              <div className="font-bold text-gray-900 text-lg">
-                {formatPriceWithCurrency(blogger.postPrice)}
+              <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
+                {blogger.postPrice && !isNaN(blogger.postPrice) 
+                  ? `от ${formatPriceWithCurrency(blogger.postPrice)}` 
+                  : formatPriceWithCurrency(blogger.postPrice)}
               </div>
             </div>
-            <div className="w-px h-12 bg-gray-200 mx-4"></div>
-            <div className="flex-1 text-center">
-              <div className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">
-                Цена сториз
+            <div className="w-px h-10 sm:h-12 bg-gray-200 flex-shrink-0"></div>
+            <div className="flex-1 min-w-0 text-center overflow-hidden">
+              <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
+                Цена сториз от
               </div>
-              <div className="font-bold text-gray-900 text-lg">
-                {formatPriceWithCurrency(blogger.storyPrice)}
+              <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
+                {blogger.storyPrice && !isNaN(blogger.storyPrice) 
+                  ? `от ${formatPriceWithCurrency(blogger.storyPrice)}` 
+                  : formatPriceWithCurrency(blogger.storyPrice)}
               </div>
             </div>
           </div>
@@ -155,17 +159,18 @@ export const BloggerTable = ({
 
   return (
     <>
-      <div className="hidden md:block border rounded-lg">
-        <Table>
+      <div className="hidden md:block border rounded-lg w-full max-w-full overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px] caption-bottom text-sm relative">
           <TableHeader>
-            <TableRow>
-              <TableHead className="text-center min-w-[80px]">Место</TableHead>
-              <TableHead className="min-w-[250px]">Блогер</TableHead>
-              <TableHead className="text-center min-w-[120px]">Подписчиков</TableHead>
-              <TableHead className="text-center min-w-[120px]">Охваты поста</TableHead>
-              <TableHead className="text-center min-w-[120px]">Охваты сториз</TableHead>
-              <TableHead className="text-center min-w-[120px]">Цена поста</TableHead>
-              <TableHead className="text-center min-w-[120px]">Цена сториз</TableHead>
+            <TableRow className="[&:first-child_th:first-child]:rounded-tl-lg [&:first-child_th:last-child]:rounded-tr-lg hover:bg-transparent">
+              <TableHead className="text-center min-w-[60px] w-[60px] sticky left-0 z-50 bg-white" style={{ willChange: "transform" }}>Место</TableHead>
+              <TableHead className="min-w-[200px] max-w-[300px]">Блогер</TableHead>
+              <TableHead className="text-center min-w-[100px]">Подписчиков</TableHead>
+              <TableHead className="text-center min-w-[100px]">Охваты поста</TableHead>
+              <TableHead className="text-center min-w-[100px]">Охваты сториз</TableHead>
+              <TableHead className="text-center min-w-[100px]">Цена поста от</TableHead>
+              <TableHead className="text-center min-w-[100px]">Цена сториз от</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -176,14 +181,16 @@ export const BloggerTable = ({
                 </TableCell>
               </TableRow>
             ) : !isEmpty ? (
-              bloggers.map((blogger, index) => (
+              bloggers.map((blogger, index) => {
+                const isLastRow = index === bloggers.length - 1;
+                return (
                 <TableRow
                   key={blogger.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  className={`group cursor-pointer hover:bg-muted/50 transition-colors ${isLastRow ? '[&:first-child_td:first-child]:rounded-bl-lg [&:first-child_td:last-child]:rounded-br-lg' : ''}`}
                   onClick={() => handleRowClick(blogger.handle)}
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick(blogger.handle)}
                 >
-                  <TableCell className="text-center font-medium">{index + 1}</TableCell>
+                  <TableCell className="text-center font-medium sticky left-0 z-50 bg-white group-hover:bg-muted transition-colors" style={{ willChange: "transform", ...(isLastRow ? { borderBottomLeftRadius: "0.5rem" } : {}) }}>{index + 1}</TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-3">
                       <SafeAvatar
@@ -212,13 +219,22 @@ export const BloggerTable = ({
                     <div className="font-medium">{formatReach(blogger.storyReach)}</div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-medium">{formatPriceWithCurrency(blogger.postPrice)}</div>
+                    <div className="font-medium">
+                      {blogger.postPrice && !isNaN(blogger.postPrice) 
+                        ? `от ${formatPriceWithCurrency(blogger.postPrice)}` 
+                        : formatPriceWithCurrency(blogger.postPrice)}
+                    </div>
                   </TableCell>
-                  <TableCell className="text-center">
-                    <div className="font-medium">{formatPriceWithCurrency(blogger.storyPrice)}</div>
+                  <TableCell className="text-center" style={isLastRow ? { borderBottomRightRadius: "0.5rem" } : undefined}>
+                    <div className="font-medium">
+                      {blogger.storyPrice && !isNaN(blogger.storyPrice) 
+                        ? `от ${formatPriceWithCurrency(blogger.storyPrice)}` 
+                        : formatPriceWithCurrency(blogger.storyPrice)}
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))
+              );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
@@ -227,7 +243,7 @@ export const BloggerTable = ({
               </TableRow>
             )}
           </TableBody>
-        </Table>
+          </table>
 
         {isLoadingMore && (
           <div className="flex items-center justify-center py-4">
@@ -240,6 +256,7 @@ export const BloggerTable = ({
         <div className="text-center text-sm text-muted-foreground mt-2">
           Показано {bloggers.length} из {totalCount} блогеров
           {hasMore && <span className="ml-2 text-blue-600">(автозагрузка при прокрутке)</span>}
+        </div>
         </div>
       </div>
 

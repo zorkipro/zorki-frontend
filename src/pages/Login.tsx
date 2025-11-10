@@ -1,17 +1,5 @@
-import { AuthForm } from "@/components/auth/AuthForm";
-import { useAuthForm } from "@/hooks/useAuthForm";
+import { AuthPage } from "./AuthPage";
 
 export const Login = () => {
-  const { loading, error, handleSubmit, handleGoogleAuth } = useAuthForm({
-    mode: "login",
-  });
-  return (
-    <AuthForm
-      mode="login"
-      onSubmit={handleSubmit}
-      onGoogleAuth={handleGoogleAuth}
-      loading={loading}
-      error={error}
-    />
-  );
+  return <AuthPage />;
 };
