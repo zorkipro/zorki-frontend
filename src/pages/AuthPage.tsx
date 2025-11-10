@@ -187,14 +187,6 @@ export const AuthPage = () => {
                 </CardDescription>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-2">
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Добро пожаловать!</strong> Регистрация займет всего
-                  несколько секунд. После регистрации вам нужно будет
-                  подтвердить email.
-                </p>
-              </div>
-
               <GoogleAuthButton
                 text="Зарегистрироваться через Google"
                 onClick={handleRegisterGoogleAuth}
