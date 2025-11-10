@@ -4,8 +4,6 @@ export const createPathFromFile = (filePath: string) => {
     let routePath = filePath.replace(/^\/src\/pages\//, '').replace(/\.tsx$/, '');
     const segments = routePath.split('/');
 
-    if (segments.includes('not-found')) return '*';
-
     if (segments[0] === 'home' && segments[1]?.toLowerCase() === 'index') segments.pop();
 
     const last = segments[segments.length - 1];

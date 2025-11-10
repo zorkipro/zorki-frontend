@@ -4,7 +4,7 @@ import {publicRoutes, privateRoutes, adminRoutes} from "./createRoutes";
 import {PrivateLayout} from "@/components/layout/PrivateLayout";
 import {AdminLayout} from "@/components/layout/AdminLayout";
 import {LoadingSpinner} from "@/ui-kit/components";
-import NotFound from "@/pages/not-found/NotFound.tsx";
+import NotFound from "@/pages/system/not-found/NotFound.tsx";
 
 const PageLoader = () => <LoadingSpinner fullScreen text="Загрузка..."/>;
 const openAdminRoutes = adminRoutes.filter(
