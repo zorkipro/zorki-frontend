@@ -78,7 +78,7 @@ export const useAdminBloggers = (activeTab: string) => {
     const bloggersWithoutGenderQuery = useInfiniteQuery({
             queryKey: ["adminBloggersWithoutGender"],
             queryFn: async ({pageParam = 1}) => {
-                const res = await adminGetBloggersWithoutGender(pageParam, 5);
+                const res = await adminGetBloggersWithoutGender(pageParam, PAGINATION.DEFAULT_PAGE_SIZE);
                 const filtered = res.bloggers.filter((b) => !b.genderType || b.genderType === null);
                 return {bloggers: filtered, currentPage: pageParam, totalCount: res.totalCount, hasMore: res.hasMore};
             },
