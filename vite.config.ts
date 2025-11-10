@@ -29,7 +29,8 @@ export default defineConfig(({ mode }) => ({
   preview: {
     host: "0.0.0.0",
     port: 3005,
-    strictPort: true
+    strictPort: true,
+    allowedHosts: ["zorki.pro", "www.zorki.pro"]
   },
   plugins: [
     react({
