@@ -128,6 +128,7 @@ export class ApiErrorHandler {
 
   /**
    * Обработать ошибку аутентификации (401)
+   * ВАЖНО: Этот метод должен вызываться ТОЛЬКО для 401 ошибок!
    *
    * @param errorData - данные ошибки
    * @param redirectPath - путь для редиректа (по умолчанию '/login')
@@ -136,11 +137,19 @@ export class ApiErrorHandler {
     errorData: BadRequestExceptionDto,
     redirectPath = "/login",
   ): void {
-    // Обрабатываем через универсальный обработчик
+    // Проверяем, что это действительно 401 ошибка
+    // Если нет - не обрабатываем как ошибку авторизации
+    if (errorData.statusCode !== 401) {
+      // Для не-401 ошибок просто логируем, но не очищаем токены и не перенаправляем
+      this.errorHandler.handleErrorSilently(errorData);
+      return;
+    }
+
+    // Обрабатываем через универсальный обработчик ТОЛЬКО для 401
     this.errorHandler.handleAuthError(errorData, {
       showNotification: false,
       logError: true,
-      redirectOnError: true,
+      redirectOnError: false, // Не используем redirectOnError, так как handleAuthError сам обрабатывает редирект
       navigate: (path: string) => {
         // Очищаем все токены при 401
         tokenManager.clearAllTokens();

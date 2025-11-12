@@ -122,7 +122,7 @@ export const useAdminBloggerEditor = (username?: string) => {
           ...prev,
           full_name: fullName,
           description: profileData.description || '',
-          avatar_url: bloggerDetails.social?.[0]?.avatar || '',
+          avatar_url: bloggerDetails.social?.find(s => s.type === 'INSTAGRAM')?.avatar || bloggerDetails.social?.[0]?.avatar || '',
           contact_link: profileData.contactLink || '',
           work_format: profileData.workFormat ? (mapWorkFormatFromApi(profileData.workFormat) || '') as "ИП" | "профдоход" | "договор подряда" | "ООО" | "" : '',
           gender_type: profileData.genderType ? (mapGenderFromApi(profileData.genderType) || '') as "мужчина" | "женщина" | "пара" | "паблик" | "" : '',
@@ -131,12 +131,12 @@ export const useAdminBloggerEditor = (username?: string) => {
           // Используем темы из черновиков или основных данных
           topics: profileData.topics?.map(t => t.id) || [],
           banned_topics: profileData.restrictedTopics?.map(t => t.id) || [],
-          // Данные Instagram (первая социальная сеть)
-          instagram_username: bloggerDetails.social?.[0]?.username || '',
-          instagram_followers: bloggerDetails.social?.[0]?.subscribers || '0',
-          instagram_engagement_rate: bloggerDetails.social?.[0]?.er?.toString() || '0',
-          instagram_post_reach: bloggerDetails.social?.[0]?.postCoverage || '0',
-          instagram_story_reach: bloggerDetails.social?.[0]?.coverage || '0',
+          // Данные Instagram (ищем Instagram явно, иначе первая платформа)
+          instagram_username: bloggerDetails.social?.find(s => s.type === 'INSTAGRAM')?.username || bloggerDetails.social?.[0]?.username || '',
+          instagram_followers: bloggerDetails.social?.find(s => s.type === 'INSTAGRAM')?.subscribers || bloggerDetails.social?.[0]?.subscribers || '0',
+          instagram_engagement_rate: bloggerDetails.social?.find(s => s.type === 'INSTAGRAM')?.er?.toString() || bloggerDetails.social?.[0]?.er?.toString() || '0',
+          instagram_post_reach: bloggerDetails.social?.find(s => s.type === 'INSTAGRAM')?.postCoverage || bloggerDetails.social?.[0]?.postCoverage || '0',
+          instagram_story_reach: bloggerDetails.social?.find(s => s.type === 'INSTAGRAM')?.coverage || bloggerDetails.social?.[0]?.coverage || '0',
           instagram_post_price: bloggerDetails.price?.find(p => p.type === 'INSTAGRAM')?.postPrice?.toString() || '0',
           instagram_story_price: bloggerDetails.price?.find(p => p.type === 'INSTAGRAM')?.storiesPrice?.toString() || '0',
           instagram_integration_price: bloggerDetails.price?.find(p => p.type === 'INSTAGRAM')?.integrationPrice?.toString() || '0',
