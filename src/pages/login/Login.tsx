@@ -1,19 +1,7 @@
-import { AuthForm } from "@/components/auth/AuthForm.tsx";
-import { useAuthForm } from "@/hooks/useAuthForm.ts";
+import { AuthPage } from "./AuthPage";
 
 const Login = () => {
-  const { loading, error, handleSubmit, handleGoogleAuth } = useAuthForm({
-    mode: "login",
-  });
-  return (
-    <AuthForm
-      mode="login"
-      onSubmit={handleSubmit}
-      onGoogleAuth={handleGoogleAuth}
-      loading={loading}
-      error={error}
-    />
-  );
+  return <AuthPage />;
 };
 
 export default Login;

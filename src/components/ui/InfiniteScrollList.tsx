@@ -67,11 +67,12 @@ const InfiniteScrollList = <T,>({
 
   // Настройка Intersection Observer для внешнего infinite scroll
   useEffect(() => {
-    if (!externalOnLoadMore || !hasMore || isLoading) return;
+    if (!externalOnLoadMore || !hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        // Дополнительная проверка внутри callback для предотвращения параллельных вызовов
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
           externalOnLoadMore();
         }
       },

@@ -19,8 +19,8 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
   }, [filters, onFilterChange]);
 
   return (
-    <div className="w-80 bg-card border-r border-border-light h-full overflow-y-auto">
-      <div className="p-6">
+    <div className="w-full lg:w-80 bg-card border-r border-border-light h-full overflow-y-auto">
+      <div className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">Фильтры</h2>
           <Button
@@ -49,7 +49,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
             <Label className="text-sm font-medium mb-2 block">Пол блогера</Label>
             <Select value={filters.gender} onValueChange={(value) => updateFilter("gender", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Выберите" />
+                <SelectValue placeholder="Выбрать" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="мужчина">Мужчина</SelectItem>
@@ -64,7 +64,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
             <Label className="text-sm font-medium mb-2 block">Тематика блога</Label>
             <Select value={filters.category} onValueChange={(value) => updateFilter("category", value)}>
               <SelectTrigger>
-                <SelectValue placeholder={loading ? "Загрузка..." : "Выберите тематику"} />
+                <SelectValue placeholder={loading ? "Загрузка..." : "Выбрать"} />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (
@@ -80,54 +80,60 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
 
           <div>
             <Label className="text-sm font-medium mb-2 block">Подписчиков</Label>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <Input
                 placeholder="От"
                 value={filters.followersMin}
                 onChange={(e) => updateFilter("followersMin", e.target.value)}
                 type="number"
+                className="flex-1 min-w-0"
               />
               <Input
                 placeholder="До"
                 value={filters.followersMax}
                 onChange={(e) => updateFilter("followersMax", e.target.value)}
                 type="number"
+                className="flex-1 min-w-0"
               />
             </div>
           </div>
 
           <div>
             <Label className="text-sm font-medium mb-2 block">Цена поста - BYN</Label>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <Input
                 placeholder="От"
                 value={filters.postPriceMin}
                 onChange={(e) => updateFilter("postPriceMin", e.target.value)}
                 type="number"
+                className="flex-1 min-w-0"
               />
               <Input
                 placeholder="До"
                 value={filters.postPriceMax}
                 onChange={(e) => updateFilter("postPriceMax", e.target.value)}
                 type="number"
+                className="flex-1 min-w-0"
               />
             </div>
           </div>
 
           <div>
             <Label className="text-sm font-medium mb-2 block">Цена сторис - BYN</Label>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <Input
                 placeholder="От"
                 value={filters.storyPriceMin}
                 onChange={(e) => updateFilter("storyPriceMin", e.target.value)}
                 type="number"
+                className="flex-1 min-w-0"
               />
               <Input
                 placeholder="До"
                 value={filters.storyPriceMax}
                 onChange={(e) => updateFilter("storyPriceMax", e.target.value)}
                 type="number"
+                className="flex-1 min-w-0"
               />
             </div>
           </div>
@@ -153,7 +159,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
             <Label className="text-sm font-medium mb-2 block">Запрещенные тематики</Label>
             <Select value={filters.restrictedTopics} onValueChange={(value) => updateFilter("restrictedTopics", value)}>
               <SelectTrigger>
-                <SelectValue placeholder={loading ? "Загрузка..." : "Выберите тематику"} />
+                <SelectValue placeholder={loading ? "Загрузка..." : "Выбрать"} />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (

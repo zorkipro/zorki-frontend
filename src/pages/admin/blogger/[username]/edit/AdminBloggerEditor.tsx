@@ -106,36 +106,59 @@ export const AdminBloggerEditor = () => {
     );
   }
 
+  // Находим основную платформу (Instagram приоритет, иначе первая)
+  const mainSocial = profile?.social?.find(s => s.type === "INSTAGRAM") || profile?.social?.[0];
+  
+  // Получаем данные из профиля или черновика
+  const profileData = profile?.profileDraft || profile;
+  const fullName = profileData?.name && profileData?.lastName 
+    ? `${profileData.name} ${profileData.lastName}`.trim()
+    : profileData?.name || mainSocial?.title || mainSocial?.username || "Неизвестный блогер";
+  
+  // Получаем цены (приоритет черновикам)
+  const priceData = profile?.priceDraft || profile?.price || [];
+  const instagramPrice = priceData.find(p => p.type === "INSTAGRAM");
+  
+  // Формируем объект platforms
+  const platforms: Blogger["platforms"] = {};
+  profile?.social?.forEach((social) => {
+    const platformPrice = priceData.find(p => p.type === social.type);
+    const platformKey = social.type.toLowerCase() as keyof Blogger["platforms"];
+    platforms[platformKey] = {
+      username: social.username,
+      subscribers: parseInt(social.subscribers || "0"),
+      er: social.er || 0,
+      reach: parseInt(social.postCoverage || "0"),
+      price: parseFloat(platformPrice?.postPrice || "0"),
+      storyReach: parseInt(social.coverage || "0"),
+      storyPrice: parseFloat(platformPrice?.storiesPrice || "0"),
+      integrationPrice: parseFloat(platformPrice?.integrationPrice || "0"),
+    };
+  });
+
   const profileForHeader = profile ? {
     id: profile.id.toString(),
-    name: profile.social?.title || profile.name || profile.social?.username || "Неизвестный блогер",
-    handle: profile.social?.username || "",
-    avatar: profile.social?.avatar || "",
-    promoText: profile.social?.description || "",
-    platforms: {
-      instagram: profile.social ? {
-        username: profile.social.username,
-        followers: parseInt(profile.social.subscribers || "0"),
-        avatar: profile.social.avatar,
-        engagementRate: profile.social.er || 0,
-      } : undefined,
-    },
-    followers: parseInt(profile.social?.subscribers || "0"),
-    postPrice: parseFloat(profile.price?.postPrice || "0"),
-    storyPrice: parseFloat(profile.price?.storiesPrice || "0"),
-    postReach: parseInt(profile.social?.[0]?.postCoverage || "0"),
-    storyReach: parseInt(profile.social?.[0]?.coverage || "0"),
-    engagementRate: profile.social?.er || 0,
-    gender: profile.genderType?.toLowerCase() as "мужчина" | "женщина" | "пара" | "паблик" | undefined,
+    name: fullName,
+    handle: mainSocial?.username || "",
+    avatar: mainSocial?.avatar || "",
+    promoText: mainSocial?.description || profileData?.description || "",
+    platforms,
+    followers: parseInt(mainSocial?.subscribers || "0"),
+    postPrice: parseFloat(instagramPrice?.postPrice || "0"),
+    storyPrice: parseFloat(instagramPrice?.storiesPrice || "0"),
+    postReach: parseInt(mainSocial?.postCoverage || "0"),
+    storyReach: parseInt(mainSocial?.coverage || "0"),
+    engagementRate: mainSocial?.er || 0,
+    gender: profileData?.genderType?.toLowerCase() as "мужчина" | "женщина" | "пара" | "паблик" | undefined,
     category: "",
-    topics: [],
-    allowsBarter: false,
-    inMartRegistry: false,
-    restrictedTopics: [],
-    cooperationConditions: "",
-    workFormat: "",
+    topics: profileData?.topics?.map(t => t.id) || [],
+    allowsBarter: profileData?.isBarterAvailable || false,
+    inMartRegistry: profileData?.isMartRegistry || false,
+    restrictedTopics: profileData?.restrictedTopics?.map(t => t.id) || [],
+    cooperationConditions: profileData?.cooperation || "",
+    workFormat: profileData?.workFormat || "",
     paymentTerms: "",
-    contact_url: "",
+    contact_url: profileData?.contactLink || "",
     verificationStatus: profile.verificationStatus,
   } : null;
 

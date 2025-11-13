@@ -30,6 +30,37 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Ранняя проверка редиректа с Supabase домена (выполняется до загрузки React)
+      (function() {
+        try {
+          const supabaseUrl = 'https://db.zorki.pro';
+          const currentHost = window.location.hostname;
+          const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : null;
+          const hasHashParams = window.location.hash.includes('access_token');
+          
+          if (supabaseHost && currentHost === supabaseHost && hasHashParams) {
+            // Пытаемся получить сохраненный origin
+            let frontendOrigin = localStorage.getItem('oauth_redirect_origin') || 
+                               sessionStorage.getItem('oauth_redirect_origin');
+            
+            if (!frontendOrigin) {
+              // Fallback: определяем по API URL или используем значение по умолчанию
+              const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('localhost');
+              frontendOrigin = isDev ? 'http://localhost:8085' : 'https://zorki.pro';
+            }
+            
+            frontendOrigin = frontendOrigin.replace(/\/$/, '');
+            const redirectUrl = frontendOrigin + window.location.pathname + window.location.search + window.location.hash;
+            
+            console.log('🔄 HTML redirect:', { from: window.location.href, to: redirectUrl });
+            window.location.replace(redirectUrl);
+          }
+        } catch (e) {
+          console.error('Ошибка при проверке редиректа:', e);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
