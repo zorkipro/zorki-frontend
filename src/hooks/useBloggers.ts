@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Blogger, FilterState } from "@/types/blogger";
 import { getAllBloggers } from "@/api/endpoints/blogger";
 import { mapApiListBloggerToLocal } from "@/utils/api/mappers";
@@ -21,6 +21,10 @@ export const useBloggers = (externalFilters?: FilterState) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  // Используем ref для отслеживания текущей страницы, чтобы избежать race condition
+  const currentPageRef = useRef(1);
+  const isLoadingMoreRef = useRef(false);
 
   const fetchBloggers = useCallback(async () => {
     setLoading(true);
@@ -32,6 +36,7 @@ export const useBloggers = (externalFilters?: FilterState) => {
       setBloggers(response.items.map(mapApiListBloggerToLocal));
       setTotalCount(response.totalCount);
       setCurrentPage(1);
+      currentPageRef.current = 1;
       setHasMore(response.pagesCount > 1);
     } catch (err: unknown) {
       setError(handleError(err).message);
@@ -41,23 +46,32 @@ export const useBloggers = (externalFilters?: FilterState) => {
   }, [debouncedSearch, filters, categories, restrictedTopics, handleError]);
 
   const loadMoreBloggers = useCallback(async () => {
-    if (!hasMore || isLoadingMore) return;
+    // Проверяем, можно ли загружать еще (используем ref для атомарной проверки)
+    if (!hasMore || isLoadingMoreRef.current) return;
+    
+    // Устанавливаем флаг загрузки сразу, чтобы предотвратить параллельные запросы
+    isLoadingMoreRef.current = true;
     setIsLoadingMore(true);
+    
+    // Используем ref для получения актуального значения страницы
+    const nextPage = currentPageRef.current + 1;
+    
     try {
-      const nextPage = currentPage + 1;
       const response = await getAllBloggers(
         buildApiParams({ ...filters, search: debouncedSearch }, nextPage, 50, { categories, restrictedTopics })
       );
       setBloggers((prev) => [...prev, ...response.items.map(mapApiListBloggerToLocal)]);
       setCurrentPage(nextPage);
+      currentPageRef.current = nextPage;
       setHasMore(nextPage < response.pagesCount);
     } catch (err: unknown) {
       const errorMessage = handleError(err).message;
       if (errorMessage.includes("Invalid page")) setHasMore(false);
     } finally {
       setIsLoadingMore(false);
+      isLoadingMoreRef.current = false;
     }
-  }, [currentPage, hasMore, isLoadingMore, debouncedSearch, filters, categories, restrictedTopics, handleError]);
+  }, [hasMore, debouncedSearch, filters, categories, restrictedTopics, handleError]);
 
   useEffect(() => {
     fetchBloggers();

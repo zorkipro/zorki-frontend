@@ -42,11 +42,19 @@ export const BloggerTable = ({
   const observerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!onLoadMore || !hasMore || isLoadingMore || !observerRef.current) return;
-    const observer = new IntersectionObserver(([entry]) => entry?.isIntersecting && onLoadMore(), {
-      threshold: 0.1,
-      rootMargin: "500px",
-    });
+    if (!onLoadMore || !hasMore || !observerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Дополнительная проверка внутри callback для предотвращения параллельных вызовов
+        if (entry?.isIntersecting && !isLoadingMore && hasMore) {
+          onLoadMore();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "500px",
+      }
+    );
     observer.observe(observerRef.current);
     return () => observer.disconnect();
   }, [onLoadMore, hasMore, isLoadingMore]);

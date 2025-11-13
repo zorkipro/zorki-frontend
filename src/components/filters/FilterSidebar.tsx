@@ -49,7 +49,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
             <Label className="text-sm font-medium mb-2 block">Пол блогера</Label>
             <Select value={filters.gender} onValueChange={(value) => updateFilter("gender", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Выберите" />
+                <SelectValue placeholder="Выбрать" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="мужчина">Мужчина</SelectItem>
@@ -64,7 +64,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
             <Label className="text-sm font-medium mb-2 block">Тематика блога</Label>
             <Select value={filters.category} onValueChange={(value) => updateFilter("category", value)}>
               <SelectTrigger>
-                <SelectValue placeholder={loading ? "Загрузка..." : "Выберите тематику"} />
+                <SelectValue placeholder={loading ? "Загрузка..." : "Выбрать"} />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (
@@ -159,7 +159,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
             <Label className="text-sm font-medium mb-2 block">Запрещенные тематики</Label>
             <Select value={filters.restrictedTopics} onValueChange={(value) => updateFilter("restrictedTopics", value)}>
               <SelectTrigger>
-                <SelectValue placeholder={loading ? "Загрузка..." : "Выберите тематику"} />
+                <SelectValue placeholder={loading ? "Загрузка..." : "Выбрать"} />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (
