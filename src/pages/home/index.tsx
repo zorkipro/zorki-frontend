@@ -7,13 +7,19 @@ import {Button, Sheet, SheetContent, SheetTrigger} from "@/ui-kit";
 import {useBloggersQuery} from "@/hooks/useBloggers.ts";
 import SEOHead from "@/components/SEO/SEOHead.tsx";
 import {DEFAULT_FILTER_STATE} from "@/config/filters.ts";
+import {ContentWrapper} from "@/components/layout/ContentWrapper.tsx";
+
+const SEO_KEYWORDS = ["блогеры беларуси", "рейтинг блогеров", "инфлюенсеры беларуси", "реклама в инстаграм", "реклама в тикток", "реклама в ютуб", "реклама в телеграм", "маркетинг беларусь", "продвижение блогеров", "сотрудничество с блогерами"] as const;
+
 
 const Index = () => {
+// const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const {
     filters,
     isFilterOpen,
-    handleFilterChange,
+      setIsFilterOpen,
+    handleFilterChange:setFilters,
     handleFilterToggle,
     allBloggers,
     filteredBloggers,
@@ -26,148 +32,79 @@ const Index = () => {
     loadMoreBloggers,
   } = useBloggersQuery(DEFAULT_FILTER_STATE);
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
-        <div className="text-center" role="alert" aria-live="assertive">
-          <div className="text-red-500 mb-4">Ошибка загрузки данных</div>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            aria-label="Повторить попытку загрузки данных"
-          >
-            Повторить попытку
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Zorki.pro - Рейтинг блогеров Беларуси"
         description="Платформа, где бренды находят блогеров. Всё удобно и бесплатно."
-        keywords={[
-          "блогеры беларуси",
-          "рейтинг блогеров",
-          "инфлюенсеры беларуси",
-          "реклама в инстаграм",
-          "реклама в тикток",
-          "реклама в ютуб",
-          "реклама в телеграм",
-          "маркетинг беларусь",
-          "продвижение блогеров",
-          "сотрудничество с блогерами",
-        ]}
+        keywords={SEO_KEYWORDS}
         url="https://zorki.pro"
         type="website"
       />
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar - Hidden on mobile by default */}
-          <aside
-            className="hidden lg:block lg:w-80 flex-shrink-0 fixed top-16 left-4 z-10 max-h-[calc(100vh-4rem)] overflow-y-auto"
-            aria-label="Фильтры поиска"
-          >
-            <FilterSidebar
-              filters={filters}
-              onFilterChange={handleFilterChange}
-            />
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 sm:pb-24 min-[430px]:pb-8 max-w-full overflow-x-hidden">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 w-full max-w-full">
+          <aside className="hidden lg:block lg:w-80 flex-shrink-0 lg:sticky lg:top-16 lg:self-start lg:h-[calc(100vh-4rem)] z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-muted">
+            <FilterSidebar filters={filters} onFilterChange={setFilters} />
           </aside>
 
-          {/* Main Content */}
-          <div className="flex-1 lg:ml-[21rem]">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                  Рейтинг блогеров Беларуси
-                </h1>
-                <p
-                  className="text-sm text-muted-foreground mt-1"
-                  aria-live="polite"
-                >
-                  Блогеров: {totalCount}
-                </p>
+          <div className="flex-1 w-full min-w-0 max-w-full overflow-x-hidden">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-full">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground break-words">Рейтинг блогеров Беларуси</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">Блогеров: {totalCount}</p>
               </div>
-              <div className="flex items-center gap-2">
-                {/* Mobile Filter Button */}
-                <Sheet open={isFilterOpen} onOpenChange={handleFilterToggle}>
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="lg:hidden"
-                      aria-label="Открыть фильтры поиска"
-                      aria-expanded={isFilterOpen}
-                    >
-                      <Filter className="w-4 h-4 mr-2" aria-hidden="true" />
-                      Фильтры
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                    side="left"
-                    className="w-80 p-0"
-                    aria-label="Панель фильтров"
-                  >
-                    <FilterSidebar
-                      filters={filters}
-                      onFilterChange={handleFilterChange}
-                      onClose={() => handleFilterToggle(false)}
-                    />
-                  </SheetContent>
-                </Sheet>
-              </div>
+              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="lg:hidden flex-shrink-0">
+                    <Filter className="w-4 h-4 mr-2" />
+                    Фильтры
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[280px] sm:w-80 p-0 max-w-[90vw]">
+                  <FilterSidebar filters={filters} onFilterChange={setFilters} onClose={() => setIsFilterOpen(false)} />
+                </SheetContent>
+              </Sheet>
             </header>
 
-            <section aria-label="Список блогеров">
-              <BloggerTable
-                bloggers={filteredBloggers}
-                loading={loading}
-                // searchLoading={searchLoading}
-                hasMore={hasMore}
-                isLoadingMore={isLoadingMore}
-                onLoadMore={loadMoreBloggers}
-                totalCount={totalCount}
-              />
-            </section>
+            {error && <div className="text-center py-6 sm:py-8 text-red-500 text-sm sm:text-base break-words px-2">Ошибка: {error}</div>}
+
+            {/* Промо карусель - закомментировано */}
+            {/* <ContentWrapper><AdSlider /></ContentWrapper> */}
+
+            {/* Промо блогеры с топовыми блогерами - закомментировано */}
+            {/* <ContentWrapper allowShadow overflowHidden={false}><PromoBloggersBlock /></ContentWrapper> */}
+
+            <ContentWrapper>
+              <BloggerTable bloggers={allBloggers} loading={loading} hasMore={hasMore} isLoadingMore={isLoadingMore} onLoadMore={loadMoreBloggers} totalCount={totalCount} />
+            </ContentWrapper>
           </div>
         </div>
       </main>
-
-      <ScrollToTopButton />
-    </div>
-  );
+<ScrollToTopButton />
+</div>
+);
 };
 
 export default Index;
 
 
-//main
 //import { useState } from "react";
 // import { Header } from "@/components/layout/Header";
 // import { FilterSidebar } from "@/components/filters/FilterSidebar";
 // import { BloggerTable } from "@/components/bloggers/BloggerTable";
+// // import { PromoBloggersBlock } from "@/components/bloggers/PromoBloggersBlock";
+// // import { AdSlider } from "@/components/ad/AdSlider";
 // import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton";
+// import { ContentWrapper } from "@/components/layout/ContentWrapper";
 // import { Filter } from "lucide-react";
 // import { Button, Sheet, SheetContent, SheetTrigger } from "@/ui-kit";
 // import { useBloggers } from "@/hooks/useBloggers";
 // import SEOHead from "@/components/SEO/SEOHead";
 // import { DEFAULT_FILTER_STATE } from "@/config/filters";
 //
-// const SEO_KEYWORDS = [
-//   "блогеры беларуси",
-//   "рейтинг блогеров",
-//   "инфлюенсеры беларуси",
-//   "реклама в инстаграм",
-//   "реклама в тикток",
-//   "реклама в ютуб",
-//   "реклама в телеграм",
-//   "маркетинг беларусь",
-//   "продвижение блогеров",
-//   "сотрудничество с блогерами",
-// ];
+// const SEO_KEYWORDS = ["блогеры беларуси", "рейтинг блогеров", "инфлюенсеры беларуси", "реклама в инстаграм", "реклама в тикток", "реклама в ютуб", "реклама в телеграм", "маркетинг беларусь", "продвижение блогеров", "сотрудничество с блогерами"] as const;
 //
 // const Index = () => {
 //   const [filters, setFilters] = useState(DEFAULT_FILTER_STATE);
@@ -185,47 +122,50 @@ export default Index;
 //       />
 //       <Header />
 //
-//       <main className="container mx-auto px-4 py-8 pb-24 min-[430px]:pb-8">
-//         <div className="flex flex-col lg:flex-row gap-8">
-//           <aside className="hidden lg:block lg:w-80 flex-shrink-0 fixed top-16 left-4 z-10 max-h-[calc(100vh-4rem)] overflow-y-auto">
+//       <main className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 sm:pb-24 min-[430px]:pb-8 max-w-full overflow-x-hidden">
+//         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 w-full max-w-full">
+//           <aside className="hidden lg:block lg:w-80 flex-shrink-0 lg:sticky lg:top-16 lg:self-start lg:h-[calc(100vh-4rem)] z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-muted">
 //             <FilterSidebar filters={filters} onFilterChange={setFilters} />
 //           </aside>
 //
-//           <div className="flex-1 lg:ml-[21rem]">
-//             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-//               <div>
-//                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">Рейтинг блогеров Беларуси</h1>
-//                 <p className="text-sm text-muted-foreground mt-1">Блогеров: {totalCount}</p>
+//           <div className="flex-1 w-full min-w-0 max-w-full overflow-x-hidden">
+//             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-full">
+//               <div className="min-w-0 flex-1">
+//                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground break-words">Рейтинг блогеров Беларуси</h1>
+//                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">Блогеров: {totalCount}</p>
 //               </div>
 //               <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
 //                 <SheetTrigger asChild>
-//                   <Button variant="outline" className="lg:hidden">
+//                   <Button variant="outline" className="lg:hidden flex-shrink-0">
 //                     <Filter className="w-4 h-4 mr-2" />
 //                     Фильтры
 //                   </Button>
 //                 </SheetTrigger>
-//                 <SheetContent side="left" className="w-80 p-0">
+//                 <SheetContent side="left" className="w-[280px] sm:w-80 p-0 max-w-[90vw]">
 //                   <FilterSidebar filters={filters} onFilterChange={setFilters} onClose={() => setIsFilterOpen(false)} />
 //                 </SheetContent>
 //               </Sheet>
 //             </header>
 //
-//             {error && <div className="text-center py-8 text-red-500">Ошибка: {error}</div>}
-//             <BloggerTable
-//               bloggers={bloggers}
-//               loading={loading}
-//               hasMore={hasMore}
-//               isLoadingMore={isLoadingMore}
-//               onLoadMore={loadMoreBloggers}
-//               totalCount={totalCount}
-//             />
+//             {error && <div className="text-center py-6 sm:py-8 text-red-500 text-sm sm:text-base break-words px-2">Ошибка: {error}</div>}
+//
+//             {/* Промо карусель - закомментировано */}
+//             {/* <ContentWrapper><AdSlider /></ContentWrapper> */}
+//
+//             {/* Промо блогеры с топовыми блогерами - закомментировано */}
+//             {/* <ContentWrapper allowShadow overflowHidden={false}><PromoBloggersBlock /></ContentWrapper> */}
+//
+//             <ContentWrapper>
+//               <BloggerTable bloggers={bloggers} loading={loading} hasMore={hasMore} isLoadingMore={isLoadingMore} onLoadMore={loadMoreBloggers} totalCount={totalCount} />
+//             </ContentWrapper>
 //           </div>
 //         </div>
 //       </main>
-//
-//       <ScrollToTopButton />
-//     </div>
-//   );
+//<ScrollToTopButton />
+// </div>
+// );
 // };
 //
 // export default Index;
+
+

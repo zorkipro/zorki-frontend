@@ -1,4 +1,4 @@
-import { AuthPage } from "./AuthPage";
+import {AuthPage} from "@/pages/auth/AuthPage.tsx";
 
 const Register = () => {
   return <AuthPage />;

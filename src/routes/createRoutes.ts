@@ -39,6 +39,7 @@ const pageFiles = import.meta.glob('/src/pages/**/*.tsx');
 
 export const publicRoutes = createDynamicRoutes(pageFiles, [
     '',
+    'auth',
     'login',
     'register',
     'forgot-password',
