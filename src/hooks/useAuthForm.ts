@@ -135,7 +135,8 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { 
-          redirectTo: redirectUrl,
+          redirectTo: 'http://localhost:8085/auth/v1/callback',
+          // redirectTo: redirectUrl,
         //   queryParams: {
         //     access_type: 'offline',
         //     prompt: 'consent',

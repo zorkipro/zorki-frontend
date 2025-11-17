@@ -48,6 +48,7 @@ export const publicRoutes = createDynamicRoutes(pageFiles, [
     'terms',
     'dev-tools',
     '[username]',
+    'auth/v1/callback',
 ]);
 
 export const privateRoutes = createDynamicRoutes(pageFiles, [

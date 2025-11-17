@@ -174,6 +174,7 @@ export async function apiRequest<T = unknown>(
         apiErrorHandler.shouldRedirect(errorData.statusCode) &&
         !skipAuthErrorHandling
       ) {
+        console.log('redirect')
         apiErrorHandler.handleAuthError(errorData);
       }
 
