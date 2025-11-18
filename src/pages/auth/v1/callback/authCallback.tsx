@@ -14,7 +14,7 @@ const AuthCallback = () => {
             navigate('/')
         }
         saveAccessToken(state)
-        navigate('/profile/edit', {replace:true})
+        // navigate('/profile/edit', {replace:true})
     }, []);
      const data = useClientMe()
     // if(data) {

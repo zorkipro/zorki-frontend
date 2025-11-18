@@ -346,6 +346,7 @@ export async function loginIgAccount(username: string, password: string): Promis
   return apiRequest<IgClientLoginOutputDto>("/ig-client/login", {
     method: "POST",
     body: JSON.stringify({ username, password } as IgClientLoginInputDto),
+    skipAuthErrorHandling: true
   });
 }
 
