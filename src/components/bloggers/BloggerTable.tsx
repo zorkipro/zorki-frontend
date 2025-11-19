@@ -78,6 +78,7 @@ export const BloggerTable = ({
             className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 aspect-square"
             username={normalizeUsername(blogger.handle)}
             gender={blogger.gender}
+            id={blogger.id}
           />
           <div className="flex-1 min-w-0 overflow-hidden">
             <h3
@@ -197,7 +198,7 @@ export const BloggerTable = ({
                   key={blogger.id}
                   className={`group cursor-pointer hover:bg-muted/50 transition-colors ${isLastRow ? '[&:first-child_td:first-child]:rounded-bl-lg [&:first-child_td:last-child]:rounded-br-lg' : ''}`}
                   onClick={() => handleRowClick({handle: blogger.handle, bloggerId: blogger.id})}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick(blogger.handle)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick({handle: blogger.handle,bloggerId:blogger.id})}
                 >
                   <TableCell className="text-center font-medium sticky left-0 z-50 bg-white group-hover:bg-muted transition-colors" style={{ willChange: "transform", ...(isLastRow ? { borderBottomLeftRadius: "0.5rem" } : {}) }}>{index + 1}</TableCell>
                   <TableCell>
@@ -208,6 +209,7 @@ export const BloggerTable = ({
                         className="w-10 h-10 aspect-square"
                         username={normalizeUsername(blogger.handle)}
                         gender={blogger.gender}
+                        id={blogger.id}
                       />
                       <div>
                         <div className="font-medium text-foreground" title={blogger.name}>
