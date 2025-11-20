@@ -1,4 +1,4 @@
-import {AppLayout} from "@/components/layout/AppLayout.tsx";
+import {AppLayout} from "@/components/layout/AppLayout";
 import {AppRoutes} from "@/routes";
 
 
