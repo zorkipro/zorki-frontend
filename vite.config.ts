@@ -80,14 +80,14 @@ export default defineConfig(({ mode }) => ({
             './src/components/profile/ScreenshotManagement'
           ],
           'dashboard-components': [
-            './src/pages/Dashboard',
+            './src/pages/dashboard/Dashboard',
             './src/components/bloggers/BloggerTable',
             './src/components/filters/FilterSidebar'
           ],
           'auth-components': [
-            './src/pages/Login',
-            './src/pages/Register',
-            './src/pages/EmailConfirmation',
+            './src/pages/login/Login',
+            './src/pages/register/Register',
+            './src/pages/email-confirmation/EmailConfirmation',
             './src/contexts/AuthContext'
           ]
         }
