@@ -16,7 +16,7 @@ const HeaderComponent = () => {
 
   return (
     <>
-      <header className="bg-background border-b border-border-light sticky top-0 z-[100] w-full max-w-full">
+      <header className="bg-background border-b border-border-light fixed top-0 left-0 right-0 z-[100] w-full max-w-full">
         <div className="w-full max-w-full px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 max-w-full">
             <Link to="/" className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 min-w-0">

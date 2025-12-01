@@ -166,6 +166,7 @@ const AdminLinkRequestsTableComponent = ({
         <div key={request.id} className="bg-card rounded-lg border p-4 hover:shadow-md transition-all duration-200">
           <div className="flex items-start space-x-3 mb-3">
             <SafeAvatar
+              id={request.linked_user_id || request.id}
               src={request.social_accounts?.[0]?.avatarUrl || null}
               alt={`Аватар ${request.name}`}
               className="w-12 h-12 flex-shrink-0 aspect-square"
@@ -216,6 +217,7 @@ const AdminLinkRequestsTableComponent = ({
         <TableCell>
           <div className="flex items-center space-x-3">
             <SafeAvatar
+              id={request.linked_user_id || request.id}
               src={request.social_accounts?.[0]?.avatarUrl || null}
               alt={`Аватар ${request.name}`}
               className="w-10 h-10 aspect-square"

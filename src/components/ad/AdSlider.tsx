@@ -3,7 +3,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AdSlide {
   id: string;
-  image: string;
+  image: string; // Для больших разрешений
+  imageMobile?: string; // Для маленьких разрешений (когда меняется соотношение сторон)
   title?: string;
   description?: string;
   link?: string;
@@ -17,37 +18,34 @@ interface AdSliderProps {
   showDots?: boolean;
 }
 
-// Пример данных для рекламы (можно заменить на данные из API)
+// Данные для рекламы
 const defaultSlides: AdSlide[] = [
   {
     id: "1",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23F59E0B'/%3E%3C/svg%3E",
-    title: "Специальное предложение",
-    description: "Разместите свою рекламу здесь",
-    link: "#",
-    buttonText: "Узнать больше",
+    image: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/1a+(1).webp",
+    imageMobile: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/1b+(1).webp",
+    link: "https://adwize.me/p/ad3",
   },
   {
     id: "2",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%236365F1'/%3E%3C/svg%3E",
-    title: "Новое предложение",
-    description: "Привлеките внимание к своему бренду",
-    link: "#",
-    buttonText: "Связаться",
+    image: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/2a+(1).webp",
+    imageMobile: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/2b+(1).webp",
+    link: "https://pr.adwize.me/sales",
   },
   {
     id: "3",
-    image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%2310B981'/%3E%3C/svg%3E",
-    title: "Акция",
-    description: "Ограниченное предложение",
-    link: "#",
-    buttonText: "Подробнее",
+    image: "", // Нет изображения, используем только текст и кнопку
+    imageMobile: "",
+    link: "/proads",
+    title: "Разместите рекламу на Zorki.pro",
+    description: "Доступ к самым влиятельным блогерам и маркетологам Беларуси",
+    buttonText: "Узнать больше",
   },
 ];
 
 export const AdSlider = ({
   slides = defaultSlides,
-  autoPlayInterval = 5000,
+  autoPlayInterval = 10000,
   showControls = true,
   showDots = true,
 }: AdSliderProps) => {
@@ -84,7 +82,13 @@ export const AdSlider = ({
 
   const handleSlideClick = (slide: AdSlide) => {
     if (slide.link && slide.link !== "#") {
-      window.open(slide.link, "_blank", "noopener,noreferrer");
+      // Если ссылка относительная (начинается с /), используем window.location
+      if (slide.link.startsWith("/")) {
+        window.location.href = slide.link;
+      } else {
+        // Для внешних ссылок открываем в новой вкладке
+        window.open(slide.link, "_blank", "noopener,noreferrer");
+      }
     }
   };
 
@@ -112,30 +116,49 @@ export const AdSlider = ({
               className="relative w-full h-full cursor-pointer group"
               onClick={() => handleSlideClick(slide)}
             >
-              <img
-                src={slide.image}
-                alt={slide.title || `Реклама ${index + 1}`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                style={{ maxWidth: "100%", height: "100%", objectFit: "cover" }}
-              />
-              {/* Минималистичный overlay для текста */}
+              {slide.image ? (
+                <picture className="w-full h-full">
+                  {slide.imageMobile && (
+                    <source
+                      media="(max-width: 768px)"
+                      srcSet={slide.imageMobile}
+                    />
+                  )}
+                  <img
+                    src={slide.image}
+                    alt={slide.title || `Реклама ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    style={{ 
+                      width: "100%", 
+                      height: "100%", 
+                      objectFit: "cover",
+                      minWidth: "100%",
+                      minHeight: "100%"
+                    }}
+                  />
+                </picture>
+              ) : (
+                // Фон для слайда без изображения
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
+              )}
+              {/* Текст и кнопка для слайдов */}
               {(slide.title || slide.description || slide.buttonText) && (
-                <div className="absolute inset-0 flex items-center justify-center md:justify-start px-2 sm:px-4 overflow-hidden">
-                  <div className="w-full max-w-full px-2 sm:px-4 md:px-6 lg:px-8 text-center md:text-left overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
+                  <div className="w-full max-w-2xl text-center overflow-hidden">
                     {slide.title && (
-                      <h3 className="text-white text-xs min-[375px]:text-sm min-[400px]:text-base sm:text-lg md:text-xl lg:text-2xl font-semibold mb-0.5 sm:mb-1 md:mb-2 drop-shadow-sm line-clamp-2 break-words overflow-hidden">
+                      <h3 className="text-foreground text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 drop-shadow-sm line-clamp-2 break-words">
                         {slide.title}
                       </h3>
                     )}
                     {slide.description && (
-                      <p className="text-white/95 text-xs sm:text-sm md:text-base mb-1.5 sm:mb-2 md:mb-3 hidden min-[400px]:block drop-shadow-sm line-clamp-2 break-words overflow-hidden">
+                      <p className="text-muted-foreground text-sm sm:text-base md:text-lg mb-4 sm:mb-6 drop-shadow-sm line-clamp-2 break-words">
                         {slide.description}
                       </p>
                     )}
                     {slide.buttonText && (
                       <button
-                        className="inline-block px-2.5 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 bg-white/95 hover:bg-white text-gray-900 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 shadow-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+                        className="inline-block px-6 py-3 sm:px-8 sm:py-4 bg-primary hover:bg-primary/90 text-primary-foreground text-sm sm:text-base font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg whitespace-nowrap"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSlideClick(slide);
@@ -156,24 +179,24 @@ export const AdSlider = ({
       {showControls && slides.length > 1 && (
         <>
           <button
-            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 opacity-0 group-hover:opacity-100 md:opacity-100"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-black/10 hover:bg-black/20 transition-all duration-200 opacity-0 group-hover:opacity-100 md:opacity-100"
             onClick={(e) => {
               e.stopPropagation();
               goToPrevious();
             }}
             aria-label="Предыдущий слайд"
           >
-            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-white/80 drop-shadow-md mx-auto" />
+            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-black/60 drop-shadow-md mx-auto" />
           </button>
           <button
-            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-20 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200 opacity-0 group-hover:opacity-100 md:opacity-100"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-20 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-black/10 hover:bg-black/20 transition-all duration-200 opacity-0 group-hover:opacity-100 md:opacity-100"
             onClick={(e) => {
               e.stopPropagation();
               goToNext();
             }}
             aria-label="Следующий слайд"
           >
-            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-white/80 drop-shadow-md mx-auto" />
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-black/60 drop-shadow-md mx-auto" />
           </button>
         </>
       )}
@@ -186,8 +209,8 @@ export const AdSlider = ({
               key={index}
               className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? "bg-white w-6 sm:w-8"
-                  : "bg-white/40 hover:bg-white/60"
+                  ? "bg-black/50 w-6 sm:w-8"
+                  : "bg-black/20 hover:bg-black/35"
               }`}
               onClick={(e) => {
                 e.stopPropagation();

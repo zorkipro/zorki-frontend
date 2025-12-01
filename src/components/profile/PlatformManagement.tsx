@@ -27,9 +27,11 @@ import {
   getPlatformName,
 } from "@/components/icons/PlatformIcons";
 import { useSocialLinking } from "@/hooks/useSocialLinking";
+import { useAdminSocialLinking } from "@/hooks/admin/useAdminSocialLinking";
 import { 
   extractTelegramUsername, 
   extractYoutubeChannel,
+  extractTikTokUsername,
   validatePlatformUrl,
   getPlatformUrlExamples,
   getPlatformHints 
@@ -50,6 +52,7 @@ interface PlatformManagementProps {
   bloggerId?: number; // ID блогера для API запросов
   onPlatformUpdated?: (platformId: string) => void; // НОВОЕ: callback для переключения таба
   isVerified?: boolean; // Статус верификации пользователя
+  isAdmin?: boolean; // Флаг для использования админских функций
 }
 
 const PlatformManagementComponent = ({
@@ -59,6 +62,7 @@ const PlatformManagementComponent = ({
   bloggerId,
   onPlatformUpdated,
   isVerified = false, // По умолчанию false для неверифицированных пользователей
+  isAdmin = false, // По умолчанию false для обычных пользователей
 }: PlatformManagementProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
@@ -68,8 +72,23 @@ const PlatformManagementComponent = ({
   });
   const [urlError, setUrlError] = useState<string | null>(null);
 
-  // Хук для работы с API связывания платформ
-  const { requestTgLink, requestYtLink, loading: apiLoading } = useSocialLinking();
+  // Хуки для работы с API связывания платформ
+  // Используем админский хук, если isAdmin = true, иначе обычный
+  const regularLinking = useSocialLinking();
+  const adminLinking = useAdminSocialLinking();
+  
+  const linkTgChannel = isAdmin 
+    ? adminLinking.linkTgChannel 
+    : regularLinking.requestTgLink;
+  const linkYtChannel = isAdmin 
+    ? adminLinking.linkYtChannel 
+    : regularLinking.requestYtLink;
+  const linkTikTokChannel = isAdmin 
+    ? adminLinking.linkTikTokChannel 
+    : undefined; // TikTok пока не поддерживается для обычных пользователей
+  const apiLoading = isAdmin 
+    ? adminLinking.loading 
+    : regularLinking.loading;
 
   const availablePlatforms = [
     { id: "instagram", name: "Instagram", icon: Instagram },
@@ -77,78 +96,6 @@ const PlatformManagementComponent = ({
     { id: "tiktok", name: "TikTok", icon: MessageCircle },
     { id: "telegram", name: "Telegram", icon: MessageCircle },
   ];
-
-  const handleAddPlatform = useCallback(async () => {
-    if (!newPlatform.name || !newPlatform.url) {
-      setUrlError("Заполните все поля");
-      return;
-    }
-
-    if (!bloggerId) {
-      setUrlError("ID блогера не найден");
-      return;
-    }
-
-    const numericBloggerId = Number(bloggerId);
-    if (isNaN(numericBloggerId) || numericBloggerId <= 0) {
-      setUrlError("Неверный ID блогера");
-      return;
-    }
-
-    // Валидация URL
-    const platformType = newPlatform.name.toLowerCase();
-    if (!validatePlatformUrl(newPlatform.url, platformType as 'telegram' | 'youtube')) {
-      setUrlError(`Неверный формат URL для ${getPlatformName(platformType)}`);
-      return;
-    }
-
-    setUrlError(null);
-
-    try {
-      const platformId = newPlatform.name.toLowerCase();
-      
-      // Оптимистичное добавление платформы
-      const optimisticPlatform: PlatformData = {
-        username: platformType === 'telegram' 
-          ? extractTelegramUsername(newPlatform.url)
-          : newPlatform.url,
-        profile_url: newPlatform.url,
-        subscribers: 0,
-        er: 0,
-        reach: 0,
-        price: 0,
-        storyReach: 0,
-        storyPrice: 0,
-        isPending: true, // Флаг "на модерации"
-      };
-
-      onPlatformsChange({
-        ...platforms,
-        [platformId]: optimisticPlatform,
-      });
-
-      // Отправка API запроса
-      if (platformType === 'telegram') {
-        const username = extractTelegramUsername(newPlatform.url);
-        await requestTgLink(numericBloggerId, { username });
-      } else if (platformType === 'youtube') {
-        const channel = extractYoutubeChannel(newPlatform.url);
-        await requestYtLink(numericBloggerId, { channel });
-      }
-
-      // Очистка формы и закрытие диалога
-      setNewPlatform({ name: "", url: "" });
-      setIsDialogOpen(false);
-    } catch (error) {
-      // Откат изменений при ошибке
-      const platformId = newPlatform.name.toLowerCase();
-      const revertedPlatforms = { ...platforms };
-      delete revertedPlatforms[platformId];
-      onPlatformsChange(revertedPlatforms);
-      
-      setUrlError(error instanceof Error ? error.message : "Ошибка добавления платформы");
-    }
-  }, [newPlatform, platforms, onPlatformsChange, bloggerId, requestTgLink, requestYtLink]);
 
   /**
    * Функция для периодической проверки статуса парсинга платформы
@@ -222,6 +169,99 @@ const PlatformManagementComponent = ({
     });
   }, [onPlatformsChange]);
 
+  const handleAddPlatform = useCallback(async () => {
+    if (!newPlatform.name || !newPlatform.url) {
+      setUrlError("Заполните все поля");
+      return;
+    }
+
+    if (!bloggerId) {
+      setUrlError("ID блогера не найден");
+      return;
+    }
+
+    const numericBloggerId = Number(bloggerId);
+    if (isNaN(numericBloggerId) || numericBloggerId <= 0) {
+      setUrlError("Неверный ID блогера");
+      return;
+    }
+
+    // Валидация URL
+    const platformType = newPlatform.name.toLowerCase();
+    if (!validatePlatformUrl(newPlatform.url, platformType as 'telegram' | 'youtube' | 'tiktok')) {
+      setUrlError(`Неверный формат URL для ${getPlatformName(platformType)}`);
+      return;
+    }
+
+    setUrlError(null);
+
+    try {
+      const platformId = newPlatform.name.toLowerCase();
+      
+      // Оптимистичное добавление платформы
+      let extractedUsername: string;
+      if (platformType === 'telegram') {
+        extractedUsername = extractTelegramUsername(newPlatform.url);
+      } else if (platformType === 'tiktok') {
+        extractedUsername = extractTikTokUsername(newPlatform.url);
+      } else {
+        extractedUsername = newPlatform.url;
+      }
+
+      const optimisticPlatform: PlatformData = {
+        username: extractedUsername,
+        profile_url: newPlatform.url,
+        subscribers: 0,
+        er: 0,
+        reach: 0,
+        price: 0,
+        storyReach: 0,
+        storyPrice: 0,
+        isPending: !isAdmin, // Для админов не ставим флаг "на модерации", так как они добавляют напрямую
+      };
+
+      onPlatformsChange({
+        ...platforms,
+        [platformId]: optimisticPlatform,
+      });
+
+      // Отправка API запроса
+      if (platformType === 'telegram') {
+        const username = extractTelegramUsername(newPlatform.url);
+        await linkTgChannel(numericBloggerId, { username });
+      } else if (platformType === 'youtube') {
+        const channel = extractYoutubeChannel(newPlatform.url);
+        await linkYtChannel(numericBloggerId, { channel });
+      } else if (platformType === 'tiktok') {
+        if (!linkTikTokChannel) {
+          throw new Error('Добавление TikTok аккаунтов пока не поддерживается для обычных пользователей. Пожалуйста, используйте админку.');
+        }
+        const username = extractTikTokUsername(newPlatform.url);
+        await linkTikTokChannel(numericBloggerId, { username });
+      }
+
+      // Очистка формы и закрытие диалога сразу после успешного добавления
+      setNewPlatform({ name: "", url: "" });
+      setIsDialogOpen(false);
+
+      // Для админов запускаем polling асинхронно в фоне (без await, чтобы не блокировать закрытие диалога)
+      if (isAdmin && (platformType === 'telegram' || platformType === 'youtube' || platformType === 'tiktok')) {
+        pollPlatformData(numericBloggerId, platformType).catch((pollError) => {
+          // Если polling не удался, просто логируем - данные обновятся при следующей загрузке
+          console.warn('Failed to poll platform data:', pollError);
+        });
+      }
+    } catch (error) {
+      // Откат изменений при ошибке
+      const platformId = newPlatform.name.toLowerCase();
+      const revertedPlatforms = { ...platforms };
+      delete revertedPlatforms[platformId];
+      onPlatformsChange(revertedPlatforms);
+      
+      setUrlError(error instanceof Error ? error.message : "Ошибка добавления платформы");
+    }
+  }, [newPlatform, platforms, onPlatformsChange, bloggerId, linkTgChannel, linkYtChannel, linkTikTokChannel, isAdmin, pollPlatformData]);
+
   const handleEditPlatform = useCallback(
     (platformId: string) => {
       setEditingPlatform(platformId);
@@ -261,10 +301,10 @@ const PlatformManagementComponent = ({
       // 2. Отправляем запрос на перепривязку
       if (platformType === 'telegram') {
         const username = extractTelegramUsername(newPlatform.url);
-        await requestTgLink(bloggerId, { username });
+        await linkTgChannel(bloggerId, { username });
       } else if (platformType === 'youtube') {
         const channel = extractYoutubeChannel(newPlatform.url);
-        await requestYtLink(bloggerId, { channel });
+        await linkYtChannel(bloggerId, { channel });
       }
       
       // 3. Ждем завершения парсинга через polling
@@ -292,7 +332,7 @@ const PlatformManagementComponent = ({
       
       setUrlError(error instanceof Error ? error.message : "Ошибка обновления платформы");
     }
-  }, [editingPlatform, newPlatform, platforms, onPlatformsChange, bloggerId, requestTgLink, requestYtLink, pollPlatformData, onPlatformUpdated]);
+  }, [editingPlatform, newPlatform, platforms, onPlatformsChange, bloggerId, linkTgChannel, linkYtChannel, pollPlatformData, onPlatformUpdated]);
 
   const handleDeletePlatform = useCallback(
     (platformId: string) => {

@@ -209,6 +209,8 @@ export const AdminBloggerEditor = () => {
               screenshotError={null}
               onScreenshotUpload={handleStatsUpload}
               onDeleteScreenshot={deleteStatsFile}
+              bloggerId={profile?.id}
+              isAdmin={true}
             />
           </div>
 

@@ -10,7 +10,9 @@ const BloggerProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  // Получаем bloggerId только из state (для обычных переходов)
   const bloggerId = location.state?.bloggerId ?? undefined;
+  // Use the optimized hook
   const { blogger, loading, error } = useBloggerProfile({username, id: Number(bloggerId)});
 
   if (loading) {

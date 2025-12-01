@@ -13,6 +13,7 @@ import {
 import { Plus, AlertCircle, CheckCircle } from "lucide-react";
 import { useInstagramClientStatus } from "@/hooks/admin/useInstagramClientStatus";
 import { InstagramClientSetupDialog } from "./InstagramClientSetupDialog";
+import { extractInstagramUsername } from "@/utils/platformUrlParsers";
 
 interface AddBloggerDialogProps {
   onAddBlogger: (username: string) => Promise<void>;
@@ -37,12 +38,15 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
     setProcessingStatus("Создание блогера...");
 
     try {
-      await onAddBlogger(instagramUsername);
+      // Извлекаем username из URL, если это ссылка
+      const extractedUsername = extractInstagramUsername(instagramUsername);
+      await onAddBlogger(extractedUsername);
       setProcessingStatus("Блогер успешно создан!");
       setIsOpen(false);
       setInstagramUsername("");
     } catch (error) {
-      setProcessingStatus("Ошибка при создании блогера");
+      const errorMessage = error instanceof Error ? error.message : "Ошибка при создании блогера";
+      setProcessingStatus(errorMessage);
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
@@ -109,7 +113,7 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
                 id="instagram_username"
                 value={instagramUsername}
                 onChange={(e) => setInstagramUsername(e.target.value.trim())}
-                placeholder="Например: elena_fitness_coach"
+                placeholder="Например: elena_fitness_coach или https://instagram.com/elena_fitness_coach"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && instagramUsername.trim()) {
@@ -118,7 +122,7 @@ export const AddBloggerDialog: React.FC<AddBloggerDialogProps> = ({
                 }}
               />
               <p className="text-sm text-muted-foreground mt-2">
-                Система автоматически загрузит данные блогера из Instagram
+                Можно ввести username или полную ссылку Instagram. Система автоматически загрузит данные блогера.
               </p>
             </div>
 

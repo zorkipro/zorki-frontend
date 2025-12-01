@@ -176,7 +176,7 @@ export const BloggerInfo: React.FC<BloggerInfoProps> = ({ formData, editingSecti
                       id="contact_url"
                       value={state.contactUrl}
                       onChange={(e) => setState(prev => ({ ...prev, contactUrl: e.target.value }))}
-                      placeholder="https://t.me/username или ссылка на WhatsApp"
+                      placeholder="https://t.me/username или ссылка на другой мессенджер"
                     />
                   </div>
 

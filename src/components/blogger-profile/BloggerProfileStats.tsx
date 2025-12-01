@@ -51,8 +51,8 @@ const getPlatformStatsConfig = (platform: string): StatConfig[] => {
       { icon: <TrendingUp className="w-6 h-6" />, getValue: (s) => `${s.er}%`, label: "ER", color: "text-success" },
       { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.reach), label: "Охват публикаций", color: "text-warning" },
       { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.storyReach), label: "Охват сторис", color: "text-warning" },
-      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price} BYN`, label: "Цена публикации", color: "text-primary" },
-      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.storyPrice} BYN`, label: "Цена сторис", color: "text-primary" },
+      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price} BYN`, label: "Цена публикации от", color: "text-primary" },
+      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.storyPrice} BYN`, label: "Цена сторис от", color: "text-primary" },
     ];
   }
   
@@ -66,8 +66,8 @@ const getPlatformStatsConfig = (platform: string): StatConfig[] => {
 
   return [
     base,
-    { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.reach), label: "Охват публикаций", color: "text-warning" },
-    { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price || 0} BYN`, label: "Цена публикации", color: "text-primary" },
+      { icon: <Eye className="w-6 h-6" />, getValue: (s) => formatNumber(s.reach), label: "Охват публикаций", color: "text-warning" },
+      { icon: <Wallet className="w-6 h-6" />, getValue: (s) => `${s.price || 0} BYN`, label: "Цена публикации от", color: "text-primary" },
   ];
 };
 

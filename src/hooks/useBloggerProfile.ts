@@ -1,8 +1,11 @@
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { mapApiDetailBloggerToLocal } from "@/utils/api/mappers";
 import { useErrorHandler } from "@/utils/errorHandler";
 import type { Blogger } from "@/types/blogger";
 import {useBloggerByIdQuery} from "@/hooks/profile/getBloggerByIdQuery.ts";
+import { getAllBloggers, getBloggerById } from "@/api/endpoints/blogger";
+import { normalizeUsername } from "@/utils/username";
 
 interface UseBloggerProfileProps {
   username?: string;
@@ -12,15 +15,44 @@ interface UseBloggerProfileProps {
 export const useBloggerProfile = ({ username, id }: UseBloggerProfileProps) => {
   const { handleError } = useErrorHandler({ showNotifications: true });
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useBloggerByIdQuery({
+  // Если есть id - используем прямой запрос
+  const byIdQuery = useBloggerByIdQuery({
     bloggerId: id,
     options: { enabled: !!id },
   });
+
+  // Если нет id, но есть username - ищем по username
+  const byUsernameQuery = useQuery({
+    queryKey: ["bloggerByUsername", username],
+    queryFn: async () => {
+      if (!username) throw new Error("Username не указан");
+      
+      const normalizedUsername = normalizeUsername(username);
+      if (!normalizedUsername) throw new Error("Username не указан");
+
+      // Сначала ищем блогера по username
+      const searchResponse = await getAllBloggers({
+        username: normalizedUsername,
+        page: 1,
+        size: 1,
+      });
+
+      const bloggerData = searchResponse.items?.[0];
+      if (!bloggerData) {
+        throw new Error("Блогер не найден");
+      }
+
+      // Затем получаем детальную информацию по id
+      const detailedResponse = await getBloggerById(bloggerData.id);
+      return detailedResponse;
+    },
+    enabled: !id && !!username,
+    staleTime: Infinity,
+  });
+
+  // Используем запрос по id, если он есть, иначе запрос по username
+  const activeQuery = id ? byIdQuery : byUsernameQuery;
+  const { data, isLoading, isError, error } = activeQuery;
 
   if (isError && error) handleError(error);
 

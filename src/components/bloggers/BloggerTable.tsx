@@ -59,16 +59,48 @@ export const BloggerTable = ({
     return () => observer.disconnect();
   }, [onLoadMore, hasMore, isLoadingMore]);
 
-  const handleRowClick = ({handle,bloggerId}:{handle: string, bloggerId?:string }) => {
-    console.log('handleRowClick',bloggerId)
-    navigate(`/${normalizeUsername(handle)}`,{ state: { bloggerId } });
+  const handleRowClick = (
+    {handle, bloggerId}: {handle: string, bloggerId?: string},
+    event?: React.MouseEvent
+  ) => {
+    const baseUrl = `/${normalizeUsername(handle)}`;
+    
+    // Если нажата Command (Mac) или Ctrl (Windows/Linux), открываем в новой вкладке
+    if (event && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      // Открываем без query параметров - используем только username
+      const fullUrl = `${window.location.origin}${baseUrl}`;
+      const newWindow = window.open(fullUrl, '_blank', 'noopener,noreferrer');
+      // Возвращаем фокус на текущую вкладку, чтобы новая открылась в фоне
+      if (newWindow) {
+        window.focus();
+      }
+      return;
+    }
+    
+    navigate(baseUrl, { state: { bloggerId } });
+  };
+
+  const handleRowRightClick = (
+    {handle}: {handle: string},
+    event: React.MouseEvent
+  ) => {
+    event.preventDefault(); // Предотвращаем стандартное контекстное меню
+    const baseUrl = `/${normalizeUsername(handle)}`;
+    const fullUrl = `${window.location.origin}${baseUrl}`;
+    const newWindow = window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    // Возвращаем фокус на текущую вкладку, чтобы новая открылась в фоне
+    if (newWindow) {
+      window.focus();
+    }
   };
 
   const renderMobileCard = (blogger: Blogger) => (
       <div
         key={blogger.id}
         className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 hover:shadow-sm transition-shadow duration-200 cursor-pointer mb-3 sm:mb-4 w-full max-w-full overflow-hidden"
-        onClick={() => handleRowClick({handle:blogger.handle, bloggerId: blogger.id})}
+        onClick={(e) => handleRowClick({handle:blogger.handle, bloggerId: blogger.id}, e)}
+        onContextMenu={(e) => handleRowRightClick({handle: blogger.handle}, e)}
       >
         {/* Аватарка/имя/никнейм - главная информация */}
         <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-full overflow-hidden">
@@ -144,9 +176,7 @@ export const BloggerTable = ({
                 Цена поста от
               </div>
               <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
-                {blogger.postPrice && !isNaN(blogger.postPrice)
-                  ? `от ${formatPriceWithCurrency(blogger.postPrice)}`
-                  : formatPriceWithCurrency(blogger.postPrice)}
+                {formatPriceWithCurrency(blogger.postPrice)}
               </div>
             </div>
             <div className="w-px h-10 sm:h-12 bg-gray-200 flex-shrink-0"></div>
@@ -155,9 +185,7 @@ export const BloggerTable = ({
                 Цена сториз от
               </div>
               <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
-                {blogger.storyPrice && !isNaN(blogger.storyPrice)
-                  ? `от ${formatPriceWithCurrency(blogger.storyPrice)}`
-                  : formatPriceWithCurrency(blogger.storyPrice)}
+                {formatPriceWithCurrency(blogger.storyPrice)}
               </div>
             </div>
           </div>
@@ -197,8 +225,9 @@ export const BloggerTable = ({
                 <TableRow
                   key={blogger.id}
                   className={`group cursor-pointer hover:bg-muted/50 transition-colors ${isLastRow ? '[&:first-child_td:first-child]:rounded-bl-lg [&:first-child_td:last-child]:rounded-br-lg' : ''}`}
-                  onClick={() => handleRowClick({handle: blogger.handle, bloggerId: blogger.id})}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick({handle: blogger.handle,bloggerId:blogger.id})}
+                  onClick={(e) => handleRowClick({handle: blogger.handle, bloggerId: blogger.id}, e)}
+                  onContextMenu={(e) => handleRowRightClick({handle: blogger.handle}, e)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleRowClick({handle: blogger.handle, bloggerId: blogger.id})}
                 >
                   <TableCell className="text-center font-medium sticky left-0 z-50 bg-white group-hover:bg-muted transition-colors" style={{ willChange: "transform", ...(isLastRow ? { borderBottomLeftRadius: "0.5rem" } : {}) }}>{index + 1}</TableCell>
                   <TableCell>
@@ -231,16 +260,12 @@ export const BloggerTable = ({
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="font-medium">
-                      {blogger.postPrice && !isNaN(blogger.postPrice)
-                        ? `от ${formatPriceWithCurrency(blogger.postPrice)}`
-                        : formatPriceWithCurrency(blogger.postPrice)}
+                      {formatPriceWithCurrency(blogger.postPrice)}
                     </div>
                   </TableCell>
                   <TableCell className="text-center" style={isLastRow ? { borderBottomRightRadius: "0.5rem" } : undefined}>
                     <div className="font-medium">
-                      {blogger.storyPrice && !isNaN(blogger.storyPrice)
-                        ? `от ${formatPriceWithCurrency(blogger.storyPrice)}`
-                        : formatPriceWithCurrency(blogger.storyPrice)}
+                      {formatPriceWithCurrency(blogger.storyPrice)}
                     </div>
                   </TableCell>
                 </TableRow>

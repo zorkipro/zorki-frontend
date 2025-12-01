@@ -127,7 +127,7 @@ const PriceListEditorComponent = ({
           </div>
           <div className="pl-6">
             <FormField
-              label="Цена публикации"
+              label="Цена публикации от"
               description="Стоимость размещения в канале в BYN"
             >
               <Input

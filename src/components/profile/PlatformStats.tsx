@@ -115,7 +115,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
 
       {/* Цена публикации - РЕДАКТИРУЕМОЕ */}
       <EditableCard
-        title="Цена публикации"
+        title="Цена публикации от"
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="instagram_post_price"
@@ -126,7 +126,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
             <div className="text-2xl font-bold text-primary">
               {stats.price || 0} BYN
             </div>
-            <div className="text-sm text-muted-foreground">Цена публикации</div>
+            <div className="text-sm text-muted-foreground">Цена публикации от</div>
           </>
         )}
         renderEditForm={() => (
@@ -167,7 +167,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
 
       {/* Цена сторис - РЕДАКТИРУЕМОЕ */}
       <EditableCard
-        title="Цена сторис"
+        title="Цена сторис от"
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.storyPrice}
         editKey="instagram_story_price"
@@ -178,7 +178,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
             <div className="text-2xl font-bold text-primary">
               {stats.storyPrice || 0} BYN
             </div>
-            <div className="text-sm text-muted-foreground">Цена сторис</div>
+            <div className="text-sm text-muted-foreground">Цена сторис от</div>
           </>
         )}
         renderEditForm={() => (
@@ -257,7 +257,7 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
 
       {/* Цена публикации - РЕДАКТИРУЕМОЕ */}
       <EditableCard
-        title="Цена публикации"
+        title="Цена публикации от"
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="tiktok_post_price"
@@ -268,7 +268,7 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
             <div className="text-2xl font-bold text-primary">
               {stats.price || 0} BYN
             </div>
-            <div className="text-sm text-muted-foreground">Цена публикации</div>
+            <div className="text-sm text-muted-foreground">Цена публикации от</div>
           </>
         )}
         renderEditForm={() => (
@@ -347,7 +347,7 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
 
       {/* Цена публикации - РЕДАКТИРУЕМОЕ */}
       <EditableCard
-        title="Цена публикации"
+        title="Цена публикации от"
         icon={<Wallet className="w-6 h-6 text-primary mx-auto mb-2" />}
         value={stats.price}
         editKey="telegram_post_price"
@@ -358,7 +358,7 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
             <div className="text-2xl font-bold text-primary">
               {stats.price || 0} BYN
             </div>
-            <div className="text-sm text-muted-foreground">Цена публикации</div>
+            <div className="text-sm text-muted-foreground">Цена публикации от</div>
           </>
         )}
         renderEditForm={() => (

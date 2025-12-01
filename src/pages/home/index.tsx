@@ -8,6 +8,7 @@ import {useBloggersQuery} from "@/hooks/useBloggers.ts";
 import SEOHead from "@/components/SEO/SEOHead.tsx";
 import {DEFAULT_FILTER_STATE} from "@/config/filters.ts";
 import {ContentWrapper} from "@/components/layout/ContentWrapper.tsx";
+import {AdSlider} from "@/components/ad/AdSlider.tsx";
 
 const SEO_KEYWORDS = ["блогеры беларуси", "рейтинг блогеров", "инфлюенсеры беларуси", "реклама в инстаграм", "реклама в тикток", "реклама в ютуб", "реклама в телеграм", "маркетинг беларусь", "продвижение блогеров", "сотрудничество с блогерами"] as const;
 
@@ -43,10 +44,12 @@ const Index = () => {
       />
       <Header />
 
-      <main className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 sm:pb-24 min-[430px]:pb-8 max-w-full overflow-x-hidden">
+      <main className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 sm:pb-24 min-[430px]:pb-8 max-w-full" style={{ paddingTop: '5.5rem' }}>
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 w-full max-w-full">
-          <aside className="hidden lg:block lg:w-80 flex-shrink-0 lg:sticky lg:top-16 lg:self-start lg:h-[calc(100vh-4rem)] z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-muted">
-            <FilterSidebar filters={filters} onFilterChange={setFilters} />
+          <aside className="hidden lg:block lg:w-80 flex-shrink-0 lg:sticky lg:top-16 lg:self-start lg:h-[calc(100vh-4rem)] lg:z-10">
+            <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-muted h-full pr-2">
+              <FilterSidebar filters={filters} onFilterChange={setFilters} />
+            </div>
           </aside>
 
           <div className="flex-1 w-full min-w-0 max-w-full overflow-x-hidden">
@@ -70,8 +73,8 @@ const Index = () => {
 
             {error && <div className="text-center py-6 sm:py-8 text-red-500 text-sm sm:text-base break-words px-2">Ошибка: {error}</div>}
 
-            {/* Промо карусель - закомментировано */}
-            {/* <ContentWrapper><AdSlider /></ContentWrapper> */}
+            {/* Промо карусель */}
+            <ContentWrapper><AdSlider /></ContentWrapper>
 
             {/* Промо блогеры с топовыми блогерами - закомментировано */}
             {/* <ContentWrapper allowShadow overflowHidden={false}><PromoBloggersBlock /></ContentWrapper> */}

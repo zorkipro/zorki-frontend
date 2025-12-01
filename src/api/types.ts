@@ -554,6 +554,10 @@ export interface BloggerLinkMediaTgRequestInputDto {
   username: string; // 3-33 chars, pattern: ^[a-zA-Z0-9_]{3,33}$
 }
 
+export interface BloggerLinkMediaTtRequestInputDto {
+  username: string; // TikTok username (3-24 chars, pattern: ^[A-Za-z0-9._]{3,24}$)
+}
+
 // ====== TOPICS ======
 
 export interface TopicsOutputDto {

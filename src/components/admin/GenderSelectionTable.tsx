@@ -155,6 +155,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
                         <TableCell className="font-medium">
                           <div className="flex items-center space-x-3">
                             <SafeAvatar
+                              id={blogger.userId || blogger.id.toString()}
                               src={mainSocial?.avatarUrl || ""}
                               alt={displayName}
                               className="w-8 h-8 aspect-square"
@@ -223,6 +224,7 @@ export const GenderSelectionTable: React.FC<GenderSelectionTableProps> = ({
                         {/* Avatar */}
                         <div className="flex-shrink-0">
                           <SafeAvatar
+                            id={blogger.userId || blogger.id.toString()}
                             src={mainSocial?.avatarUrl || ""}
                             alt={displayName}
                             className="w-12 h-12 aspect-square"

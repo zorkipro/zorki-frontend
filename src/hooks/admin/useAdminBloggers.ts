@@ -1,7 +1,8 @@
-import {useState, useCallback} from "react";
+import {useState, useCallback, useMemo} from "react";
 import {useToast} from "@/hooks/use-toast";
 import {logError} from "@/utils/logger";
 import {useDebounce} from "@/hooks/useDebounce";
+import {extractInstagramUsername} from "@/utils/platformUrlParsers";
 import {
     adminGetBloggers,
     adminGetBloggersStats,
@@ -27,6 +28,17 @@ export const useAdminBloggers = (activeTab: string) => {
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
     const [showHidden, setShowHidden] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Извлекаем username из URL Instagram, если это ссылка
+    const normalizedSearchTerm = useMemo(() => {
+        if (!debouncedSearchTerm) return "";
+        try {
+            return extractInstagramUsername(debouncedSearchTerm);
+        } catch {
+            // Если не удалось извлечь (не Instagram URL), возвращаем как есть
+            return debouncedSearchTerm;
+        }
+    }, [debouncedSearchTerm]);
 
     const queryClient = useQueryClient();
 
@@ -56,14 +68,14 @@ export const useAdminBloggers = (activeTab: string) => {
 
     // === useInfiniteQuery для всех блогеров ===
     const bloggersQuery = useInfiniteQuery({
-            queryKey: ["adminBloggers", debouncedSearchTerm],
+            queryKey: ["adminBloggers", normalizedSearchTerm],
             queryFn: async ({pageParam = 1}) => {
                 const res = await adminGetBloggers({
                     page: pageParam,
                     size: PAGINATION.DEFAULT_PAGE_SIZE,
                     sortDirection: "desc",
                     sortField: "createdAt",
-                    username: debouncedSearchTerm || undefined
+                    username: normalizedSearchTerm || undefined
                 });
                 return {bloggers: res.items, currentPage: pageParam, totalCount: res.totalCount};
             },
@@ -105,7 +117,7 @@ export const useAdminBloggers = (activeTab: string) => {
 
     // === Методы для локальных обновлений ===
     const updateBloggerVisibility = useCallback((bloggerId: number, isHidden: boolean) => {
-        queryClient.setQueryData<any>(["adminBloggers", debouncedSearchTerm], (oldData) => {
+        queryClient.setQueryData<any>(["adminBloggers", normalizedSearchTerm], (oldData) => {
             if (!oldData) return oldData;
             const newPages = oldData.pages.map((page: any) => ({
                 ...page,
@@ -115,7 +127,7 @@ export const useAdminBloggers = (activeTab: string) => {
             }));
             return {...oldData, pages: newPages};
         });
-    }, [queryClient, debouncedSearchTerm]);
+    }, [queryClient, normalizedSearchTerm]);
 
     const updateBloggerGenderLocally = useCallback((bloggerId: number, genderType: ApiGender) => {
         queryClient.setQueryData<any>(["adminBloggers", debouncedSearchTerm], (oldData) => {

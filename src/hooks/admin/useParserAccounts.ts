@@ -349,12 +349,6 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
   const reauthIgAccount = useCallback(async (sessionId: number, username: string, password: string) => {
     try {
       setIsProcessing(true);
-      await deleteIgSession(sessionId);
-      setIgState(prev => ({
-        ...prev,
-        accounts: prev.accounts.filter(acc => acc.id !== sessionId),
-        totalCount: prev.totalCount - 1,
-      }));
       const result = await loginIgAccount(username, password);
       const success = result.isAuthorized && result.isVerify;
       toast({

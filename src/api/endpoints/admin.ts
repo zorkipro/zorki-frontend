@@ -30,7 +30,9 @@ import type {
   GetIgSessionsParams,
   IgSessionsResponse,
   BloggerLinkMediaTgRequestInputDto,
-  BloggerLinkMediaYtRequestInputDto, AdminGetBloggerOutputDto,
+  BloggerLinkMediaYtRequestInputDto,
+  BloggerLinkMediaTtRequestInputDto,
+  AdminGetBloggerOutputDto,
 } from "../types";
 
 export async function adminLogin(data: AdminLoginInputDto): Promise<AdminLoginOutputDto> {
@@ -262,6 +264,16 @@ export async function adminLinkYtChannelToBlogger(
   data: BloggerLinkMediaYtRequestInputDto,
 ): Promise<void> {
   return apiRequest<void>(`/admin/blogger/link/YT/${bloggerId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminLinkTikTokChannelToBlogger(
+  bloggerId: number,
+  data: BloggerLinkMediaTtRequestInputDto,
+): Promise<void> {
+  return apiRequest<void>(`/admin/blogger/link/TT/${bloggerId}`, {
     method: "POST",
     body: JSON.stringify(data),
   });

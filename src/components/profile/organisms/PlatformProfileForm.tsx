@@ -42,6 +42,7 @@ interface PlatformProfileFormProps {
   // Blogger ID for API requests
   bloggerId?: number;
   isVerified?: boolean; // Статус верификации пользователя
+  isAdmin?: boolean; // Флаг для использования админских функций
 }
 
 const PlatformProfileFormComponent = ({
@@ -65,6 +66,7 @@ const PlatformProfileFormComponent = ({
   onDeleteScreenshot,
   bloggerId,
   isVerified = false,
+  isAdmin = false,
 }: PlatformProfileFormProps) => {
   const hasMaxPlatforms = Object.keys(availablePlatforms).length >= 4;
 
@@ -146,6 +148,7 @@ const PlatformProfileFormComponent = ({
                   bloggerId={bloggerId}
                   onPlatformUpdated={onActiveTabChange}
                   isVerified={isVerified}
+                  isAdmin={isAdmin}
                 />
             )}
           </div>
