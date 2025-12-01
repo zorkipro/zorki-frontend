@@ -73,8 +73,8 @@ export default defineConfig(({ mode }) => ({
           
           // Feature chunks
           'profile-components': [
-            './src/pages/ProfileEditor',
-            './src/pages/BloggerProfile',
+            './src/pages/profile/edit/ProfileEditor',
+            './src/pages/[username]/BloggerProfile',
             './src/components/profile/ProfileHeader',
             './src/components/profile/PlatformStats',
             './src/components/profile/ScreenshotManagement'
