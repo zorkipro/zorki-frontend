@@ -3,7 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import {QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -64,9 +64,10 @@ if (supabaseHost && currentHost === supabaseHost) {
         <HelmetProvider>
             <QueryClientProvider client={queryClient}>
                 <App />
-                {import.meta.env.DEV && (
+                {/* ReactQueryDevtools закомментирован - не показывать пользователям */}
+                {/* {import.meta.env.DEV && (
                     <ReactQueryDevtools initialIsOpen={false} buttonPosition={'bottom-right'} />
-                )}
+                )} */}
             </QueryClientProvider>
         </HelmetProvider>,
     );
