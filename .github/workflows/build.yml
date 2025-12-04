@@ -1,0 +1,32 @@
+name: deploy Zorki
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing deploy command
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /root/zorki/zorki-frontend
+              git checkout main
+              git pull origin main
+
+            docker compose -p zorki -f docker-compose.yml build
+            if [ $? -eq 0 ]; then
+              echo "Build successful, deploying containers..."
+              docker compose -p zorki -f docker-compose.yml down --volumes
+              docker system prune --volumes -f
+              docker compose -p zorki -f docker-compose.yml up --build --force-recreate -d
+              docker image prune -f
+            else
+              echo "Build failed, skipping deployment."
+              exit 1
+            fi
