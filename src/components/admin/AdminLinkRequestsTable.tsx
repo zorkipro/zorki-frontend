@@ -192,7 +192,7 @@ const AdminLinkRequestsTableComponent = ({
               onAction={() => handleRequest(request.request_id, request.name, "approve")}
               disabled={isProcessing}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              holdDuration={1000}
+              holdDuration={500}
             >
               ✓ Одобрить
             </HoldButton>
@@ -243,7 +243,7 @@ const AdminLinkRequestsTableComponent = ({
               onAction={() => handleRequest(request.request_id, request.name, "approve")}
               disabled={isProcessing}
               className="bg-green-600 hover:bg-green-700 text-white"
-              holdDuration={1000}
+              holdDuration={500}
             >
               ✓ Одобрить
             </HoldButton>

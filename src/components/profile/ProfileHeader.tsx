@@ -100,7 +100,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
       }
 
       const normalizedUsername = normalizeUsername(username);
-      const mediaKitUrl = `${window.location.origin}/_${normalizedUsername}`;
+      const mediaKitUrl = `${window.location.origin}/${normalizedUsername}`;
 
       try {
         await navigator.clipboard.writeText(mediaKitUrl);

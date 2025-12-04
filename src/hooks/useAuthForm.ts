@@ -91,7 +91,8 @@ export const useAuthForm = ({ mode, onSuccess }: UseAuthFormProps) => {
           }
           
           if (mode === "login") {
-            onSuccess?.();
+            // Редирект обрабатывается AuthRedirectHandler на основе данных пользователя
+            // Не вызываем onSuccess, чтобы избежать конфликтов редиректов
           } else {
             navigate("/email-confirmation");
           }

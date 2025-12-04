@@ -64,7 +64,9 @@ if (supabaseHost && currentHost === supabaseHost) {
         <HelmetProvider>
             <QueryClientProvider client={queryClient}>
                 <App />
-                <ReactQueryDevtools initialIsOpen={false} buttonPosition={'bottom-right'} />
+                {import.meta.env.DEV && (
+                    <ReactQueryDevtools initialIsOpen={false} buttonPosition={'bottom-right'} />
+                )}
             </QueryClientProvider>
         </HelmetProvider>,
     );

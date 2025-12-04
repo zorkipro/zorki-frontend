@@ -49,14 +49,33 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   const queryClient = useQueryClient();
 
   const determineRedirectPath = useCallback(async (): Promise<string> => {
-    const cachedData:ClientAuthMeOutputDto = queryClient.getQueryData(clientMeQueryKey);
+    // Ждем загрузки данных, если их нет в кеше
+    let data: ClientAuthMeOutputDto | undefined = queryClient.getQueryData(clientMeQueryKey);
 
-    if (cachedData) {
+    if (!data) {
+      // Если данных нет в кеше, пытаемся загрузить их
+      try {
+        const result = await queryClient.fetchQuery({
+          queryKey: clientMeQueryKey,
+          queryFn: getClientMe,
+          staleTime: Infinity,
+        });
+        data = result;
+      } catch (error) {
+        // Если ошибка загрузки (например, 401), значит пользователь не связан с блогером
+        logger.error("Failed to fetch client data for redirect", error);
+        return "/profile-setup";
+      }
+    }
+
+    if (data) {
       const username =
-          cachedData.blogger?.username || cachedData.lastLinkRequest?.username;
+          data.blogger?.username || data.lastLinkRequest?.username;
       return username ? "/profile/edit" : "/profile-setup";
     }
 
+    // Fallback
+    return "/profile-setup";
   }, [queryClient]);
 
   const updateSession = useCallback((newSession: Session | null) => {

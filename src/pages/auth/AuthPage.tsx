@@ -41,9 +41,7 @@ export const AuthPage = () => {
     handleGoogleAuth: handleLoginGoogleAuth,
   } = useAuthForm({
     mode: "login",
-    onSuccess: () => {
-      navigate("/dashboard");
-    },
+    // Редирект обрабатывается AuthRedirectHandler
   });
 
   // Обработчики для регистрации
