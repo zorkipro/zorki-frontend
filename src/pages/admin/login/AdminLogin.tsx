@@ -42,8 +42,6 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="w-full max-w-md">
-        {/* Красный квадрат */}
-        <div className="w-20 h-20 bg-red-500 mb-4 mx-auto"></div>
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
