@@ -65,8 +65,10 @@ const Index = () => {
                     Фильтры
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[280px] sm:w-80 p-0 max-w-[90vw]">
-                  <FilterSidebar filters={filters} onFilterChange={setFilters} onClose={() => setIsFilterOpen(false)} />
+                <SheetContent side="left" className="w-[280px] sm:w-80 p-0 max-w-[90vw] flex flex-col h-full">
+                  <div className="flex-1 overflow-y-auto overscroll-contain">
+                    <FilterSidebar filters={filters} onFilterChange={setFilters} onClose={() => setIsFilterOpen(false)} />
+                  </div>
                 </SheetContent>
               </Sheet>
             </header>

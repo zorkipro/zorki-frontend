@@ -19,7 +19,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
   }, [filters, onFilterChange]);
 
   return (
-    <div className="w-full lg:w-80 bg-card border-r border-border-light">
+    <div className="w-full lg:w-80 bg-card lg:border-r lg:border-border-light">
       <div className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">Фильтры</h2>
