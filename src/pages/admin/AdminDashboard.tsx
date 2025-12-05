@@ -89,7 +89,7 @@ const AdminDashboard = () => {
 
   return (
       <div className="min-h-screen bg-gradient-subtle">
-        <AdminHeader onOpenTopicsManagement={() => setTopicsDialogOpen(true)} />
+        <AdminHeader />
         <div className="container mx-auto px-4 py-6">
           <StatsCards stats={stats} />
           <div className="space-y-4 mb-6">

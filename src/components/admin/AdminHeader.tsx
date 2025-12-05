@@ -22,7 +22,7 @@ export const AdminHeader: React.FC = () => {
             Админ панель
           </h1>
           <div className="hidden md:flex items-center space-x-2">
-            <Button variant="outline" onClick={() => navigate("/admin/topics")} className="flex items-center space-x-2">
+            <Button variant="outline" onClick={() => navigate("/admin/topic")} className="flex items-center space-x-2">
               <Settings className="w-4 h-4" />
               <span>Управление топиками</span>
             </Button>
@@ -92,7 +92,7 @@ export const AdminHeader: React.FC = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => {
-                    navigate("/admin/topics");
+                    navigate("/admin/topic");
                   }} 
                   className="w-full justify-start"
                 >
