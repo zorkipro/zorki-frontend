@@ -185,3 +185,25 @@ export async function deleteTgSession(sessionId: number): Promise<void> {
     method: "DELETE",
   });
 }
+
+// ====== POST /tg-client/start-parsing - Запуск парсинга Telegram ======
+
+/**
+ * Запуск парсинга Telegram
+ *
+ * @returns Promise<void> (201 Created)
+ *
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * await startTgParsing();
+ * ```
+ */
+export async function startTgParsing(): Promise<void> {
+  return apiRequest<void>("/tg-client/start-parsing", {
+    method: "POST",
+  });
+}

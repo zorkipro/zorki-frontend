@@ -102,6 +102,28 @@ export const useAdminBloggers = (activeTab: string) => {
         }
     );
 
+    // === useInfiniteQuery для скрытых пользователей ===
+    const hiddenBloggersQuery = useInfiniteQuery({
+            queryKey: ["adminHiddenBloggers", normalizedSearchTerm],
+            queryFn: async ({pageParam = 1}) => {
+                const res = await adminGetBloggers({
+                    page: pageParam,
+                    size: PAGINATION.DEFAULT_PAGE_SIZE,
+                    sortDirection: "desc",
+                    sortField: "createdAt",
+                    username: normalizedSearchTerm || undefined,
+                    isHidden: true
+                });
+                return {bloggers: res.items, currentPage: pageParam, totalCount: res.totalCount};
+            },
+            enabled: activeTab === 'hidden-users',
+            initialPageParam: 1,
+            getNextPageParam: (lastPage) => {
+                return lastPage.currentPage < (lastPage.totalCount / PAGINATION.DEFAULT_PAGE_SIZE) ? lastPage.currentPage + 1 : undefined
+            },
+        }
+    );
+
     // === Методы для пагинации ===
     const loadMoreBloggers = useCallback(() => {
         if (bloggersQuery.hasNextPage && !bloggersQuery.isFetchingNextPage) {
@@ -115,6 +137,12 @@ export const useAdminBloggers = (activeTab: string) => {
         }
     }, [bloggersWithoutGenderQuery]);
 
+    const loadMoreHiddenBloggers = useCallback(() => {
+        if (hiddenBloggersQuery.hasNextPage && !hiddenBloggersQuery.isFetchingNextPage) {
+            hiddenBloggersQuery.fetchNextPage();
+        }
+    }, [hiddenBloggersQuery]);
+
     // === Методы для локальных обновлений ===
     const updateBloggerVisibility = useCallback((bloggerId: number, isHidden: boolean) => {
         queryClient.setQueryData<any>(["adminBloggers", normalizedSearchTerm], (oldData) => {
@@ -126,6 +154,22 @@ export const useAdminBloggers = (activeTab: string) => {
                 ),
             }));
             return {...oldData, pages: newPages};
+        });
+        // Обновляем также список скрытых пользователей
+        queryClient.setQueryData<any>(["adminHiddenBloggers", normalizedSearchTerm], (oldData) => {
+            if (!oldData) return oldData;
+            if (isHidden) {
+                // Если пользователь стал скрытым, добавляем его в список скрытых
+                // (это упрощенная логика, в реальности может потребоваться перезагрузка)
+            } else {
+                // Если пользователь стал видимым, удаляем из списка скрытых
+                const newPages = oldData.pages.map((page: any) => ({
+                    ...page,
+                    bloggers: page.bloggers.filter((b: AdminBloggerWithGender) => b.id !== bloggerId),
+                }));
+                return {...oldData, pages: newPages};
+            }
+            return oldData;
         });
     }, [queryClient, normalizedSearchTerm]);
 
@@ -190,14 +234,18 @@ export const useAdminBloggers = (activeTab: string) => {
     // === Вычисленные значения ===
     const allBloggers = filteredBloggers || [];
     const bloggersWithoutGender = bloggersWithoutGenderQuery.data?.pages.flatMap(p => p.bloggers) || [];
+    const hiddenBloggers = hiddenBloggersQuery.data?.pages.flatMap(p => p.bloggers) || [];
     const loading = bloggersQuery.isLoading && !debouncedSearchTerm;
     const searchLoading = bloggersQuery.isLoading && !!debouncedSearchTerm;
     const isLoadingMore = bloggersQuery.isFetchingNextPage;
     const loadingGenderBloggers = bloggersWithoutGenderQuery.isFetching || bloggersQuery.isFetchingNextPage;
+    const loadingHiddenBloggers = hiddenBloggersQuery.isFetching || hiddenBloggersQuery.isFetchingNextPage;
     const hasMoreBloggers = !!bloggersQuery.hasNextPage;
     const hasMoreGenderBloggers = !!bloggersWithoutGenderQuery.hasNextPage;
+    const hasMoreHiddenBloggers = !!hiddenBloggersQuery.hasNextPage;
     const totalBloggersCount = bloggersQuery.data?.pages[0]?.totalCount || 0;
     const totalGenderBloggersCount = bloggersWithoutGenderQuery.data?.pages[0]?.totalCount || 0;
+    const totalHiddenBloggersCount = hiddenBloggersQuery.data?.pages[0]?.totalCount || 0;
     const error = bloggersQuery.error;
     return {
 
@@ -205,6 +253,7 @@ export const useAdminBloggers = (activeTab: string) => {
         refetchBloggers: bloggersQuery.refetch,
         fetchBloggersWithoutGender: bloggersWithoutGenderQuery.fetchNextPage,
         bloggersWithoutGender,
+        hiddenBloggers,
         linkRequests,
         loading,
         searchLoading,
@@ -218,6 +267,7 @@ export const useAdminBloggers = (activeTab: string) => {
         setShowHidden,
         loadMoreBloggers,
         loadMoreGenderBloggers,
+        loadMoreHiddenBloggers,
         approveRequest,
         rejectRequest,
         updateBloggerVisibility,
@@ -226,6 +276,9 @@ export const useAdminBloggers = (activeTab: string) => {
         loadingGenderBloggers,
         hasMoreGenderBloggers,
         totalGenderBloggersCount,
+        loadingHiddenBloggers,
+        hasMoreHiddenBloggers,
+        totalHiddenBloggersCount,
         isProcessing,
         error,
     };

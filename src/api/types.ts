@@ -878,9 +878,11 @@ export interface ParserAccount {
   identifier: string; // username для IG, phone для TG
   isAuthorized: boolean;
   createdAt: string;
-  // Дополнительные поля для Instagram
+  // Дополнительные поля для Instagram/Telegram
   requests?: number | null;
   lastReset?: string | null;
+  // Дополнительные поля для TikTok
+  credits?: number | null;
 }
 
 // Типы для запросов к API
@@ -911,4 +913,19 @@ export interface YtClientSessionOutputDto {
 export interface YtClientAddInputDto {
   token: string; // 35-40 chars, pattern: ^AIza[0-9A-Za-z_\\-]{30,35}$
   name: string; // 2-40 chars
+}
+
+// ====== TIKTOK CLIENT TYPES ======
+
+export interface TtClientSessionOutputDto {
+  id: number;
+  name: string | null;
+  credits: number;
+  createdAt: string; // ISO date string
+}
+
+export interface TtClientAddInputDto {
+  name: string; // 2-40 chars
+  token: string; // 20-50 chars
+  credits: number;
 }

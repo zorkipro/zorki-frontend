@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui-kit";
 import { LoadingSpinner } from "@/ui-kit/components";
-import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useParserAccounts } from "@/hooks/admin/useParserAccounts";
 import { ParserAccountsTable } from "@/components/admin/parser/ParserAccountsTable";
 import { AddInstagramAccountDialog } from "@/components/admin/parser/AddInstagramAccountDialog";
 import { AddTelegramAccountDialog } from "@/components/admin/parser/AddTelegramAccountDialog";
 import { AddYouTubeAccountDialog } from "@/components/admin/parser/AddYouTubeAccountDialog";
-import { PlatformNotAvailableMessage } from "@/components/admin/parser/PlatformNotAvailableMessage";
+import { AddTikTokAccountDialog } from "@/components/admin/parser/AddTikTokAccountDialog";
 import type { ParserPlatform } from "@/api/types";
 
 const ErrorMessage: React.FC<{ error: string }> = ({ error }) => (
@@ -97,6 +96,8 @@ const ParserAccountsManagement: React.FC = () => {
     addTgAccount, confirmTgAccount, deleteTgAccount, logoutTgAccount, reauthTgAccount,
     ytAccounts, ytLoading, ytError, ytHasMore, ytTotalCount, fetchYtAccounts, loadMoreYtAccounts,
     addYtAccount, deleteYtAccount,
+    ttAccounts, ttLoading, ttError, ttHasMore, ttTotalCount, fetchTtAccounts, loadMoreTtAccounts,
+    addTtAccount, deleteTtAccount,
     isProcessing,
   } = useParserAccounts();
 
@@ -104,6 +105,7 @@ const ParserAccountsManagement: React.FC = () => {
     if (activeTab === "INSTAGRAM") fetchIgAccounts({ isAuthorized: igAuthStatus === "active" });
     else if (activeTab === "TELEGRAM") fetchTgAccounts({ isAuthorized: tgAuthStatus === "active" });
     else if (activeTab === "YOUTUBE") fetchYtAccounts();
+    else if (activeTab === "TIKTOK") fetchTtAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, igAuthStatus, tgAuthStatus]);
 
@@ -115,21 +117,19 @@ const ParserAccountsManagement: React.FC = () => {
   const isLoading = 
     (activeTab === "INSTAGRAM" && igLoading && igAccounts.length === 0) ||
     (activeTab === "TELEGRAM" && tgLoading && tgAccounts.length === 0) ||
-    (activeTab === "YOUTUBE" && ytLoading && ytAccounts.length === 0);
+    (activeTab === "YOUTUBE" && ytLoading && ytAccounts.length === 0) ||
+    (activeTab === "TIKTOK" && ttLoading && ttAccounts.length === 0);
 
   if (isLoading) {
     return <LoadingSpinner fullScreen text="Загрузка аккаунтов парсера..." />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <AdminHeader />
-
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Управление аккаунтами парсера</h1>
-          <p className="text-gray-600">Добавление и управление аккаунтами для парсинга данных по каждой платформе</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Управление аккаунтами парсера</h2>
+        <p className="text-gray-600 text-sm">Добавление и управление аккаунтами для парсинга данных по каждой платформе</p>
+      </div>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ParserPlatform)} className="space-y-4 sm:space-y-6">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 h-auto">
             <TabsTrigger value="INSTAGRAM" className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2 py-2 sm:py-1">
@@ -218,11 +218,30 @@ const ParserAccountsManagement: React.FC = () => {
             />
           </TabsContent>
 
-          <TabsContent value="TIKTOK">
-            <PlatformNotAvailableMessage platform="TIKTOK" />
+          <TabsContent value="TIKTOK" className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <p className="text-sm text-muted-foreground flex-1 min-w-0">
+                <span className="hidden sm:inline">Управление TikTok API сессиями для парсинга данных.</span>
+                <span className="sm:hidden">Управление TikTok сессиями.</span>
+              </p>
+              <AddTikTokAccountDialog 
+                onAddAccount={addTtAccount} 
+                disabled={isProcessing}
+                existingAccounts={ttAccounts}
+              />
+            </div>
+            {ttError && <ErrorMessage error={ttError} />}
+            <ParserAccountsTable
+              accounts={ttAccounts}
+              platform="TIKTOK"
+              loading={ttLoading}
+              hasMore={ttHasMore}
+              onLoadMore={loadMoreTtAccounts}
+              onDelete={confirmAction("Вы уверены, что хотите удалить эту TikTok сессию?", deleteTtAccount)}
+              totalCount={ttTotalCount}
+            />
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 };

@@ -20,15 +20,10 @@ import type {
   AdminBloggerWithGender,
   PublicGetBloggerByIdOutputDto,
   // Parser Accounts types
-  IgClientSessionsOutputDto,
-  IgClientLoginInputDto,
-  IgClientLoginOutputDto,
   TgClientLoginInputDto,
   TgClientLoginOutputDto,
   TgClientConfirmInputDto,
   TgClientConfirmOutputDto,
-  GetIgSessionsParams,
-  IgSessionsResponse,
   BloggerLinkMediaTgRequestInputDto,
   BloggerLinkMediaYtRequestInputDto,
   BloggerLinkMediaTtRequestInputDto,
@@ -350,29 +345,6 @@ export async function adminGetBloggersWithoutGender(
   };
 }
 
-export async function getIgSessions(params: GetIgSessionsParams = {}): Promise<IgSessionsResponse> {
-  return apiRequest<IgSessionsResponse>(`/ig-client?${buildQueryString(params)}`);
-}
-
-export async function loginIgAccount(username: string, password: string): Promise<IgClientLoginOutputDto> {
-  return apiRequest<IgClientLoginOutputDto>("/ig-client/login", {
-    method: "POST",
-    body: JSON.stringify({ username, password } as IgClientLoginInputDto),
-    skipAuthErrorHandling: true
-  });
-}
-
-export async function deleteIgSession(sessionId: number): Promise<void> {
-  return apiRequest<void>(`/ig-client/${sessionId}`, {
-    method: "DELETE",
-  });
-}
-
-export async function logoutIgSession(sessionId: number): Promise<void> {
-  return apiRequest<void>(`/ig-client/logout/${sessionId}`, {
-    method: "POST",
-  });
-}
 
 export async function loginTgAccount(phone: string, apiHash: string, apiId: number): Promise<TgClientLoginOutputDto> {
   return apiRequest<TgClientLoginOutputDto>("/tg-client/login", {

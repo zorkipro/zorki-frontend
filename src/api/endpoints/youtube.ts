@@ -116,3 +116,25 @@ export async function deleteYtSession(sessionId: number): Promise<void> {
   });
 }
 
+// ====== POST /yt-client/start-parsing - Запуск парсинга YouTube ======
+
+/**
+ * Запуск парсинга YouTube
+ *
+ * @returns Promise<void> (201 Created)
+ *
+ * @throws APIError 401 - Unauthorized (требуется admin token)
+ *
+ * @note Требует Authorization header с admin token
+ *
+ * @example
+ * ```typescript
+ * await startYtParsing();
+ * ```
+ */
+export async function startYtParsing(): Promise<void> {
+  return apiRequest<void>("/yt-client/start-parsing", {
+    method: "POST",
+  });
+}
+

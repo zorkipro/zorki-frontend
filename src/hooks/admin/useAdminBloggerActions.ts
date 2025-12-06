@@ -6,6 +6,7 @@ import {useErrorHandler} from "@/utils/errorHandler";
 import {adminCreateBlogger, adminToggleBloggerVisibility} from "@/api/endpoints/admin";
 import {normalizeUsername} from "@/utils/username";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
+import type {AdminGetBloggerOutputDto} from "@/api/types";
 
 export const useAdminBloggerActions = (onUpdate?: () => void) => {
     const {toast} = useToast();
@@ -104,6 +105,7 @@ export const useAdminBloggerActions = (onUpdate?: () => void) => {
         onSettled: () => {
             // Перезапрашиваем данные с сервера на всякий случай
             queryClient.invalidateQueries({ queryKey: ["adminBloggers"] });
+            queryClient.invalidateQueries({ queryKey: ["adminHiddenBloggers"] });
         },
         onSuccess: (id) => {
             toast({

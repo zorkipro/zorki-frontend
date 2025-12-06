@@ -26,9 +26,9 @@ export const AdminHeader: React.FC = () => {
               <Settings className="w-4 h-4" />
               <span>Управление топиками</span>
             </Button>
-            <Button variant="outline" onClick={() => navigate("/admin/parser-accounts")} className="flex items-center space-x-2">
+            <Button variant="outline" onClick={() => navigate("/admin/parser")} className="flex items-center space-x-2">
               <Database className="w-4 h-4" />
-              <span>Аккаунты парсера</span>
+              <span>Парсер</span>
             </Button>
           </div>
         </div>
@@ -102,12 +102,12 @@ export const AdminHeader: React.FC = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => {
-                    navigate("/admin/parser-accounts");
+                    navigate("/admin/parser");
                   }} 
                   className="w-full justify-start"
                 >
                   <Database className="w-4 h-4 mr-2" />
-                  <span>Аккаунты парсера</span>
+                  <span>Парсер</span>
                 </Button>
               </div>
             </SheetContent>

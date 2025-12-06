@@ -33,6 +33,7 @@ const AdminDashboard = () => {
   const {
     allBloggers,
     bloggersWithoutGender,
+    hiddenBloggers,
     linkRequests,
     loading,
     searchLoading,
@@ -54,6 +55,10 @@ const AdminDashboard = () => {
     loadingGenderBloggers,
     hasMoreGenderBloggers,
     totalGenderBloggersCount,
+    loadMoreHiddenBloggers,
+    loadingHiddenBloggers,
+    hasMoreHiddenBloggers,
+    totalHiddenBloggersCount,
     clearGenderCache,
     isProcessing,
     error,
@@ -131,6 +136,13 @@ const AdminDashboard = () => {
                   Все блогеры
                 </Button>
                 <Button
+                    variant={activeTab === "hidden-users" ? "default" : "outline"}
+                    onClick={() => setActiveTab("hidden-users")}
+                    size="sm"
+                >
+                  Скрытые пользователи
+                </Button>
+                <Button
                     variant={activeTab === "gender-selection" ? "default" : "outline"}
                     onClick={() => setActiveTab("gender-selection")}
                     size="sm"
@@ -159,7 +171,9 @@ const AdminDashboard = () => {
                   ? "Показаны запросы на связывание блогеров с клиентами. При одобрении запроса блогер автоматически становится верифицированным."
                   : activeTab === "gender-selection"
                       ? "Быстрый выбор пола для блогеров без указанного пола. Нажмите на кнопку с нужным полом для обновления."
-                      : ""}
+                      : activeTab === "hidden-users"
+                          ? "Показаны только скрытые пользователи. Вы можете изменить их видимость, нажав на кнопку видимости."
+                          : ""}
             </div>
           </div>
 
@@ -175,6 +189,19 @@ const AdminDashboard = () => {
                   onLoadMore={loadMoreBloggers}
                   totalCount={
                     searchTerm ? filteredBloggers.length : totalBloggersCount
+                  }
+              />
+          ) : activeTab === "hidden-users" ? (
+              <BloggersTable
+                  bloggers={hiddenBloggers}
+                  onToggleVisibility={(id) => toggleVisibility.mutate({ id })}
+                  formatNumber={formatNumber}
+                  searchLoading={searchLoading}
+                  isLoadingMore={loadingHiddenBloggers}
+                  hasMore={hasMoreHiddenBloggers}
+                  onLoadMore={loadMoreHiddenBloggers}
+                  totalCount={
+                    searchTerm ? hiddenBloggers.length : totalHiddenBloggersCount
                   }
               />
           ) : activeTab === "gender-selection" ? (

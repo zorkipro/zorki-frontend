@@ -5,6 +5,12 @@ import {
   loginIgAccount,
   deleteIgSession,
   logoutIgSession,
+} from "@/api/endpoints/instagram";
+import type {
+  GetIgSessionsParams,
+  IgSessionsResponse,
+} from "@/api/types";
+import {
   loginTgAccount,
   confirmTgLogin,
 } from "@/api/endpoints/admin";
@@ -20,16 +26,22 @@ import {
   deleteYtSession,
   type GetYtSessionsParams,
 } from "@/api/endpoints/youtube";
+import {
+  getTtSessions,
+  addTtSession,
+  deleteTtSession,
+  type GetTtSessionsParams,
+} from "@/api/endpoints/tiktok";
 import type {
   ParserAccount,
   IgClientSessionsOutputDto,
-  GetIgSessionsParams,
-  IgSessionsResponse,
   TgClientSessionsOutputDto,
   YtClientSessionOutputDto,
+  TtClientSessionOutputDto,
 } from "@/api/types";
 import type { TgSessionsResponse } from "@/api/endpoints/telegram";
 import type { YtSessionsResponse } from "@/api/endpoints/youtube";
+import type { TtSessionsResponse } from "@/api/endpoints/tiktok";
 
 interface PlatformState<TParams = {}> {
   accounts: ParserAccount[];
@@ -77,6 +89,16 @@ interface UseParserAccountsReturn {
   addYtAccount: (token: string, name: string) => Promise<void>;
   deleteYtAccount: (sessionId: number) => Promise<void>;
   
+  ttAccounts: ParserAccount[];
+  ttLoading: boolean;
+  ttError: string | null;
+  ttHasMore: boolean;
+  ttTotalCount: number;
+  fetchTtAccounts: (params?: GetTtSessionsParams) => Promise<void>;
+  loadMoreTtAccounts: (params?: GetTtSessionsParams) => Promise<void>;
+  addTtAccount: (token: string, name: string, credits: number) => Promise<void>;
+  deleteTtAccount: (sessionId: number) => Promise<void>;
+  
   isProcessing: boolean;
 }
 
@@ -104,6 +126,16 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
   });
   
   const [ytState, setYtState] = useState<PlatformState<GetYtSessionsParams>>({
+    accounts: [],
+    loading: false,
+    error: null,
+    hasMore: true,
+    totalCount: 0,
+    currentPage: 1,
+    currentFilters: {},
+  });
+  
+  const [ttState, setTtState] = useState<PlatformState<GetTtSessionsParams>>({
     accounts: [],
     loading: false,
     error: null,
@@ -141,6 +173,15 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
     identifier: session.name || `Session ${session.id}`,
     isAuthorized: true,
     createdAt: session.createdAt,
+  });
+
+  const convertTtSessionToAccount = (session: TtClientSessionOutputDto): ParserAccount => ({
+    id: session.id,
+    platform: 'TIKTOK',
+    identifier: session.name || `Session ${session.id}`,
+    isAuthorized: true,
+    createdAt: session.createdAt,
+    credits: session.credits,
   });
 
   // Обобщенная функция для fetch
@@ -312,6 +353,29 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
     "Не удалось удалить YouTube сессию"
   );
 
+  const fetchTtAccounts = createFetchFunction(
+    setTtState,
+    getTtSessions,
+    convertTtSessionToAccount,
+    "Не удалось загрузить аккаунты TikTok",
+    toast
+  );
+
+  const loadMoreTtAccounts = createLoadMoreFunction(
+    () => ttState,
+    setTtState,
+    getTtSessions,
+    convertTtSessionToAccount,
+    toast
+  );
+
+  const deleteTtAccount = createDeleteFunction(
+    setTtState,
+    deleteTtSession,
+    "TikTok сессия удалена",
+    "Не удалось удалить TikTok сессию"
+  );
+
   const logoutIgAccount = createLogoutFunction(
     setIgState,
     logoutIgSession,
@@ -451,6 +515,20 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
     }
   }, [fetchYtAccounts, ytState.currentFilters, toast]);
 
+  const addTtAccount = useCallback(async (token: string, name: string, credits: number) => {
+    try {
+      setIsProcessing(true);
+      await addTtSession({ token, name, credits });
+      toast({ title: "Успех", description: `TikTok сессия "${name}" успешно добавлена` });
+      await fetchTtAccounts(ttState.currentFilters);
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Не удалось добавить TikTok сессию", variant: "destructive" });
+      throw error;
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [fetchTtAccounts, ttState.currentFilters, toast]);
+
   return {
     igAccounts: igState.accounts,
     igLoading: igState.loading,
@@ -486,6 +564,16 @@ export const useParserAccounts = (): UseParserAccountsReturn => {
     loadMoreYtAccounts,
     addYtAccount,
     deleteYtAccount,
+    
+    ttAccounts: ttState.accounts,
+    ttLoading: ttState.loading,
+    ttError: ttState.error,
+    ttHasMore: ttState.hasMore,
+    ttTotalCount: ttState.totalCount,
+    fetchTtAccounts,
+    loadMoreTtAccounts,
+    addTtAccount,
+    deleteTtAccount,
     
     isProcessing,
   };

@@ -95,6 +95,7 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
   };
 
   const formatRequests = (requests?: number | null) => requests?.toLocaleString("ru-RU") ?? "-";
+  const formatCredits = (credits?: number | null) => credits?.toLocaleString("ru-RU") ?? "-";
   const getStatusBadge = (isAuthorized: boolean) => (
     <Badge variant={isAuthorized ? "default" : "destructive"} className={isAuthorized ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
       {isAuthorized ? "Активен" : "Неактивен"}
@@ -103,6 +104,7 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
 
   const platformInfo = PLATFORM_INFO[platform] || { icon: "🔗", name: platform, label: "Идентификатор", isInstagram: false };
   const isInstagram = platform === "INSTAGRAM";
+  const isTikTok = platform === "TIKTOK";
   const canAddAccounts = platform === "INSTAGRAM" || platform === "TELEGRAM";
 
   if (loading && accounts.length === 0) {
@@ -153,6 +155,9 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
                   <TableHead>Последний сброс</TableHead>
                 </>
               )}
+              {isTikTok && (
+                <TableHead className="text-center">Кредиты</TableHead>
+              )}
               <TableHead>Создан</TableHead>
               <TableHead className="w-24">Действия</TableHead>
             </TableRow>
@@ -168,6 +173,9 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
                     <TableCell className="text-center font-mono">{formatRequests(account.requests)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{account.lastReset ? formatDate(account.lastReset) : "-"}</TableCell>
                   </>
+                )}
+                {isTikTok && (
+                  <TableCell className="text-center font-mono">{formatCredits(account.credits)}</TableCell>
                 )}
                 <TableCell className="text-sm text-muted-foreground">{formatDate(account.createdAt)}</TableCell>
                 <TableCell>
@@ -208,6 +216,12 @@ export const ParserAccountsTable: React.FC<ParserAccountsTableProps> = ({
                   <span className="text-sm">{account.lastReset ? formatDate(account.lastReset) : "-"}</span>
                 </div>
               </>
+            )}
+            {isTikTok && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Кредиты:</span>
+                <span className="font-mono text-sm">{formatCredits(account.credits)}</span>
+              </div>
             )}
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Создан:</span>
