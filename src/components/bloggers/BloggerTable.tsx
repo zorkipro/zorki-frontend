@@ -131,7 +131,7 @@ export const BloggerTable = ({
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex-1 min-w-0 text-center overflow-hidden">
               <div className="text-gray-500 text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 truncate">
-                Подписчиков
+                Подписчики
               </div>
               <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {formatNumber(blogger.followers)}
@@ -222,7 +222,7 @@ export const BloggerTable = ({
             <TableRow className="[&:first-child_th:first-child]:rounded-tl-lg [&:first-child_th:last-child]:rounded-tr-lg hover:bg-transparent">
               <TableHead className="text-center min-w-[60px] w-[60px] sticky left-0 z-50 bg-white" style={{ willChange: "transform" }}>Место</TableHead>
               <TableHead className="min-w-[200px] max-w-[300px]">Блогер</TableHead>
-              <TableHead className="text-center min-w-[100px]">Подписчиков</TableHead>
+              <TableHead className="text-center min-w-[100px]">Подписчики</TableHead>
               <TableHead className="text-center min-w-[100px]">Охваты поста</TableHead>
               <TableHead className="text-center min-w-[100px]">Охваты сториз</TableHead>
               <TableHead className="text-center min-w-[100px]">Цена поста от</TableHead>
