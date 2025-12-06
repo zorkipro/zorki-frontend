@@ -7,7 +7,7 @@ interface VerificationNoticeProps {
   profileStatus: string;
 }
 
-const ADMIN_INSTAGRAM_URL = "https://instagram.com/zorki.pro";
+const ADMIN_INSTAGRAM_URL = "https://www.instagram.com/zorki_pro/";
 
 export const VerificationNotice: React.FC<VerificationNoticeProps> = React.memo(
   ({ profileStatus }) => {

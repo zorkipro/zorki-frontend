@@ -321,7 +321,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
                     <p className="text-xs sm:text-sm text-yellow-800">
                       Ваш профиль не верифицирован.{" "}
                       <a
-                        href="https://www.instagram.com/zorki.pro"
+                        href="https://www.instagram.com/zorki_pro/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-semibold text-yellow-900 underline hover:text-yellow-950 transition-colors"
