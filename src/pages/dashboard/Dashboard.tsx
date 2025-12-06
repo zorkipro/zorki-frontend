@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
 import { DashboardPlatformCard } from "@/components/dashboard/DashboardPlatformCard";
 import { useDashboardNavigation } from "@/hooks/dashboard/useDashboardNavigation";
+import SEOHead from "@/components/SEO/SEOHead.tsx";
 
 const DashboardComponent = () => {
   const {
@@ -79,6 +80,14 @@ const DashboardComponent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <SEOHead
+        title="Личный кабинет | Zorki.pro"
+        description="Управление профилем блогера на платформе Zorki.pro"
+        url="https://zorki.pro/dashboard"
+        canonical="https://zorki.pro/dashboard"
+        noindex={true}
+        nofollow={true}
+      />
       {/* Header */}
       <DashboardHeader
         displayName={displayName || ""}

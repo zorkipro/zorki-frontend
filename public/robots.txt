@@ -1,0 +1,125 @@
+# robots.txt для zorki.pro
+# Платформа для поиска и взаимодействия с блогерами
+# Обновлено: 2025-12-06
+
+# ============================================
+# Общие правила для всех поисковых роботов
+# ============================================
+User-agent: *
+Allow: /
+
+# Публичные страницы - разрешены для индексации
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Allow: /email-confirmation
+Allow: /privacy
+Allow: /terms
+
+# Профили блогеров - разрешены для индексации
+Allow: /*username
+
+# ============================================
+# Запрещенные для индексации страницы
+# ============================================
+
+# Приватные пользовательские страницы
+Disallow: /dashboard
+Disallow: /profile-setup
+Disallow: /profile/edit
+Disallow: /profile/
+
+# Административные страницы
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/2fa
+
+# Служебные и тестовые страницы
+Disallow: /dev-tools
+Disallow: /proads
+Disallow: /auth/v1/callback
+Disallow: /test-
+Disallow: /comprehensive-test
+Disallow: /admin-dashboard-test
+Disallow: /cache-monitor
+
+# API и служебные файлы
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?*  # Параметры запросов (опционально, если не нужны в индексе)
+
+# ============================================
+# Разрешенные статические ресурсы
+# ============================================
+Allow: /favicon.svg
+Allow: /logo.svg
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.webp$
+Allow: /*.svg$
+
+# ============================================
+# Указание расположения sitemap
+# ============================================
+Sitemap: https://zorki.pro/sitemap.xml
+
+# ============================================
+# Специфичные настройки для поисковых систем
+# ============================================
+
+# Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.gif$
+Allow: /*.webp$
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Crawl-delay: 1
+
+# Yandex Images
+User-agent: YandexImages
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Facebook
+User-agent: facebookexternalhit
+Allow: /
+
+# Twitter
+User-agent: Twitterbot
+Allow: /
+
+# LinkedIn
+User-agent: LinkedInBot
+Allow: /
+
+# ============================================
+# Блокировка нежелательных ботов
+# ============================================
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Crawl-delay: 10

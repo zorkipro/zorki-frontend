@@ -15,6 +15,15 @@ interface SEOHeadProps {
   noindex?: boolean;
   nofollow?: boolean;
   canonical?: string;
+  // Дополнительные поля для Person schema
+  firstName?: string;
+  lastName?: string;
+  allNames?: string[];
+  allUsernames?: string[];
+  sameAs?: string[];
+  platformName?: string;
+  followers?: number;
+  category?: string;
 }
 
 const SEOHead = ({
@@ -32,7 +41,7 @@ const SEOHead = ({
     "продвижение",
     "сотрудничество с блогерами",
   ],
-  image = "/og-image.jpg",
+  image = "https://zorki.pro/og-image.jpg",
   url = "https://zorki.pro",
   type = "website",
   author,
@@ -43,6 +52,15 @@ const SEOHead = ({
   noindex = false,
   nofollow = false,
   canonical,
+  // Person schema дополнительные поля
+  firstName,
+  lastName,
+  allNames = [],
+  allUsernames = [],
+  sameAs = [],
+  platformName,
+  followers,
+  category,
 }: SEOHeadProps) => {
   const fullTitle = title.includes("Zorki") ? title : `${title} | Zorki.pro`;
   const fullDescription =
@@ -69,15 +87,15 @@ const SEOHead = ({
       <meta httpEquiv="Content-Language" content="ru" />
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
 
-      {/* Canonical URL */}
-      {canonical && <link rel="canonical" href={canonical} />}
+      {/* Canonical URL - всегда устанавливаем для избежания дублей */}
+      <link rel="canonical" href={canonical || url} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={fullDescription} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={image.startsWith("http") ? image : `https://zorki.pro${image}`} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:site_name" content="Zorki.pro" />
@@ -100,12 +118,22 @@ const SEOHead = ({
         </>
       )}
 
+      {/* Profile specific */}
+      {type === "profile" && author && (
+        <>
+          <meta property="profile:first_name" content={author.split(" ")[0] || author} />
+          {author.includes(" ") && (
+            <meta property="profile:last_name" content={author.split(" ").slice(1).join(" ")} />
+          )}
+        </>
+      )}
+
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={url} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={fullDescription} />
-      <meta name="twitter:image" content={image} />
+      <meta name="twitter:image" content={image.startsWith("http") ? image : `https://zorki.pro${image}`} />
       <meta name="twitter:site" content="@zorki_pro" />
       <meta name="twitter:creator" content="@zorki_pro" />
 
@@ -119,40 +147,134 @@ const SEOHead = ({
       />
       <meta name="apple-mobile-web-app-title" content="Zorki.pro" />
 
-      {/* Structured Data */}
+      {/* Structured Data - WebSite/Article/Person */}
       <script type="application/ld+json">
-        {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": type === "article" ? "Article" : "WebSite",
-          name: fullTitle,
-          description: fullDescription,
-          url: url,
-          image: image,
-          author: author
+        {JSON.stringify(
+          type === "profile" && author
             ? {
+                "@context": "https://schema.org",
                 "@type": "Person",
                 name: author,
+                givenName: firstName || undefined,
+                familyName: lastName || undefined,
+                alternateName: allNames.length > 1 ? allNames.slice(1) : undefined,
+                url: url,
+                image: image,
+                description: fullDescription,
+                sameAs: sameAs.length > 0 ? sameAs : [url],
+                knowsAbout: tags.length > 0 ? tags : keywords,
+                jobTitle: platformName ? `${platformName} блогер` : "Блогер",
+                worksFor: {
+                  "@type": "Organization",
+                  name: "Zorki.pro",
+                  url: "https://zorki.pro",
+                },
+                affiliation: {
+                  "@type": "Organization",
+                  name: "Zorki.pro",
+                  url: "https://zorki.pro",
+                },
+                // Дополнительные поля для лучшей индексации
+                ...(followers ? { audience: {
+                  "@type": "Audience",
+                  audienceType: "Подписчики",
+                  geographicArea: {
+                    "@type": "Country",
+                    name: "Беларусь",
+                  },
+                }} : {}),
+                ...(category ? { knowsAbout: [...(tags.length > 0 ? tags : keywords), category] } : {}),
               }
-            : undefined,
-          publisher: {
+            : type === "article"
+            ? {
+                "@context": "https://schema.org",
+                "@type": "Article",
+                headline: fullTitle,
+                description: fullDescription,
+                url: url,
+                image: image,
+                author: author
+                  ? {
+                      "@type": "Person",
+                      name: author,
+                    }
+                  : undefined,
+                publisher: {
+                  "@type": "Organization",
+                  "@id": "https://zorki.pro/#organization",
+                  name: "Zorki.pro",
+                  alternateName: "Zorki",
+                  url: "https://zorki.pro",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://zorki.pro/logo.svg",
+                    width: 512,
+                    height: 512,
+                  },
+                },
+                datePublished: publishedTime,
+                dateModified: modifiedTime,
+                keywords: allKeywords,
+                inLanguage: "ru",
+              }
+            : {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "Zorki.pro",
+                alternateName: "Zorki",
+                description: fullDescription,
+                url: url,
+                image: image,
+                publisher: {
+                  "@type": "Organization",
+                  "@id": "https://zorki.pro/#organization",
+                  name: "Zorki.pro",
+                  alternateName: "Zorki",
+                  url: "https://zorki.pro",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://zorki.pro/logo.svg",
+                    width: 512,
+                    height: 512,
+                  },
+                },
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: "https://zorki.pro/?search={search_term_string}",
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+                keywords: allKeywords,
+                inLanguage: "ru",
+              }
+        )}
+      </script>
+      
+      {/* Organization Schema для логотипа в Google Search (только для главной страницы) */}
+      {type === "website" && url === "https://zorki.pro" && (
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
             "@type": "Organization",
+            "@id": "https://zorki.pro/#organization",
             name: "Zorki.pro",
+            alternateName: "Zorki",
             url: "https://zorki.pro",
             logo: {
               "@type": "ImageObject",
-              url: "https://zorki.pro/logo.png",
+              url: "https://zorki.pro/logo.svg",
+              width: 512,
+              height: 512,
             },
-          },
-          datePublished: publishedTime,
-          dateModified: modifiedTime,
-          mainEntityOfPage: {
-            "@type": "WebPage",
-            "@id": url,
-          },
-          keywords: allKeywords,
-          inLanguage: "ru",
-        })}
-      </script>
+            description: "Платформа для поиска и сотрудничества с блогерами Беларуси",
+            sameAs: [
+              "https://zorki.pro",
+            ],
+          })}
+        </script>
+      )}
     </Helmet>
   );
 };

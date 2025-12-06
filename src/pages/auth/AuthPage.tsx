@@ -15,6 +15,7 @@ import {
 } from "@/ui-kit/components";
 import { useAuthForm } from "@/hooks/useAuthForm.ts";
 import { Link } from "react-router-dom";
+import SEOHead from "@/components/SEO/SEOHead.tsx";
 
 export const AuthPage = () => {
   const location = useLocation();
@@ -23,6 +24,9 @@ export const AuthPage = () => {
   // Определяем начальный таб на основе URL
   const initialTab = location.pathname === "/register" ? "register" : "login";
   const [activeTab, setActiveTab] = useState<"login" | "register">(initialTab);
+  
+  // SEO для страниц авторизации (noindex - приватные страницы)
+  const isRegister = location.pathname === "/register";
 
   // Синхронизируем таб с URL
   useEffect(() => {
@@ -81,6 +85,17 @@ export const AuthPage = () => {
 
   return (
     <CenteredAuthLayout>
+      <SEOHead
+        title={isRegister ? "Регистрация | Zorki.pro" : "Вход | Zorki.pro"}
+        description={isRegister 
+          ? "Зарегистрируйтесь на платформе Zorki.pro для сотрудничества с блогерами"
+          : "Войдите в свой аккаунт на платформе Zorki.pro"
+        }
+        url={`https://zorki.pro${location.pathname}`}
+        canonical={`https://zorki.pro${location.pathname}`}
+        noindex={true}
+        nofollow={true}
+      />
       <Card className="w-full">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <CardHeader className="text-center pb-4">
