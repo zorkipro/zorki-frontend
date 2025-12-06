@@ -87,6 +87,42 @@ export const formatPriceWithCurrency = (
 };
 
 /**
+ * Calculate CPM (Cost Per Mille) - стоимость за тысячу показов
+ * @param price - цена размещения
+ * @param reach - охват/количество показов
+ * @returns CPM значение или null если данных недостаточно
+ */
+export const calculateCPM = (
+  price: number,
+  reach: number,
+): number | null => {
+  if (!price || !reach || price <= 0 || reach <= 0 || isNaN(price) || isNaN(reach)) {
+    return null;
+  }
+  
+  return (price / reach) * 1000;
+};
+
+/**
+ * Format CPM for display
+ * @param cpm - CPM значение или null
+ * @param currency - валюта (по умолчанию "BYN")
+ * @returns отформатированная строка CPM или null если данных нет
+ */
+export const formatCPM = (
+  cpm: number | null,
+  currency: string = "BYN",
+): string | null => {
+  if (cpm === null || isNaN(cpm)) return null;
+  
+  const rounded = cpm.toFixed(1);
+  // Если дробная часть равна нулю, показываем только целое число
+  const formatted = rounded.endsWith('.0') ? Math.round(cpm).toString() : rounded;
+  
+  return `${formatted} ${currency}`;
+};
+
+/**
  * Форматирует количество подписчиков в читаемый формат
  * @param subscribers - строка с числом подписчиков или null
  * @returns отформатированная строка (например "125.0K", "1.5M") или "-"

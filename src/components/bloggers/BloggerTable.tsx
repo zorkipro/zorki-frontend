@@ -11,7 +11,7 @@ import {
 } from "@/ui-kit";
 import { InfiniteScrollList } from "@/ui-kit";
 import { SafeAvatar } from "@/components/ui/SafeAvatar";
-import { truncateName, formatNumber, formatReach, formatPriceWithCurrency } from "@/utils/formatters";
+import { truncateName, formatNumber, formatReach, formatPriceWithCurrency, calculateCPM, formatCPM } from "@/utils/formatters";
 import { normalizeUsername } from "@/utils/username";
 
 interface BloggerTableProps {
@@ -178,6 +178,15 @@ export const BloggerTable = ({
               <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {formatPriceWithCurrency(blogger.postPrice)}
               </div>
+              {(() => {
+                const cpm = calculateCPM(blogger.postPrice, blogger.postReach);
+                const cpmFormatted = formatCPM(cpm);
+                return cpmFormatted ? (
+                  <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+                    CPM: {cpmFormatted}
+                  </div>
+                ) : null;
+              })()}
             </div>
             <div className="w-px h-10 sm:h-12 bg-gray-200 flex-shrink-0"></div>
             <div className="flex-1 min-w-0 text-center overflow-hidden">
@@ -187,6 +196,15 @@ export const BloggerTable = ({
               <div className="font-bold text-gray-900 text-sm sm:text-base md:text-lg truncate">
                 {formatPriceWithCurrency(blogger.storyPrice)}
               </div>
+              {(() => {
+                const cpm = calculateCPM(blogger.storyPrice, blogger.storyReach);
+                const cpmFormatted = formatCPM(cpm);
+                return cpmFormatted ? (
+                  <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+                    CPM: {cpmFormatted}
+                  </div>
+                ) : null;
+              })()}
             </div>
           </div>
         </div>
@@ -262,11 +280,29 @@ export const BloggerTable = ({
                     <div className="font-medium">
                       {formatPriceWithCurrency(blogger.postPrice)}
                     </div>
+                    {(() => {
+                      const cpm = calculateCPM(blogger.postPrice, blogger.postReach);
+                      const cpmFormatted = formatCPM(cpm);
+                      return cpmFormatted ? (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          CPM: {cpmFormatted}
+                        </div>
+                      ) : null;
+                    })()}
                   </TableCell>
                   <TableCell className="text-center" style={isLastRow ? { borderBottomRightRadius: "0.5rem" } : undefined}>
                     <div className="font-medium">
                       {formatPriceWithCurrency(blogger.storyPrice)}
                     </div>
+                    {(() => {
+                      const cpm = calculateCPM(blogger.storyPrice, blogger.storyReach);
+                      const cpmFormatted = formatCPM(cpm);
+                      return cpmFormatted ? (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          CPM: {cpmFormatted}
+                        </div>
+                      ) : null;
+                    })()}
                   </TableCell>
                 </TableRow>
               );
