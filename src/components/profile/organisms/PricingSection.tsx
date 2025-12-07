@@ -62,150 +62,158 @@ const PricingSectionComponent = ({
     [onSave, onEditingSectionChange, priceStates],
   );
 
+  const platformEntries = Object.entries(availablePlatforms)
+    .sort(([a], [b]) => {
+      if (a === "instagram") return -1;
+      if (b === "instagram") return 1;
+      return a.localeCompare(b);
+    });
+
   return (
-    <Card className="relative">
-      <CardContent className="p-4 sm:p-5">
-        <h3 className="font-semibold mb-4 sm:mb-5 text-sm sm:text-base">Цены</h3>
-        <div className="space-y-3 sm:space-y-4">
-          {Object.entries(availablePlatforms)
-            .sort(([a], [b]) => {
-              if (a === "instagram") return -1;
-              if (b === "instagram") return 1;
-              return a.localeCompare(b);
-            })
-            .map(([platform, stats]) => (
-            <div key={platform} className="flex items-center justify-between gap-2">
-              <div className="flex items-center space-x-2 min-w-0 flex-1">
-                <span className="w-5 h-5 shrink-0 flex items-center justify-center">
-                  {getPlatformIcon(platform)}
-                </span>
-                <span className="text-xs sm:text-sm truncate">{getPlatformName(platform)}</span>
-              </div>
-              <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+    <>
+      <Card className="relative">
+        <CardContent className="p-4 sm:p-5">
+          <h3 className="font-semibold mb-4 sm:mb-5 text-sm sm:text-base">Цены</h3>
+          <div className="space-y-3 sm:space-y-4">
+            {platformEntries.map(([platform, stats]) => (
+              <div key={platform} className="flex items-center justify-between gap-2">
+                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                  <span className="w-5 h-5 shrink-0 flex items-center justify-center">
+                    {getPlatformIcon(platform)}
+                  </span>
+                  <span className="text-xs sm:text-sm truncate">{getPlatformName(platform)}</span>
+                </div>
+                <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
                   <div className="text-right">
-                  <div className="text-xs sm:text-sm font-medium whitespace-nowrap">
-                    {platform === 'youtube' ? (stats.integrationPrice || 0) : (stats.price || 0)} BYN
+                    <div className="text-xs sm:text-sm font-medium whitespace-nowrap">
+                      {platform === 'youtube' ? (stats.integrationPrice || 0) : (stats.price || 0)} BYN
+                    </div>
+                    {stats.storyPrice > 0 && platform === 'instagram' && (
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">
+                        Stories: {stats.storyPrice} BYN
+                      </div>
+                    )}
                   </div>
-                  {stats.storyPrice > 0 && platform === 'instagram' && (
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">
-                      Stories: {stats.storyPrice} BYN
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 shrink-0 touch-manipulation"
+                    onClick={() => onEditingSectionChange(`${platform}_prices`)}
+                    aria-label={`Редактировать цены ${getPlatformName(platform)}`}
+                  >
+                    <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Диалоги вынесены за пределы Card для правильного портирования */}
+      {platformEntries.map(([platform, stats]) => (
+        <Dialog
+          key={`dialog-${platform}`}
+          open={editingSection === `${platform}_prices`}
+          onOpenChange={(open) =>
+            onEditingSectionChange(open ? `${platform}_prices` : null)
+          }
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                Редактировать цены {getPlatformName(platform)}
+              </DialogTitle>
+              <DialogDescription>
+                {platform === 'youtube' 
+                  ? `Текущая цена: ${stats.integrationPrice || stats.price || 0} BYN`
+                  : `Текущая цена: ${stats.price || 0} BYN${platform === 'instagram' && stats.storyPrice > 0 ? `, Stories: ${stats.storyPrice} BYN` : ''}`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {platform === 'youtube' ? (
+                <div>
+                  <Label htmlFor={`${platform}_integration_price`}>
+                    Цена за интеграцию (BYN)
+                  </Label>
+                  <Input
+                    id={`${platform}_integration_price`}
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={getPriceState(platform).postPrice}
+                    onChange={(e) =>
+                      setPriceStates((prev) => ({
+                        ...prev,
+                        [platform]: { ...getPriceState(platform), postPrice: e.target.value },
+                      }))
+                    }
+                    placeholder="Введите цену"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <Label htmlFor={`${platform}_post_price`}>
+                      Цена за пост (BYN)
+                    </Label>
+                    <Input
+                      id={`${platform}_post_price`}
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={getPriceState(platform).postPrice}
+                      onChange={(e) =>
+                        setPriceStates((prev) => ({
+                          ...prev,
+                          [platform]: { ...getPriceState(platform), postPrice: e.target.value },
+                        }))
+                      }
+                      placeholder="Введите цену"
+                    />
+                  </div>
+                  {platform === 'instagram' && (
+                    <div>
+                      <Label htmlFor={`${platform}_story_price`}>
+                        Цена за stories (BYN)
+                      </Label>
+                      <Input
+                        id={`${platform}_story_price`}
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={getPriceState(platform).storyPrice}
+                        onChange={(e) =>
+                          setPriceStates((prev) => ({
+                            ...prev,
+                            [platform]: { ...getPriceState(platform), storyPrice: e.target.value },
+                          }))
+                        }
+                        placeholder="Введите цену"
+                      />
                     </div>
                   )}
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 shrink-0 touch-manipulation"
-                  onClick={() => onEditingSectionChange(`${platform}_prices`)}
-                  aria-label={`Редактировать цены ${getPlatformName(platform)}`}
+                </>
+              )}
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => onEditingSectionChange(null)}
                 >
-                  <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  Отмена
                 </Button>
-                <Dialog
-                  open={editingSection === `${platform}_prices`}
-                  onOpenChange={(open) =>
-                    onEditingSectionChange(open ? `${platform}_prices` : null)
-                  }
+                <Button
+                  onClick={() => handlePriceEdit(platform)}
+                  disabled={saving}
                 >
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>
-                        Редактировать цены {getPlatformName(platform)}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {platform === 'youtube' 
-                          ? `Текущая цена: ${stats.integrationPrice || stats.price || 0} BYN`
-                          : `Текущая цена: ${stats.price || 0} BYN${platform === 'instagram' && stats.storyPrice > 0 ? `, Stories: ${stats.storyPrice} BYN` : ''}`}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      {platform === 'youtube' ? (
-                        <div>
-                          <Label htmlFor={`${platform}_integration_price`}>
-                            Цена за интеграцию (BYN)
-                          </Label>
-                          <Input
-                            id={`${platform}_integration_price`}
-                            type="tel"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            value={getPriceState(platform).postPrice}
-                            onChange={(e) =>
-                              setPriceStates((prev) => ({
-                                ...prev,
-                                [platform]: { ...getPriceState(platform), postPrice: e.target.value },
-                              }))
-                            }
-                            placeholder="Введите цену"
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <div>
-                            <Label htmlFor={`${platform}_post_price`}>
-                              Цена за пост (BYN)
-                            </Label>
-                            <Input
-                              id={`${platform}_post_price`}
-                              type="tel"
-                              inputMode="numeric"
-                              pattern="[0-9]*"
-                              value={getPriceState(platform).postPrice}
-                              onChange={(e) =>
-                                setPriceStates((prev) => ({
-                                  ...prev,
-                                  [platform]: { ...getPriceState(platform), postPrice: e.target.value },
-                                }))
-                              }
-                              placeholder="Введите цену"
-                            />
-                          </div>
-                          {platform === 'instagram' && (
-                            <div>
-                              <Label htmlFor={`${platform}_story_price`}>
-                                Цена за stories (BYN)
-                              </Label>
-                              <Input
-                                id={`${platform}_story_price`}
-                                type="tel"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                value={getPriceState(platform).storyPrice}
-                                onChange={(e) =>
-                                  setPriceStates((prev) => ({
-                                    ...prev,
-                                    [platform]: { ...getPriceState(platform), storyPrice: e.target.value },
-                                  }))
-                                }
-                                placeholder="Введите цену"
-                              />
-                            </div>
-                          )}
-                        </>
-                      )}
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => onEditingSectionChange(null)}
-                        >
-                          Отмена
-                        </Button>
-                        <Button
-                          onClick={() => handlePriceEdit(platform)}
-                          disabled={saving}
-                        >
-                          Сохранить
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                  Сохранить
+                </Button>
               </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          </DialogContent>
+        </Dialog>
+      ))}
+    </>
   );
 };
 
