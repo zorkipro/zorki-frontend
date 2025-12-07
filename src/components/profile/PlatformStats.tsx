@@ -83,7 +83,9 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               <Label htmlFor="instagram_story_reach">Охват сторис</Label>
               <Input
                 id="instagram_story_reach"
-                type="number"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 defaultValue={formData.instagram_story_reach}
                 placeholder="0"
               />
@@ -135,7 +137,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               <Label htmlFor="instagram_post_price">Цена за пост (BYN)</Label>
               <Input
                 id="instagram_post_price"
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 defaultValue={formData.instagram_post_price}
@@ -191,7 +193,7 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               </Label>
               <Input
                 id="instagram_story_price"
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 defaultValue={formData.instagram_story_price}
@@ -283,7 +285,7 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
               </Label>
               <Input
                 id="tiktok_post_price"
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 defaultValue={formData.tiktok_post_price || stats.price || ""}
@@ -375,7 +377,7 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
               </Label>
               <Input
                 id="telegram_post_price"
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 defaultValue={formData.telegram_post_price || stats.price || ""}
@@ -469,7 +471,7 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
               </Label>
               <Input
                 id="youtube_integration_price"
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 defaultValue={formData.youtube_integration_price || stats.price || ""}

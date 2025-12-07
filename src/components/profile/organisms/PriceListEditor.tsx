@@ -65,7 +65,7 @@ const PriceListEditorComponent = ({
               description="Стоимость публикации в BYN"
             >
               <Input
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={prices.instagram?.postPrice || ""}
@@ -81,7 +81,7 @@ const PriceListEditorComponent = ({
               description="Стоимость stories в BYN"
             >
               <Input
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={prices.instagram?.storyPrice || ""}
@@ -109,7 +109,7 @@ const PriceListEditorComponent = ({
               description="Стоимость размещения рекламы в BYN"
             >
               <Input
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={prices.tiktok?.price || ""}
@@ -137,7 +137,7 @@ const PriceListEditorComponent = ({
               description="Стоимость размещения в канале в BYN"
             >
               <Input
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={prices.telegram?.price || ""}
@@ -165,7 +165,7 @@ const PriceListEditorComponent = ({
               description="Стоимость размещения рекламы в BYN"
             >
               <Input
-                type="number"
+                type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={prices.youtube?.price || ""}

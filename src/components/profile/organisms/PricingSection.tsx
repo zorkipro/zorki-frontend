@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Card, CardContent, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Input, Label } from "@/ui-kit";
+import { Card, CardContent, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Label } from "@/ui-kit";
 import { Edit } from "lucide-react";
 import { getPlatformIcon, getPlatformName } from "@/components/icons/PlatformIcons";
 import { getPlatformField, safeParseFloat } from "@/utils/platform-field-helpers";
@@ -92,18 +92,22 @@ const PricingSectionComponent = ({
                     </div>
                   )}
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 shrink-0 touch-manipulation"
+                  onClick={() => onEditingSectionChange(`${platform}_prices`)}
+                  aria-label={`Редактировать цены ${getPlatformName(platform)}`}
+                >
+                  <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </Button>
                 <Dialog
                   open={editingSection === `${platform}_prices`}
                   onOpenChange={(open) =>
                     onEditingSectionChange(open ? `${platform}_prices` : null)
                   }
                 >
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0">
-                      <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
                     <DialogHeader>
                       <DialogTitle>
                         Редактировать цены {getPlatformName(platform)}
@@ -122,7 +126,7 @@ const PricingSectionComponent = ({
                           </Label>
                           <Input
                             id={`${platform}_integration_price`}
-                            type="number"
+                            type="tel"
                             inputMode="numeric"
                             pattern="[0-9]*"
                             value={getPriceState(platform).postPrice}
@@ -143,7 +147,7 @@ const PricingSectionComponent = ({
                             </Label>
                             <Input
                               id={`${platform}_post_price`}
-                              type="number"
+                              type="tel"
                               inputMode="numeric"
                               pattern="[0-9]*"
                               value={getPriceState(platform).postPrice}
@@ -163,7 +167,7 @@ const PricingSectionComponent = ({
                               </Label>
                               <Input
                                 id={`${platform}_story_price`}
-                                type="number"
+                                type="tel"
                                 inputMode="numeric"
                                 pattern="[0-9]*"
                                 value={getPriceState(platform).storyPrice}
