@@ -66,6 +66,8 @@ const PriceListEditorComponent = ({
             >
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={prices.instagram?.postPrice || ""}
                 onChange={(e) =>
                   onPriceChange("instagram", "postPrice", e.target.value)
@@ -80,6 +82,8 @@ const PriceListEditorComponent = ({
             >
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={prices.instagram?.storyPrice || ""}
                 onChange={(e) =>
                   onPriceChange("instagram", "storyPrice", e.target.value)
@@ -106,6 +110,8 @@ const PriceListEditorComponent = ({
             >
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={prices.tiktok?.price || ""}
                 onChange={(e) =>
                   onPriceChange("tiktok", "price", e.target.value)
@@ -132,6 +138,8 @@ const PriceListEditorComponent = ({
             >
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={prices.telegram?.price || ""}
                 onChange={(e) =>
                   onPriceChange("telegram", "price", e.target.value)
@@ -158,6 +166,8 @@ const PriceListEditorComponent = ({
             >
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={prices.youtube?.price || ""}
                 onChange={(e) =>
                   onPriceChange("youtube", "price", e.target.value)

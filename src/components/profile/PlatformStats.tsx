@@ -136,6 +136,8 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               <Input
                 id="instagram_post_price"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 defaultValue={formData.instagram_post_price}
                 placeholder="0"
               />
@@ -190,6 +192,8 @@ export const InstagramStats: React.FC<PlatformStatsProps> = ({
               <Input
                 id="instagram_story_price"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 defaultValue={formData.instagram_story_price}
                 placeholder="0"
               />
@@ -280,6 +284,8 @@ export const TikTokStats: React.FC<PlatformStatsProps> = ({
               <Input
                 id="tiktok_post_price"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 defaultValue={formData.tiktok_post_price || stats.price || ""}
                 placeholder="0"
               />
@@ -370,6 +376,8 @@ export const TelegramStats: React.FC<PlatformStatsProps> = ({
               <Input
                 id="telegram_post_price"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 defaultValue={formData.telegram_post_price || stats.price || ""}
                 placeholder="0"
               />
@@ -462,6 +470,8 @@ export const YouTubeStats: React.FC<PlatformStatsProps> = ({
               <Input
                 id="youtube_integration_price"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 defaultValue={formData.youtube_integration_price || stats.price || ""}
                 placeholder="0"
               />
