@@ -103,15 +103,13 @@ const PricingSectionComponent = ({
                       <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent>
                     <DialogHeader>
                       <DialogTitle>
                         Редактировать цены {getPlatformName(platform)}
                       </DialogTitle>
                       <DialogDescription>
-                        {platform === 'youtube' 
-                          ? `Текущая цена: ${stats.integrationPrice || stats.price || 0} BYN`
-                          : `Текущая цена: ${stats.price || 0} BYN${platform === 'instagram' && stats.storyPrice > 0 ? `, Stories: ${stats.storyPrice} BYN` : ''}`}
+                        Обновите цены для этой платформы
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -123,8 +121,6 @@ const PricingSectionComponent = ({
                           <Input
                             id={`${platform}_integration_price`}
                             type="number"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
                             value={getPriceState(platform).postPrice}
                             onChange={(e) =>
                               setPriceStates((prev) => ({
@@ -144,8 +140,6 @@ const PricingSectionComponent = ({
                             <Input
                               id={`${platform}_post_price`}
                               type="number"
-                              inputMode="numeric"
-                              pattern="[0-9]*"
                               value={getPriceState(platform).postPrice}
                               onChange={(e) =>
                                 setPriceStates((prev) => ({
@@ -164,8 +158,6 @@ const PricingSectionComponent = ({
                               <Input
                                 id={`${platform}_story_price`}
                                 type="number"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
                                 value={getPriceState(platform).storyPrice}
                                 onChange={(e) =>
                                   setPriceStates((prev) => ({

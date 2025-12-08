@@ -45,15 +45,11 @@ export const EditableCard: React.FC<EditableCardProps> = ({
                 <Edit className="w-4 h-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Редактировать {title}</DialogTitle>
                 <DialogDescription>
-                  {(typeof value === 'number' && value > 0) || (typeof value === 'string' && value && !isNaN(Number(value)) && Number(value) > 0)
-                    ? `Текущее значение: ${value} BYN` 
-                    : title.toLowerCase().includes('цена') 
-                      ? `Текущее значение: ${value || 0} BYN`
-                      : `Внесите изменения в поле "${title}" и сохраните их`}
+                  Внесите изменения в поле "{title}" и сохраните их
                 </DialogDescription>
               </DialogHeader>
               {renderEditForm()}
