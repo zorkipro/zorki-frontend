@@ -34,16 +34,12 @@ export const EditableCard: React.FC<EditableCardProps> = ({
   return (
     <Card className="relative">
       <CardContent className="p-4 text-center">
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2">
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 w-8 p-0 touch-manipulation relative z-10"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onEditChange(editKey);
-            }}
+            className="h-8 w-8 p-0 touch-manipulation"
+            onClick={() => onEditChange(editKey)}
             aria-label={`Редактировать ${title}`}
           >
             <Edit className="w-4 h-4" />
@@ -52,7 +48,7 @@ export const EditableCard: React.FC<EditableCardProps> = ({
             open={isEditing}
             onOpenChange={(open) => onEditChange(open ? editKey : null)}
           >
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
               <DialogHeader>
                 <DialogTitle>Редактировать {title}</DialogTitle>
                 <DialogDescription>

@@ -107,7 +107,7 @@ const PricingSectionComponent = ({
                     onEditingSectionChange(open ? `${platform}_prices` : null)
                   }
                 >
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
                     <DialogHeader>
                       <DialogTitle>
                         Редактировать цены {getPlatformName(platform)}
