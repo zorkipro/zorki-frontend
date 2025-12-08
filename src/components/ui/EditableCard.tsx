@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Edit } from "lucide-react";
 
@@ -35,20 +36,16 @@ export const EditableCard: React.FC<EditableCardProps> = ({
     <Card className="relative">
       <CardContent className="p-4 text-center">
         <div className="absolute top-2 right-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-8 w-8 p-0 touch-manipulation"
-            onClick={() => onEditChange(editKey)}
-            aria-label={`Редактировать ${title}`}
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
           <Dialog
             open={isEditing}
             onOpenChange={(open) => onEditChange(open ? editKey : null)}
           >
-            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Edit className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Редактировать {title}</DialogTitle>
                 <DialogDescription>
