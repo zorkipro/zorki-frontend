@@ -32,48 +32,44 @@ export const EditableCard: React.FC<EditableCardProps> = ({
   renderEditForm,
 }) => {
   return (
-    <>
-      <Card className="relative">
-        <CardContent className="p-4 text-center">
-          <div className="absolute top-2 right-2 z-10">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 w-8 p-0 touch-manipulation relative z-10"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onEditChange(editKey);
-              }}
-              aria-label={`Редактировать ${title}`}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-          </div>
-          {icon}
-          {renderContent()}
-        </CardContent>
-      </Card>
-      
-      {/* Dialog вынесен за пределы Card для правильного портирования */}
-      <Dialog
-        open={isEditing}
-        onOpenChange={(open) => onEditChange(open ? editKey : null)}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Редактировать {title}</DialogTitle>
-            <DialogDescription>
-              {(typeof value === 'number' && value > 0) || (typeof value === 'string' && value && !isNaN(Number(value)) && Number(value) > 0)
-                ? `Текущее значение: ${value} BYN` 
-                : title.toLowerCase().includes('цена') 
-                  ? `Текущее значение: ${value || 0} BYN`
-                  : `Внесите изменения в поле "${title}" и сохраните их`}
-            </DialogDescription>
-          </DialogHeader>
-          {renderEditForm()}
-        </DialogContent>
-      </Dialog>
-    </>
+    <Card className="relative">
+      <CardContent className="p-4 text-center">
+        <div className="absolute top-2 right-2 z-10">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0 touch-manipulation relative z-10"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onEditChange(editKey);
+            }}
+            aria-label={`Редактировать ${title}`}
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          <Dialog
+            open={isEditing}
+            onOpenChange={(open) => onEditChange(open ? editKey : null)}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Редактировать {title}</DialogTitle>
+                <DialogDescription>
+                  {(typeof value === 'number' && value > 0) || (typeof value === 'string' && value && !isNaN(Number(value)) && Number(value) > 0)
+                    ? `Текущее значение: ${value} BYN` 
+                    : title.toLowerCase().includes('цена') 
+                      ? `Текущее значение: ${value || 0} BYN`
+                      : `Внесите изменения в поле "${title}" и сохраните их`}
+                </DialogDescription>
+              </DialogHeader>
+              {renderEditForm()}
+            </DialogContent>
+          </Dialog>
+        </div>
+        {icon}
+        {renderContent()}
+      </CardContent>
+    </Card>
   );
 };
