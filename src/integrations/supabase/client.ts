@@ -41,43 +41,46 @@ let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
 export const supabase = (() => {
   if (!supabaseInstance) {
-    // Агрессивная очистка старых данных от предыдущего проекта
-    try {
-      // Очищаем все ключи, связанные со старым проектом
-      const oldProjectRef = "lyeukzcohzufapmtajcl";
-      const keysToRemove: string[] = [];
-      
-      // Собираем все ключи, связанные со старым проектом
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.includes(oldProjectRef) || key.includes("sb-zorki7"))) {
-          keysToRemove.push(key);
-        }
-      }
-      
-      // Удаляем найденные ключи
-      keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-        sessionStorage.removeItem(key);
-      });
-      
-      // Также удаляем ключи со старым URL
-      const oldUrl = "https://lyeukzcohzufapmtajcl.supabase.co";
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && typeof localStorage.getItem(key) === 'string') {
-          const value = localStorage.getItem(key);
-          if (value && value.includes(oldUrl)) {
-            localStorage.removeItem(key);
+    const CLEANUP_FLAG = "supabase-cleanup";
+    
+    if (!localStorage.getItem(CLEANUP_FLAG)) {
+      try {
+        // Очищаем только ключи, связанные со старым проектом
+        const oldProjectRef = "lyeukzcohzufapmtajcl";
+        const currentStorageKey = "sb-zorki7-anon";
+        const keysToRemove: string[] = [];
+        
+        // Собираем все ключи, связанные со старым проектом
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            if (key.includes(oldProjectRef) && key !== currentStorageKey) {
+              keysToRemove.push(key);
+            }
           }
         }
+        // Удаляем найденные ключи
+        keysToRemove.forEach(key => {
+          localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
+        });
+        
+        // Также удаляем ключи со старым URL
+        const oldUrl = "https://lyeukzcohzufapmtajcl.supabase.co";
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key !== currentStorageKey) {
+              const value = localStorage.getItem(key);
+              if (value && typeof value === 'string' && value.includes(oldUrl)) {
+                keysToRemove.push(key);
+                localStorage.removeItem(key);
+            }
+          }
+        }
+        localStorage.setItem(CLEANUP_FLAG, "true");
+      } catch (error) {
+        console.warn("⚠️ Ошибка при очистке старых данных:", error);
       }
-      
-      if (import.meta.env.DEV && keysToRemove.length > 0) {
-        console.log("🧹 Очищены старые данные:", keysToRemove);
-      }
-    } catch (error) {
-      console.warn("⚠️ Ошибка при очистке старых данных:", error);
     }
 
     // Проверяем, что URL правильный
@@ -91,6 +94,7 @@ export const supabase = (() => {
         storageKey: "sb-zorki7-anon",
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true,
       },
     });
     
