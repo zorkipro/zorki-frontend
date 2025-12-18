@@ -21,6 +21,18 @@ interface AdSliderProps {
 // Данные для рекламы
 const defaultSlides: AdSlide[] = [
   {
+    id: "mediaway-new",
+    image: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/m1.webp",
+    imageMobile: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/m2.webp",
+    link: "https://mediaway.one",
+  },
+  {
+    id: "mediaway",
+    image: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/m1.webp",
+    imageMobile: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/m2.webp",
+    link: "https://mediaway.one",
+  },
+  {
     id: "1",
     image: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/1a+(1).webp",
     imageMobile: "https://zorkipro.s3.us-east-1.amazonaws.com/default/blogger/ads/1b+(1).webp",
