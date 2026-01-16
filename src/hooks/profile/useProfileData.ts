@@ -150,7 +150,6 @@ export const useProfileData = () => {
       };
 
       const platformsData: Record<string, any> = {};
-      debugger
       // detailedBlogger.social?.forEach((social) => {
       //   platformsData[social.type.toLowerCase()] = createPlatformData(social);
       // });
