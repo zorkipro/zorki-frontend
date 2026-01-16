@@ -150,13 +150,40 @@ export const useProfileData = () => {
       };
 
       const platformsData: Record<string, any> = {};
+      debugger
+      // detailedBlogger.social?.forEach((social) => {
+      //   platformsData[social.type.toLowerCase()] = createPlatformData(social);
+      // });
+      // detailedBlogger.socialMediaDrafts?.forEach((socialDraft) => {
+      //   const platformName = socialDraft.type.toLowerCase();
+      //   if (!platformsData[platformName]) {
+      //     platformsData[platformName] = createPlatformData(socialDraft, true);
+      //   }
+      // });
+
+
+// 1️⃣ Сначала кладём LIVE данные
       detailedBlogger.social?.forEach((social) => {
-        platformsData[social.type.toLowerCase()] = createPlatformData(social);
+        const key = social.type.toLowerCase();
+        platformsData[key] = createPlatformData(social);
       });
-      detailedBlogger.socialMediaDrafts?.forEach((socialDraft) => {
-        const platformName = socialDraft.type.toLowerCase();
-        if (!platformsData[platformName]) {
-          platformsData[platformName] = createPlatformData(socialDraft, true);
+
+// 2️⃣ Потом накладываем DRAFT
+      detailedBlogger.socialMediaDrafts?.forEach((draft) => {
+        const key = draft.type.toLowerCase();
+
+        // Если профиль не верифицирован — draft должен перекрывать live
+        if (!isVerified) {
+          platformsData[key] = {
+            ...(platformsData[key] ?? {}),
+            ...createPlatformData(draft, true),
+            // isPending: true,
+          };
+        }
+
+        // Если платформа существует только в draft — добавляем
+        if (!platformsData[key]) {
+          platformsData[key] = createPlatformData(draft, true);
         }
       });
 
